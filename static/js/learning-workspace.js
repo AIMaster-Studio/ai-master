@@ -61,7 +61,7 @@
   const progress = id => (app.state.progress || {})[id] || {};
   const current = () => moduleById(app.moduleId);
   const date = value => value ? new Date(value).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '—';
-  const modeLabel = mode => mode === 'ai' ? 'AI 复评' : mode === 'fallback' ? '本地反馈 · AI 暂不可用' : '本地练习';
+  const modeLabel = mode => mode === 'ai' ? 'AI 复评' : mode === 'fallback-local' || mode === 'fallback' ? '本地反馈 · AI 暂不可用' : '本地练习';
   const draftKey = id => 'aimaster-learning-draft:' + (app.user.id || 'guest') + ':' + id;
   function readDraft(id) { try { return localStorage.getItem(draftKey(id)) || ''; } catch (_) { return ''; } }
   function saveDraft(id,value) { try { localStorage.setItem(draftKey(id),value); } catch (_) {} }
@@ -131,7 +131,7 @@
   }
   function feedbackPanel(result) {
     const feedback = Array.isArray(result.feedback) ? result.feedback.join('；') : result.feedback;
-    return '<div class="feedback"><div class="feedback-title"><strong>' + (result.accepted ? '讲解练习已通过' : result.mode === 'fallback' ? 'AI 复评暂未完成' : '再完善一下讲解') + '</strong><span class="badge ' + (result.accepted ? 'green' : 'amber') + '">' + esc(modeLabel(result.mode)) + '</span></div><p class="small">' + esc(feedback || (result.accepted ? '继续完成测验。' : '请依据下方反馈修订。')) + '</p><ul class="checks">' + (result.checks || []).map(c => '<li class="check' + (c.pass ? ' pass' : '') + '"><strong>' + (c.pass ? '✓ ' : '○ ') + esc(c.label) + '</strong><span>' + esc(c.detail) + '</span></li>').join('') + '</ul>' + (result.followUp ? '<div class="follow-up"><strong>再想一层</strong><br>' + esc(Array.isArray(result.followUp) ? result.followUp.join('；') : result.followUp) + '</div>' : '') + (result.accepted ? '<div class="button-row" style="margin-top:18px"><button type="button" class="primary" data-stage="quiz">进入测验 →</button></div>' : '') + '</div>';
+    return '<div class="feedback"><div class="feedback-title"><strong>' + (result.accepted ? '讲解练习已通过' : result.mode === 'fallback-local' || result.mode === 'fallback' ? 'AI 复评暂未完成' : '再完善一下讲解') + '</strong><span class="badge ' + (result.accepted ? 'green' : 'amber') + '">' + esc(modeLabel(result.mode)) + '</span></div><p class="small">' + esc(feedback || (result.accepted ? '继续完成测验。' : '请依据下方反馈修订。')) + '</p><ul class="checks">' + (result.checks || []).map(c => '<li class="check' + (c.pass ? ' pass' : '') + '"><strong>' + (c.pass ? '✓ ' : '○ ') + esc(c.label) + '</strong><span>' + esc(c.detail) + '</span></li>').join('') + '</ul>' + (result.followUp ? '<div class="follow-up"><strong>再想一层</strong><br>' + esc(Array.isArray(result.followUp) ? result.followUp.join('；') : result.followUp) + '</div>' : '') + (result.accepted ? '<div class="button-row" style="margin-top:18px"><button type="button" class="primary" data-stage="quiz">进入测验 →</button></div>' : '') + '</div>';
   }
   function questionsHtml(quiz,result) {
     return quiz.questions.map((q,index) => {
@@ -145,7 +145,7 @@
     let html = '<div class="section-header"><h2>情境测验</h2><span class="badge">通过线 75%</span></div>';
     if (!accepted && !p.completedAt) return html + '<p class="muted small">先完成本节讲解，再开始通关测验。</p><button type="button" class="primary" data-stage="explain">返回讲解 →</button>';
     if (app.quiz && app.quiz.moduleId === item.id) {
-      html += '<form id="quiz-form">' + questionsHtml(app.quiz,app.quizResult) + '<div class="form-footer">' + (app.quizResult ? '<div><span class="result-score">' + esc(app.quizResult.score) + '%</span><span class="muted small"> · ' + esc(app.quizResult.correct) + ' / ' + esc(app.quizResult.total) + ' 题正确</span></div><button type="button" data-action="start-quiz">重新测验</button>' : '<span class="muted">所有题目作答后提交。</span><button type="submit" class="primary">提交测验</button>') + '</div></form>';
+      html += '<form id="quiz-form">' + questionsHtml(app.quiz,app.quizResult) + '<div class="form-footer">' + (app.quizResult ? '<div><span class="result-score">' + esc(app.quizResult.score) + '%</span><span class="muted small"> · ' + esc(app.quizResult.correct) + ' / ' + esc(app.quizResult.total) + ' 题正确</span></div><button type="button" data-action="start-quiz">重新测验</button>' : '<span class="muted">' + (Number.isInteger(app.quiz.attemptsRemaining) ? '今日还可开始测验 ' + esc(app.quiz.attemptsRemaining) + ' 次。' : '所有题目作答后提交。') + '</span><button type="submit" class="primary">提交测验</button>') + '</div></form>';
     } else html += '<p class="small muted">' + (p.quiz ? '上次测验：' + esc(p.quiz.score) + '%。' : '用具体情境检验刚刚学到的概念。') + '</p><button type="button" class="primary" data-action="start-quiz">' + (p.quiz ? '重新测验' : '开始测验') + '</button>';
     html += '<section class="section-band" style="margin-top:26px"><h2>本节通关</h2><ul class="requirements"><li><span>讲解练习</span><span>' + (accepted ? '✓ 已通过' : '待通过') + '</span></li><li><span>客观测验 ≥ 75%</span><span>' + (passed ? '✓ 已通过' : '待通过') + '</span></li></ul>';
     if (p.completedAt) html += '<div class="completion-summary"><span class="completion-icon" aria-hidden="true">✓</span><div><h3>这一个概念，已留下你的理解</h3><p>通关于 ' + date(p.completedAt) + (p.dueAt ? ' · 复习时间 ' + date(p.dueAt) : '') + '</p></div></div><button type="button" class="primary" data-action="next-module">继续下一节 →</button>';
