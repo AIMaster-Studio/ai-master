@@ -62,3 +62,6 @@
 - `2026-09-05T17:14:28+08:00` `62a71c68` **433525** （CN/项目负责人 / 全栈开发）[文档] docs: 新增 AIMaster 宣传视频完整脚本 + 开场粒子星场CG片段(15s)
 - `2026-09-05T17:22:23+08:00` `588d7839` **433525** （CN/项目负责人 / 全栈开发）[文档] docs: 补充宣传视频结尾收束片段 + RAG证据链可视化片段
 - `2026-09-06T11:47:27+08:00` `ce340ef4` **433525** （CN/项目负责人 / 全栈开发）[开发迭代] Merge origin/master and preserve iCAN learning loop
+- `2026-09-05T12:25:17+08:00` `9589afb5` **L2464** （-/-）[版本迭代] open class扩展页面与开发 星图美术效果优化
+- `2026-09-06T11:59:12+08:00` `1bc225ff` **433525** （CN/项目负责人 / 全栈开发）[开发迭代] Merge master updates while preserving iCAN learning loop
+- `2026-09-06T12:44:50+08:00` `3396743a` **433525** （CN/项目负责人 / 全栈开发）[开发迭代] merge: resolve master conflicts for learning loop
