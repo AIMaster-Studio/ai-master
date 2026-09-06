@@ -15,6 +15,76 @@
   pointer-events: none;
 }
 #aimaster-avatar-root * { box-sizing: border-box; }
+#aimaster-avatar-root.aw-docked {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#aimaster-avatar-root.aw-docked .aw-stage {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: 180px;
+  flex: 1 1 auto;
+  min-height: 120px;
+  cursor: pointer;
+  touch-action: auto;
+}
+#aimaster-avatar-root.aw-docked .aw-action-select {
+  width: 100%;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 3px 8px;
+  border: 1px solid #d6dfdb;
+  border-radius: 4px;
+  background: #fff;
+  color: #33463f;
+  font: 12px "Microsoft YaHei", sans-serif;
+  pointer-events: auto;
+}
+#aimaster-avatar-root.aw-docked .aw-bubble,
+#aimaster-avatar-root.aw-docked .aw-gear { display: none; }
+#aimaster-avatar-root.aw-docked .aw-menu,
+#aimaster-avatar-root.aw-docked .aw-stage.aw-menu-open .aw-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  background: #fff;
+  backdrop-filter: none;
+  border: 1px solid #ccd8d1;
+  border-radius: 8px;
+  color: #243e32;
+  box-shadow: 0 12px 36px rgba(18, 42, 31, 0.18);
+  z-index: 100;
+}
+#aimaster-avatar-root.aw-docked .aw-dock-heading { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e2e9e5; font-size: 16px; }
+#aimaster-avatar-root.aw-docked .aw-dock-controls { display: grid; gap: 12px; padding: 16px; }
+#aimaster-avatar-root.aw-docked .aw-dock-controls select { width: 100%; min-width: 0; height: 36px; border: 1px solid #ccd8d1; border-radius: 4px; background: #fff; color: #243e32; font: inherit; padding: 4px 8px; }
+#aimaster-avatar-root.aw-docked .aw-dock-transport { display: flex; gap: 8px; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; padding: 8px; background: #f4f7f5; border: 1px solid #d5dfd9; color: #245a42; border-radius: 4px; cursor: pointer; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon:hover { background: #e5f1e9; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon:disabled { opacity: .4; cursor: default; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon svg { width: 18px; height: 18px; }
+#aimaster-avatar-root.aw-docked .aw-dock-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#aimaster-avatar-root.aw-docked .aw-dock-volume { display: flex; align-items: center; gap: 12px; }
+#aimaster-avatar-root.aw-docked .aw-dock-volume input { flex: 1; min-width: 0; width: 100%; accent-color: #28674a; }
+#aimaster-avatar-root.aw-docked .aw-dock-controls input[type="checkbox"] { accent-color: #28674a; }
+#aimaster-avatar-root.aw-docked .aw-menu :focus-visible { outline: 2px solid #28674a; outline-offset: 2px; }
+@media (max-width: 700px) {
+  #aimaster-avatar-root.aw-docked { min-height: 150px; }
+  #aimaster-avatar-root.aw-docked .aw-stage { height: 120px; }
+}
 #aimaster-avatar-root .aw-stage {
   position: absolute;
   width: calc(150px * var(--aw-scale, 1));
@@ -549,4 +619,127 @@
 @keyframes aw-zzz {
   0%, 100% { transform: translateY(0) scale(0.9); opacity: 0.7; }
   50% { transform: translateY(-9px) scale(1.15); opacity: 1; }
+}
+
+/* ---------- 番茄钟专注模式 ---------- */
+#aimaster-avatar-root .aw-focus-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: rgba(255, 79, 109, 0.85);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  z-index: 5;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+#aimaster-avatar-root .aw-focus-badge b { font-variant-numeric: tabular-nums; }
+#aimaster-avatar-root .aw-focus-badge button {
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#aimaster-avatar-root .aw-focus-badge button:hover { background: rgba(255, 255, 255, 0.4); }
+#aimaster-avatar-root .aw-stage.aw-focus {
+  filter: drop-shadow(0 0 8px rgba(114, 246, 228, 0.45));
+}
+#aimaster-avatar-root .aw-focus-ctl {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  align-items: center;
+}
+#aimaster-avatar-root .aw-focus-ctl input {
+  width: 58px;
+  padding: 5px 6px;
+  background: #0b1322;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #dfe9f5;
+  font-size: 12px;
+}
+#aimaster-avatar-root .aw-focus-ctl .aw-btn { flex: 1; margin-top: 0; }
+
+/* ---------- 左吸附（镜像）时气泡/徽章反向还原，避免文字镜像 ---------- */
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble,
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble.aw-show {
+  transform: scaleX(-1);
+}
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble:not(.aw-show) {
+  transform: translateY(6px) scale(0.9) scaleX(-1);
+}
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble::after {
+  right: auto;
+  left: 22px;
+}
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-focus-badge {
+  transform: scaleX(-1);
+}
+
+/* ---------- 学习报表：柱状图 ---------- */
+#aimaster-avatar-root .aw-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 70px;
+  padding: 4px 2px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+#aimaster-avatar-root .aw-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+#aimaster-avatar-root .aw-chart-bar {
+  width: 70%;
+  min-height: 2px;
+  background: rgba(114, 246, 228, 0.4);
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+}
+#aimaster-avatar-root .aw-chart-label {
+  font-size: 9px;
+  color: #8d9cbd;
+}
+
+/* ---------- 学习报表：30 天打卡热力图 ---------- */
+#aimaster-avatar-root .aw-calendar {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 3px;
+}
+#aimaster-avatar-root .aw-cal-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+#aimaster-avatar-root .aw-cal-cell.aw-cal-1 { background: rgba(114, 246, 228, 0.25); }
+#aimaster-avatar-root .aw-cal-cell.aw-cal-2 { background: rgba(114, 246, 228, 0.45); }
+#aimaster-avatar-root .aw-cal-cell.aw-cal-3 { background: rgba(114, 246, 228, 0.7); }
+#aimaster-avatar-root .aw-cal-cell.aw-cal-4 { background: linear-gradient(135deg, #72f6e4, #4f8cff); }
+
+/* ---------- 桌面模式状态指示 ---------- */
+#aimaster-avatar-root .aw-row .aw-val {
+  font-size: 11px;
+  color: #8d9cbd;
+  margin-left: 6px;
+  white-space: nowrap;
 }
