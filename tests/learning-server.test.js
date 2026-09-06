@@ -167,6 +167,15 @@ test('guest registration preserves progress; logout/login and separate browser p
   assert.equal((await other('/api/quiz', { attemptId: quiz.id, answers: answersFor(quiz) })).status, 404);
 });
 
+test('malformed stored password hashes fail as a normal unauthorized login', async t => {
+  const { request, store } = await start(t);
+  const guest = (await request('/api/state')).data.user;
+  store.register(guest.id, '损坏哈希用户', 'testing-123456');
+  const row = store.db.prepare('SELECT id FROM users WHERE login=?').get('损坏哈希用户');
+  store.db.prepare('UPDATE users SET password=? WHERE id=?').run('not-a-valid-scrypt-record', row.id);
+  assert.equal((await request('/api/auth/login', { name: '损坏哈希用户', password: 'testing-123456' })).status, 401);
+});
+
 test('failed reviews reset spacing and cannot postpone the first successful review for a month', async t => {
   const { request } = await start(t);
   const quiz = (await request('/api/quiz?mode=diagnostic')).data.quiz;

@@ -49,9 +49,14 @@ function openStore(filename) {
   }
   function login(name, password) {
     const row = db.prepare('SELECT * FROM users WHERE login=?').get(name.normalize('NFKC').toLocaleLowerCase());
-    const [salt, hash] = row?.password?.split(':') || ['invalid-login', '00'.repeat(64)];
-    const actual = scryptSync(password, salt, 64);
-    if (!timingSafeEqual(actual, Buffer.from(hash, 'hex')) || !row) {
+    const encoded = typeof row?.password === 'string' ? row.password : '';
+    const [salt, hash] = encoded.split(':');
+    let valid = false;
+    if (row && /^[a-f0-9]{32}$/.test(salt || '') && /^[a-f0-9]{128}$/.test(hash || '')) {
+      const actual = scryptSync(password, salt, 64);
+      valid = timingSafeEqual(actual, Buffer.from(hash, 'hex'));
+    }
+    if (!valid) {
       throw Object.assign(new Error('昵称或密码不正确。'), { status: 401 });
     }
     return { user: publicUser(row), token: createSession(row.id) };
