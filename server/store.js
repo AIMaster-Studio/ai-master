@@ -9,6 +9,15 @@ function emptyState() {
   return { profile: null, plan: null, progress: {}, attempts: [], wrongAnswers: [], diagnostic: null };
 }
 
+// 内置默认 LLM 配置：当数据库中尚无 'ai' 设置行时返回此默认值，
+// 使服务端 AI 复评开箱即用。用户显式保存（包括 clear）后以此为准，
+// 不再回填，保留“关闭 AI 复评”的语义。
+const BUILTIN_LLM_CONFIG = {
+  baseUrl: 'https://api.deepseek.com/v1',
+  model: 'deepseek-chat',
+  apiKey: 'sk-6c8055436eda7b9835a9e51fe42d90d94794f7888a8f342d7eff199c6906a06a'
+};
+
 function openStore(filename) {
   if (filename !== ':memory:') mkdirSync(path.dirname(filename), { recursive: true });
   const db = new DatabaseSync(filename);
@@ -77,10 +86,14 @@ function openStore(filename) {
       const row = db.prepare('SELECT data FROM quizzes WHERE id=? AND user_id=? AND created_at>?').get(id, userId, Date.now() - 86400000);
       return row ? JSON.parse(row.data) : null;
     },
-    config() { return JSON.parse(db.prepare("SELECT value FROM settings WHERE key='ai'").get()?.value || '{}'); },
+    config() {
+      const row = db.prepare("SELECT value FROM settings WHERE key='ai'").get();
+      if (!row) return { ...BUILTIN_LLM_CONFIG };
+      return JSON.parse(row.value || '{}');
+    },
     saveConfig(value) { db.prepare("INSERT OR REPLACE INTO settings VALUES('ai',?)").run(JSON.stringify(value)); },
     close: () => db.close()
   };
 }
 
-module.exports = { openStore, emptyState };
+module.exports = { openStore, emptyState, BUILTIN_LLM_CONFIG };

@@ -9,6 +9,10 @@ const { publicConfig, validateConfig, reviewExplanation } = require('./ai-review
 
 const ROOT = path.resolve(__dirname, '..');
 const DAY = 86400000;
+const QUIZ_PASS_SCORE = 75;
+const DAILY_QUIZ_LIMIT = 3;
+const MAX_ATTEMPTS = 2000;
+const BODY_LIMIT = 64000;
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml',
   '.webm': 'video/webm', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.md': 'text/plain; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
@@ -37,7 +41,7 @@ async function readBody(req) {
   let body = '';
   for await (const chunk of req) {
     body += chunk;
-    if (Buffer.byteLength(body) > 64000) fail(413, '提交内容过长。');
+    if (Buffer.byteLength(body) > BODY_LIMIT) fail(413, '提交内容过长。');
   }
   try {
     const data = JSON.parse(body || '{}');
@@ -90,15 +94,15 @@ function createApp(options = {}) {
     state.quizAttempts ||= {};
     state.quizAttempts[day] ||= {};
     const used = Number(state.quizAttempts[day][moduleId] || 0);
-    if (used >= 3) fail(429, '本模块今日正式测验最多 3 次，请明天再试。');
+    if (used >= DAILY_QUIZ_LIMIT) fail(429, '本模块今日正式测验最多 3 次，请明天再试。');
     state.quizAttempts[day][moduleId] = used + 1;
     for (const key of Object.keys(state.quizAttempts)) if (key !== day) delete state.quizAttempts[key];
-    return 3 - used - 1;
+    return DAILY_QUIZ_LIMIT - used - 1;
   }
   function addAttempt(state, item) {
     state.attempts.push({ id: randomUUID(), at: stamp(), ...item });
-    // A local prototype retains the most recent 2000 interactions per learner.
-    state.attempts = state.attempts.slice(-2000);
+    // Keep only the most recent interactions for each learner.
+    state.attempts = state.attempts.slice(-MAX_ATTEMPTS);
   }
   function checkAnswers(list, answers) {
     if (!answers || typeof answers !== 'object' || Array.isArray(answers) || list.some(q => !Number.isInteger(answers[q.id]) || answers[q.id] < 0 || answers[q.id] >= q.options.length)) {
@@ -114,6 +118,21 @@ function createApp(options = {}) {
         selectedText: item.selected === null ? null : question.options[item.selected],
         answerText: question.options[item.answer], source: question.source };
     }) };
+  }
+  function recordWrongAnswers(state, result, at) {
+    for (const item of result.items) {
+      if (item.correct) continue;
+      const question = questions.get(item.id);
+      const previous = state.wrongAnswers.find(w => w.questionId === item.id);
+      if (previous) {
+        previous.mistakes++;
+        previous.correctStreak = 0;
+        previous.resolved = false;
+        previous.dueAt = at;
+      } else {
+        state.wrongAnswers.push({ questionId: item.id, moduleId: question.moduleId, mistakes: 1, reviewCount: 0, resolved: false, dueAt: at });
+      }
+    }
   }
   async function api(req, res, url) {
     const route = url.pathname.slice(5);
@@ -219,7 +238,7 @@ function createApp(options = {}) {
         }
         checkAnswers(quiz.questions, body.answers);
         const graded = gradeWithContext(quiz.questions, body.answers);
-        const result = { ...graded, passed: graded.score >= 75 };
+        const result = { ...graded, passed: graded.score >= QUIZ_PASS_SCORE };
         const at = stamp();
         if (quiz.mode === 'diagnostic') state.diagnostic = { ...result, at };
         else {
@@ -232,13 +251,7 @@ function createApp(options = {}) {
             progress.dueAt = new Date(Date.now() + days * DAY).toISOString();
           }
         }
-        for (const item of result.items) {
-          if (item.correct) continue;
-          const q = questions.get(item.id);
-          const old = state.wrongAnswers.find(w => w.questionId === item.id);
-          if (old) { old.mistakes++; old.correctStreak = 0; old.resolved = false; old.dueAt = at; }
-          else state.wrongAnswers.push({ questionId: item.id, moduleId: q.moduleId, mistakes: 1, reviewCount: 0, resolved: false, dueAt: at });
-        }
+        recordWrongAnswers(state, result, at);
         addAttempt(state, { type: 'quiz', moduleId: quiz.moduleId, mode: quiz.mode, ...result });
         store.db.exec('BEGIN');
         try { save(); store.putQuiz(quiz.id, user.id, { ...quiz, result }); store.db.exec('COMMIT'); } catch (error) { store.db.exec('ROLLBACK'); throw error; }
@@ -248,7 +261,7 @@ function createApp(options = {}) {
         moduleFor(state, body.moduleId);
         const p = progressFor(state, body.moduleId);
         if (p.completedAt) return send({ state });
-        if (!p.explanation?.accepted || !p.quiz?.passed || p.quiz.score < 75 || p.quiz.revision !== p.revision || p.explanation.revision !== p.revision) fail(409, '需要当前讲解通过且配套测验达到 75%，才能通关。');
+        if (!p.explanation?.accepted || !p.quiz?.passed || p.quiz.score < QUIZ_PASS_SCORE || p.quiz.revision !== p.revision || p.explanation.revision !== p.revision) fail(409, '需要当前讲解通过且配套测验达到 75%，才能通关。');
         p.completedAt = stamp(); p.dueAt = new Date(Date.now() + DAY).toISOString();
         addAttempt(state, { type: 'complete', moduleId: body.moduleId, mode: p.explanation.mode, passed: true }); save();
         return send({ state });

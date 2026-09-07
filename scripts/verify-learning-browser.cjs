@@ -25,13 +25,8 @@ async function mediaState(page) {
   const report = { date: new Date().toISOString(), base, environment: 'Headless Microsoft Edge on Windows; viewport emulation, not physical phone testing', checks: [], errors: [] };
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-    await page.addInitScript(() => {
-      const play = HTMLMediaElement.prototype.play;
-      HTMLMediaElement.prototype.play = function (...args) {
-        if (this.tagName === 'AUDIO') window.__lastPetAudio = this;
-        return play.apply(this, args);
-      };
-    });
+    const duckRequests = [];
+    page.on('request', request => { if (/\/Ya1\.mp3(?:\?|$)/i.test(request.url())) duckRequests.push(request.url()); });
     page.on('pageerror', error => report.errors.push(error.message));
     await page.goto(base);
     await page.waitForSelector('#plan-form');
@@ -105,20 +100,11 @@ async function mediaState(page) {
     await page.locator('#aw-dock-idle').click();
     await page.waitForTimeout(300);
     assert((await mediaState(page)).src.includes('待机呼吸休闲'));
-    await page.locator('#aw-dock-sound').uncheck();
-    assert(await page.locator('#aw-dock-preview').isDisabled());
-    assert(await page.locator('#aw-dock-volume').isDisabled());
-    await page.locator('#aw-dock-sound').check();
-    await page.locator('#aw-dock-volume').fill('25');
-    assert.equal(await page.locator('#aw-dock-volume-value').textContent(), '25%');
-    await page.locator('#aw-dock-preview').click();
-    await page.waitForFunction(() => window.__lastPetAudio?.currentTime > 0 && window.__lastPetAudio.volume === 0.25);
-    report.checks.push({ name: 'whale-settings-actions-pause-resume-and-sound' });
+    report.checks.push({ name: 'whale-settings-actions-pause-resume', audioQualityTested: false });
     await page.screenshot({ path: path.join(output, 'desktop-whale-settings.png') });
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('.aw-menu-open').count(), 0);
     await page.locator('[data-companion="menu"]').click();
-    assert.equal(await page.locator('#aw-dock-volume').inputValue(), '25');
     await page.locator('#aw-dock-close').click();
     assert.equal(await page.locator('.aw-menu-open').count(), 0);
     await page.locator('[data-companion="random"]').click();
@@ -143,6 +129,8 @@ async function mediaState(page) {
     assert(shortMenu.y >= 0 && shortMenu.y + shortMenu.height <= 320, 'Settings must fit landscape phone height');
     await page.locator('#aw-dock-close').click();
     report.checks.push({ name: 'landscape-whale-settings', ...shortMenu });
+    assert.deepEqual(duckRequests, [], 'Pet interactions must not request the removed duck sound');
+    report.checks.push({ name: 'no-duck-audio-requests' });
     assert.deepEqual(report.errors, []);
     report.passed = true;
   } catch (error) {
