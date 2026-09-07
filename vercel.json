@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/[...slug].js" },
+    { "source": "/", "destination": "/frontend/learning-center/" },
+    { "source": "/((?!api).*)", "destination": "/frontend/$1" }
+  ],
+  "functions": {
+    "api/[...slug].js": {
+      "maxDuration": 30
+    }
+  }
+}

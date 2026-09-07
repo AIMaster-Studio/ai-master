@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 // 轻量 .env 加载器：本地开发时从项目根目录的 .env 文件读取配置。
 // 已存在的环境变量（如 Render 面板配置）不会被 .env 覆盖。
@@ -83,7 +83,7 @@ function csvCell(value) {
 function createApp(options = {}) {
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || JSON.parse(fs.readFileSync(path.join(ROOT, 'frontend/data/learning-curriculum.json'), 'utf8'));
-  const store = openStore(options.dbPath || path.join(ROOT, '.local/learning.sqlite'));
+  const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')));
   const modules = new Map(catalog.modules.map(m => [m.id, m]));
   const questions = new Map(catalog.modules.flatMap(m => m.questions.map(q => [q.id, { ...q, moduleId: m.id }])));
   const rate = new Map();
@@ -160,7 +160,10 @@ function createApp(options = {}) {
     if (!['GET', 'POST'].includes(req.method)) fail(405, '不支持此请求方式。');
     if (req.method === 'POST') {
       if (req.headers['sec-fetch-site'] === 'cross-site') fail(403, '不接受其他网站提交的请求。');
-      if (req.headers.origin && req.headers.origin !== 'http://' + req.headers.host) fail(403, '请求来源不匹配。');
+      if (req.headers.origin) {
+        const allowedOrigins = ['http://' + req.headers.host, 'https://' + req.headers.host];
+        if (!allowedOrigins.includes(req.headers.origin)) fail(403, '请求来源不匹配。');
+      }
     }
     let token = String(req.headers.cookie || '').match(/(?:^|;\s*)aimaster_session=([a-f0-9]{64})(?:;|$)/)?.[1];
     let user = store.session(token);
@@ -348,13 +351,13 @@ function createApp(options = {}) {
     const stream = fs.createReadStream(filename, { start, end });
     stream.on('error', () => res.destroy()); res.on('close', () => stream.destroy()); stream.pipe(res);
   }
-  const server = http.createServer(async (req, res) => {
+  const handleRequest = async (req, res) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'same-origin');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     try {
       const host = req.headers.host || '';
-      if (!/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host)) fail(403, '服务仅供本机使用。');
+      if (!options.skipHostCheck && !/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host)) fail(403, '服务仅供本机使用。');
       const url = new URL(req.url, 'http://' + host);
       if (url.pathname.startsWith('/api/')) await api(req, res, url); else staticFile(req, res, url);
     } catch (error) {
@@ -362,9 +365,10 @@ function createApp(options = {}) {
       else res.end();
       if (!error.status && options.onError) options.onError(error);
     }
-  });
+  };
+  const server = http.createServer(handleRequest);
   server.on('close', () => store.close());
-  return { server, store };
+  return { server, store, handleRequest };
 }
 
 if (require.main === module) {

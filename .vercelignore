@@ -1,0 +1,36 @@
+# Vercel 部署忽略文件
+# 桌面应用相关
+electron/
+.vercel/
+release/
+
+# 开发日志和文档
+devlog/
+docs/
+assets/aimaster-*.mp4
+docs/*.mp4
+
+# 开发工具
+scripts/
+tests/
+test-results/
+.vercel/
+.githooks/
+.github/
+
+# 第三方源码（保留 dsh-pet 资源）
+third_party/dsh-pet/.github/
+
+# 根目录杂项
+*.md
+!README.md
+*.bat
+*.ps1
+*.cmd
+*.py
+
+# 临时/构建
+node_modules/
+.local/
+*.log
+.DS_Store
