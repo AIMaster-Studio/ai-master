@@ -150,8 +150,6 @@
   var DEFAULT_SETTINGS = {
     avatar: 'whale1',
     size: 1,
-    sound: true,
-    volume: 0.6,
     bubbleOn: true,
     x: null,
     y: null,
@@ -163,8 +161,6 @@
     bgBlur: 18,
     sleepOn: true,
     sleepMin: 3,
-    voiceOn: true,
-    voiceRate: 1,
     desktopMode: true,
     desktopPetAlive: false
   };
@@ -548,27 +544,6 @@
   var PET_ANIM_ROOT = PROJECT_ROOT + 'third_party/dsh-pet/dsh-pet/assets/webm/';
   var petAnimNames = (window.DSH_PET_ANIMATIONS || PET_ANIM_NAMES || []).slice();
 
-  /* ---------- 音效 ---------- */
-  var audios = [];
-  var SOUND_FILES = ['Ya1.mp3'];
-  function ensureAudio() {
-    if (audios.length || !settings.sound) return;
-    SOUND_FILES.forEach(function (f) {
-      try {
-        var a = new Audio(BASE + 'assets/' + f);
-        a.volume = settings.volume;
-        audios.push(a);
-      } catch (e) { }
-    });
-  }
-  function playPress() {
-    if (!settings.sound || settings.volume <= 0) return;
-    ensureAudio();
-    if (!audios.length) return;
-    var a = audios[Math.floor(Math.random() * audios.length)];
-    try { a.currentTime = 0; a.volume = settings.volume; a.play().catch(function () { }); } catch (e) { }
-  }
-
   /* ---------- 形象渲染 ---------- */
   function avatarSrc(id) {
     for (var i = 0; i < PRESET_AVATARS.length; i++) if (PRESET_AVATARS[i].id === id) return PRESET_AVATARS[i].src;
@@ -736,28 +711,6 @@
     playPetAnimation('打瞌睡被惊醒', false);
   }
 
-  /* ---------- TTS 语音播报 ---------- */
-  function awSpeak(text) {
-    if (!settings.voiceOn) return;
-    try { if (!('speechSynthesis' in window)) return; } catch (e) { return; }
-    var t = String(text || '')
-      .replace(/<[^>]*>/g, '')
-      .replace(/[\u{1F300}-\u{1FAFF}\u{FE0F}\u{200D}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}]/gu, '')
-      .replace(/\s+/g, ' ').trim();
-    if (!t) return;
-    try {
-      speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(t);
-      u.lang = 'zh-CN';
-      u.rate = settings.voiceRate || 1;
-      var voices = speechSynthesis.getVoices();
-      var v = null;
-      for (var i = 0; i < voices.length; i++) { if (/^zh/i.test(voices[i].lang)) { v = voices[i]; break; } }
-      if (v) u.voice = v;
-      speechSynthesis.speak(u);
-    } catch (e) { }
-  }
-
   /* ---------- 番茄钟专注模式 ---------- */
   var focus = { active: false, remain: 0, total: 0, timer: null, paused: false };
   function fmtClock(ms) {
@@ -782,7 +735,6 @@
     stage.classList.add('aw-focus');
     if (supportsAnimation()) playPetAnimation('写代码', false);
     showBubble('<div class="aw-bb-row"><span class="aw-bb-tag">🍅 专注开始</span><span>静心奋斗 ' + m + ' 分钟，鲸鱼娘为你守时~</span></div>', true);
-    awSpeak('专注开始，' + m + ' 分钟，加油！');
     renderFocusBadge();
     if (focus.timer) clearInterval(focus.timer);
     focus.timer = setInterval(function () {
@@ -811,7 +763,6 @@
     saveStats();
     if (supportsAnimation()) playPetAnimation('放烟花', false);
     showBubble('<div class="aw-bb-row"><span class="aw-bb-tag">🎉 专注完成</span><span>完成 ' + mins + ' 分钟专注，去喝口水放松一下吧~</span></div>', true);
-    awSpeak('专注完成，' + mins + ' 分钟，太棒了！');
     var newly = unlockAchievements(s);
     if (newly && newly.length) showAchievementBubble(newly);
     if (menuOpen) renderMenu();
@@ -888,12 +839,11 @@
   stage.addEventListener('pointerdown', function (e) {
     if (e.target === gearBtn || menuEl.contains(e.target) || bubbleEl.contains(e.target)) return;
     if (companionDock) { moved = false; return; }
-    if (!isPixelHit(e)) return; // 只允许点击到人物实体才触发拖拽/声音
+    if (!isPixelHit(e)) return; // 只允许点击到人物实体才触发拖拽
     if (sleeping) { touchInteract(); return; } // 睡梦中：第一次点击仅唤醒，不拖拽
-    if (e.button !== 0) return; // 仅左键拖拽/声音，右键留给菜单
+    if (e.button !== 0) return; // 仅左键拖拽，右键留给菜单
     dragging = true; moved = false;
     stage.classList.add('aw-pressed');
-    playPress();
     var r = stageRect();
     startX = e.clientX; startY = e.clientY;
     startLeft = parseInt(stage.style.left, 10) || (window.innerWidth - r.w - 16);
@@ -1356,11 +1306,7 @@
       '<select id="aw-dock-action" aria-label="设置中的鲸鱼娘动作"></select>' +
       '<div class="aw-dock-transport"><button type="button" class="aw-dock-icon" id="aw-dock-play"></button>' +
       '<button type="button" class="aw-dock-icon" id="aw-dock-random" title="随机动作" aria-label="随机动作"><i data-lucide="shuffle"></i></button>' +
-      '<button type="button" class="aw-dock-icon" id="aw-dock-idle" title="返回待机" aria-label="返回待机"><i data-lucide="rotate-ccw"></i></button></div>' +
-      '<label class="aw-dock-row" for="aw-dock-sound"><span>音效</span><input type="checkbox" id="aw-dock-sound"></label>' +
-      '<label class="aw-dock-row" for="aw-dock-volume"><span>音量</span><output id="aw-dock-volume-value"></output></label>' +
-      '<div class="aw-dock-volume"><input type="range" id="aw-dock-volume" min="0" max="100" aria-label="音量">' +
-      '<button type="button" class="aw-dock-icon" id="aw-dock-preview" title="试听音效" aria-label="试听音效"><i data-lucide="volume-2"></i></button></div></div>';
+      '<button type="button" class="aw-dock-icon" id="aw-dock-idle" title="返回待机" aria-label="返回待机"><i data-lucide="rotate-ccw"></i></button></div></div>';
     var select = menuEl.querySelector('#aw-dock-action');
     petAnimNames.forEach(function (name) {
       var option = document.createElement('option');
@@ -1368,7 +1314,7 @@
       option.textContent = name;
       select.appendChild(option);
     });
-    select.addEventListener('change', function () { playPetAnimation(select.value, false); playPress(); });
+    select.addEventListener('change', function () { playPetAnimation(select.value, false); });
     menuEl.querySelector('#aw-dock-close').addEventListener('click', closeMenu);
     menuEl.querySelector('#aw-dock-play').addEventListener('click', function () {
       petPlaybackPaused = !petPlaybackPaused;
@@ -1377,24 +1323,8 @@
     });
     menuEl.querySelector('#aw-dock-random').addEventListener('click', function () {
       playPetAnimation(petAnimNames[Math.floor(Math.random() * petAnimNames.length)], false);
-      playPress();
     });
     menuEl.querySelector('#aw-dock-idle').addEventListener('click', function () { playPetAnimation('待机呼吸休闲', true); });
-    var sound = menuEl.querySelector('#aw-dock-sound');
-    var volume = menuEl.querySelector('#aw-dock-volume');
-    var preview = menuEl.querySelector('#aw-dock-preview');
-    sound.checked = settings.sound;
-    volume.value = Math.round(settings.volume * 100);
-    function syncSoundControls() {
-      volume.disabled = !settings.sound;
-      preview.disabled = !settings.sound || settings.volume <= 0;
-      menuEl.querySelector('#aw-dock-volume-value').textContent = Math.round(settings.volume * 100) + '%';
-      audios.forEach(function (audio) { audio.volume = settings.volume; if (!settings.sound) audio.pause(); });
-    }
-    sound.addEventListener('change', function () { settings.sound = sound.checked; saveSettings(); syncSoundControls(); });
-    volume.addEventListener('input', function () { settings.volume = Number(volume.value) / 100; saveSettings(); syncSoundControls(); });
-    preview.addEventListener('click', playPress);
-    syncSoundControls();
     syncPetControls();
   }
 
@@ -1479,10 +1409,6 @@
       '<h4>⚙️ 设置</h4>' +
       '<div class="aw-sec">' +
         '<label class="aw-row">大小 <input type="range" id="aw-size" min="' + minSize + '" max="' + maxSize + '" step="0.05" value="' + settings.size + '" /><span class="aw-val">' + settings.size.toFixed(2) + '</span></label>' +
-        '<label class="aw-row">音效 <input type="checkbox" id="aw-sound" ' + (settings.sound ? 'checked' : '') + ' /></label>' +
-        '<label class="aw-row">音量 <input type="range" id="aw-vol" min="0" max="1" step="0.05" value="' + settings.volume + '" /><span class="aw-val">' + Math.round(settings.volume * 100) + '%</span></label>' +
-        '<label class="aw-row">语音播报 <input type="checkbox" id="aw-voice" ' + (settings.voiceOn ? 'checked' : '') + ' /></label>' +
-        '<label class="aw-row">语速 <input type="range" id="aw-voice-rate" min="0.6" max="1.5" step="0.1" value="' + settings.voiceRate + '" /><span class="aw-val">' + settings.voiceRate.toFixed(1) + 'x</span></label>' +
         '<label class="aw-row">🖥️ 桌面模式 <input type="checkbox" id="aw-desktop" ' + (settings.desktopMode ? 'checked' : '') + ' /><span class="aw-val">' + (settings.desktopPetAlive ? '● 运行中' : '○ 未启动') + '</span></label>' +
         '<label class="aw-row">气泡台词 <input type="checkbox" id="aw-bubble" ' + (settings.bubbleOn ? 'checked' : '') + ' /></label>' +
         '<label class="aw-row">休息提醒 <input type="checkbox" id="aw-rest" ' + (settings.remindRest ? 'checked' : '') + ' /></label>' +
@@ -1566,20 +1492,6 @@
         updateStageSize(sizeDragStart.centerX, sizeDragStart.bottomY);
         sizeDragStart = null;
       }
-    });
-    var soundBox = menuEl.querySelector('#aw-sound');
-    if (soundBox) soundBox.addEventListener('change', function () {
-      settings.sound = soundBox.checked;
-      if (!settings.sound) audios = [];
-      saveSettings();
-    });
-    var volInput = menuEl.querySelector('#aw-vol');
-    var volVal = menuEl.querySelector('#aw-vol + .aw-val');
-    if (volInput) volInput.addEventListener('input', function () {
-      settings.volume = parseFloat(volInput.value);
-      volVal.textContent = Math.round(settings.volume * 100) + '%';
-      audios.forEach(function (a) { a.volume = settings.volume; });
-      saveSettings();
     });
     var bubbleBox = menuEl.querySelector('#aw-bubble');
     if (bubbleBox) bubbleBox.addEventListener('change', function () {
@@ -1688,19 +1600,6 @@
       }
       var fm = menuEl.querySelector('#aw-focus-min');
       startFocus(fm ? fm.value : 25);
-    });
-    var voiceBox = menuEl.querySelector('#aw-voice');
-    if (voiceBox) voiceBox.addEventListener('change', function () {
-      settings.voiceOn = voiceBox.checked;
-      if (!settings.voiceOn) { try { window.speechSynthesis && speechSynthesis.cancel(); } catch (e) { } }
-      saveSettings();
-    });
-    var voiceRate = menuEl.querySelector('#aw-voice-rate');
-    var voiceRateVal = voiceRate ? voiceRate.nextElementSibling : null;
-    if (voiceRate) voiceRate.addEventListener('input', function () {
-      settings.voiceRate = parseFloat(voiceRate.value);
-      if (voiceRateVal) voiceRateVal.textContent = settings.voiceRate.toFixed(1) + 'x';
-      saveSettings();
     });
     var desktopBox = menuEl.querySelector('#aw-desktop');
     if (desktopBox) desktopBox.addEventListener('change', function () {
@@ -2051,7 +1950,6 @@
       goalCelebrated = true;
       if (supportsAnimation()) playPetAnimation('放烟花', false);
       showBubble('<div class="aw-bb-row"><span class="aw-bb-tag">🎉 里程碑</span><span>今日学习目标已达成！鲸鱼娘为你放烟花庆祝~</span></div>', true);
-      awSpeak('恭喜达成今日学习目标，太棒了！');
     }
     // 跨天重置
     var d = todayKey();
@@ -2086,7 +1984,7 @@
       actionSelect.appendChild(option);
     });
     actionSelect.value = '待机呼吸休闲';
-    actionSelect.addEventListener('change', function () { playPetAnimation(actionSelect.value, false); playPress(); });
+    actionSelect.addEventListener('change', function () { playPetAnimation(actionSelect.value, false); });
     root.appendChild(actionSelect);
   }
   // 3 秒后打个招呼
@@ -2096,7 +1994,6 @@
       var greetHtml = '<div class="aw-bb-row"><span class="aw-bb-tag">🐋 ' + g.hi + '</span><span>我是你的虚拟学习助手，点我随机提问、右键打开菜单，还有 100+ 动画可以点播哦~</span></div>';
       showBubble(greetHtml, true);
       petDesktopGreet(g.hi + '我是你的虚拟学习助手，祝你学习顺利');
-      awSpeak(g.hi + '我是你的虚拟学习助手，祝你学习顺利');
     }
   }, 3000);
 })();

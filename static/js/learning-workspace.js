@@ -189,7 +189,7 @@
   function readAnswers(form,quiz) { const values = new FormData(form); return Object.fromEntries(quiz.questions.map(q => [q.id,Number(values.get('q:' + q.id))])); }
   function selectModule(id) {
     if (!moduleById(id)) return;
-    app.moduleId = id; app.view = 'learn'; app.stage = 'study'; app.quiz = null; app.quizResult = null; render(); main.focus({preventScroll:true});
+    app.moduleId = id; setLearnView(); resetQuiz(); render(); main.focus({preventScroll:true});
   }
   async function startQuiz() {
     if (!current()) { toast('先建立学习计划。'); return; }
@@ -197,6 +197,8 @@
     if (!progress(app.moduleId).completedAt && !(progress(app.moduleId).explanation || {}).accepted) { render(); return; }
     const data = await api('quiz?module=' + encodeURIComponent(app.moduleId)); app.quiz = data.quiz; app.quizResult = null; render();
   }
+  function resetQuiz() { app.quiz = null; app.quizResult = null; }
+  function setLearnView(stage = 'study') { app.view = 'learn'; app.stage = stage; }
   document.addEventListener('input',event => {
     if (event.target.id === 'explanation-text') { saveDraft(app.moduleId,event.target.value); $('#draft-status').textContent = event.target.value.length + ' / 6000 字 · 草稿已保存'; }
   });
@@ -221,7 +223,7 @@
       if (action === 'complete') { applyState(await api('complete',{moduleId:app.moduleId})); pet('celebrate','这一节已通关，继续下一段航线。'); render(); toast('通关记录已保存，复习已安排。'); }
       if (action === 'refresh-review') { await loadReviews(); render(); }
       if (action === 'clear-ai') { const data = await api('ai/config',{clear:true}); app.status.ai = data.ai; dialog.close(); render(); toast('已切换为本地练习。'); }
-      if (action === 'logout') { applyState(await api('auth/logout',{})); app.quiz = null; app.quizResult = null; app.view = 'learn'; dialog.close(); render(); toast('已退出账号。'); }
+      if (action === 'logout') { applyState(await api('auth/logout',{})); resetQuiz(); setLearnView(); dialog.close(); render(); toast('已退出账号。'); }
       if (action === 'retry-connect') await initialize();
     });
   });
@@ -233,11 +235,11 @@
       const values = new FormData(form);
       if (form.id === 'plan-form' || form.id === 'plan-dialog-form') {
         applyState(await api('plan',{goal:String(values.get('goal')).trim(),level:values.get('level'),dailyMinutes:Number(values.get('dailyMinutes')),deadline:values.get('deadline') || undefined}));
-        app.view = 'learn'; app.stage = 'study'; app.quiz = null; app.quizResult = null; dialog.close(); render(); toast('学习计划已保存。');
+        setLearnView(); resetQuiz(); dialog.close(); render(); toast('学习计划已保存。');
       }
       if (form.id === 'explanation-form') {
         const id = app.moduleId; const text = String(values.get('text')).trim(); saveDraft(id,text); pet('thinking','我在看你的讲解，稍等一下。');
-        const data = await api('explanation',{moduleId:id,text}); applyState(data); app.quiz = null; app.quizResult = null;
+        const data = await api('explanation',{moduleId:id,text}); applyState(data); resetQuiz();
         if (data.result && !progress(id).explanation) { app.state.progress = app.state.progress || {}; app.state.progress[id] = {...progress(id),explanation:data.result}; }
         pet(data.result.accepted ? 'correct' : 'wrong',data.result.accepted ? '讲解已通过，再用测验检验一次。' : '看一看反馈，再补上缺少的部分。'); render();
       }
@@ -252,7 +254,7 @@
         app.status.ai = data.ai || (await api('status')).ai; dialog.close(); render(); toast('模型设置已保存。');
       }
       if (form.id === 'account-form') {
-        applyState(await api('auth/' + app.authMode,{name:String(values.get('name')).trim(),password:values.get('password')})); app.quiz = null; app.quizResult = null; app.view = 'learn'; app.stage = 'study'; dialog.close(); render(); toast('已进入你的学习档案。');
+        applyState(await api('auth/' + app.authMode,{name:String(values.get('name')).trim(),password:values.get('password')})); resetQuiz(); setLearnView(); dialog.close(); render(); toast('已进入你的学习档案。');
       }
       if (form.dataset.reviewForm) {
         const id = form.dataset.reviewForm; const data = await api('review',{questionId:id,answer:Number(values.get('answer'))}); applyState(data);
