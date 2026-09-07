@@ -1,0 +1,22 @@
+[build]
+  publish = "."
+  command = ""
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
+[[redirects]]
+  from = "/"
+  to = "/frontend/learning-center/"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/frontend/:splat"
+  status = 200
