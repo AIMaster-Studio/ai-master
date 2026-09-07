@@ -2,13 +2,12 @@
 
 // Netlify Functions 入口：将 /.netlify/functions/api/* 请求转发到学习服务器。
 // 使用 in-memory SQLite（冷启动后数据重置），适合演示部署。
-const path = require('node:path');
 const { Readable } = require('node:stream');
 
 let app = null;
 function getApp() {
   if (!app) {
-    const { createApp } = require(path.join(__dirname, '..', '..', 'server', 'index.js'));
+    const { createApp } = require('../../server/index.js');
     app = createApp({
       inMemory: true,
       skipHostCheck: true,
