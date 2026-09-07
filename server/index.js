@@ -82,7 +82,7 @@ function csvCell(value) {
 
 function createApp(options = {}) {
   const core = options.core || require('../frontend/static/js/learning-core');
-  const catalog = options.catalog || JSON.parse(fs.readFileSync(path.join(ROOT, 'frontend/data/learning-curriculum.json'), 'utf8'));
+  const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
   const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')));
   const modules = new Map(catalog.modules.map(m => [m.id, m]));
   const questions = new Map(catalog.modules.flatMap(m => m.questions.map(q => [q.id, { ...q, moduleId: m.id }])));
