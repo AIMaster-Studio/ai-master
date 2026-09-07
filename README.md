@@ -1,12 +1,44 @@
 # AI Master
 
-面向大学生 AI 通识与 RAG 入门的学习原型。保留原有星际课程、知识星海与鲸鱼娘交互，本次增加“讲解通关”工作台：学习者自己解释概念，再完成独立客观测验，保存尝试、错题和复习记录。
+面向大学生 AI 通识与 RAG 入门的学习原型。保留原有星际课程、知识星海与鲸鱼娘交互，本次增加"讲解通关"工作台：学习者自己解释概念，再完成独立客观测验，保存尝试、错题和复习记录。
 
 这是静态课程与本机学习服务组合的原型。当前仓库不证明存在此前文档提及的私有 Flask 完整版，也不包含真实学生数据、生产服务凭据或商业效果证明。
 
+## 在线部署（免费）
+
+本项目支持部署到 Netlify 或 Vercel，无需信用卡。
+
+### Netlify（推荐，国内可访问）
+
+1. 在 [Netlify](https://app.netlify.com) 导入 GitHub 仓库
+2. Build command 留空，Publish directory 设为 `.`
+3. 环境变量添加 `NODE_VERSION=22`
+4. 部署后设置站点可见性为 **Public**
+5. 如需 AI 复评，添加环境变量 `DEEPSEEK_API_KEY`（见下文）
+
+配置文件已内置：`netlify.toml`（路由）和 `netlify/functions/api.js`（API 函数）。
+
+### Vercel（国内可能无法访问 vercel.app）
+
+1. 在 [Vercel](https://vercel.com/new) 导入 GitHub 仓库
+2. Framework Preset 选 Other，Build command 留空
+3. 环境变量添加 `NODE_VERSION=22`
+4. 如需 AI 复评，添加环境变量 `DEEPSEEK_API_KEY`
+
+配置文件已内置：`vercel.json`（路由）和 `api/[...slug].js`（API 函数）。
+
+### 环境变量
+
+| 变量 | 说明 | 必填 |
+|------|------|------|
+| `NODE_VERSION` | Node 运行时版本，设为 `22` | ✅ |
+| `DEEPSEEK_API_KEY` | DeepSeek API 密钥，用于 AI 讲解复评 | ❌（不配则使用本地规则） |
+
+> 在线部署使用内存 SQLite，函数冷启动后数据会重置。如需持久化需自行接入外部数据库。
+
 ## 启动学习工作台
 
-需要 Node.js 24。新服务使用 Node 内置 HTTP 与 SQLite，不需要额外数据库服务。
+需要 Node.js 22+。新服务使用 Node 内置 HTTP 与 SQLite，不需要额外数据库服务。
 
 ```bash
 npm run dev
@@ -15,6 +47,8 @@ npm run dev
 打开终端显示的地址，默认 [http://127.0.0.1:8787/](http://127.0.0.1:8787/)。端口占用时以实际启动输出为准。服务默认供本机浏览器使用，不是公开互联网部署方案。
 
 工作台提供访客档案与可选本地账号、基础诊断、学习目标、核心模块练习、讲解反馈、测验、复习与记录导出。数据由本机服务保存，不能称为云同步或跨设备账号。
+
+本地开发时可在项目根目录创建 `.env` 文件设置 `DEEPSEEK_API_KEY`，服务会自动读取。
 
 ## 通关规则与范围
 

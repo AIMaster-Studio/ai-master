@@ -41,6 +41,10 @@ frontend/data/*.log
 # Electron 打包产物（不推送到 GitHub）
 release/
 
+# 部署平台本地配置
+.netlify/
+.vercel/
+
 # DevLog local state
 devlog/.last_commit
 devlog/.cache_pdf/
