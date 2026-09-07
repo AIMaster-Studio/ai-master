@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -265,9 +265,11 @@ test('AI review validates schema, falls back to local on outage, and cannot bypa
   assert.equal(called, false);
   for (const provider of [async () => { throw new Error('timeout'); }, async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: '{"score":100}' } }] }) })]) {
     const result = await reviewExplanation(explanation, module, local, config, provider);
-    assert.equal(result.mode, 'fallback-local'); assert.equal(result.accepted, true);
-    assert.deepEqual(result.checks, local.checks);
-    assert.match(result.feedback, /不代表 AI/);
+    assert.equal(result.mode, 'fallback-local'); assert.equal(result.accepted, false);
+    assert.equal(result.checks.length, local.checks.length + 1);
+    assert.equal(result.checks[result.checks.length - 1].label, 'AI 内容复评');
+    assert.equal(result.checks[result.checks.length - 1].pass, false);
+    assert.match(result.feedback, /AI 复评当前不可用/);
   }
   for (const provider of [async () => { throw new Error('timeout'); }]) {
     const localFailure = core.screenExplanation('因为'.repeat(100), module);

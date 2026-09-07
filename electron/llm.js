@@ -1,11 +1,11 @@
-// AIMaster 真实大模型接入（OpenAI 兼容接口，如 DeepSeek / OpenAI / 阿里云等）
+﻿// AIMaster 真实大模型接入（OpenAI 兼容接口，如 DeepSeek / OpenAI / 阿里云等）
 const fs = require('fs');
 const path = require('path');
 
-// 内置默认配置：未在用户配置文件中覆盖时使用，使桌面端开箱即用。
+// 内置默认配置：未在用户配置文件中覆盖时使用。API Key 必须从环境变量 DEEPSEEK_API_KEY 读取，未设置时为空。
 const BUILTIN_LLM_CONFIG = {
   baseUrl: 'https://api.deepseek.com/v1',
-  apiKey: 'sk-6c8055436eda7b9835a9e51fe42d90d94794f7888a8f342d7eff199c6906a06a',
+  apiKey: process.env.DEEPSEEK_API_KEY || '',
   model: 'deepseek-chat'
 };
 

@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const { DatabaseSync } = require('node:sqlite');
 const { randomUUID, randomBytes, scryptSync, timingSafeEqual } = require('node:crypto');
@@ -9,13 +9,14 @@ function emptyState() {
   return { profile: null, plan: null, progress: {}, attempts: [], wrongAnswers: [], diagnostic: null };
 }
 
-// 内置默认 LLM 配置：当数据库中尚无 'ai' 设置行时返回此默认值，
-// 使服务端 AI 复评开箱即用。用户显式保存（包括 clear）后以此为准，
-// 不再回填，保留“关闭 AI 复评”的语义。
+// 内置默认 LLM 配置：当数据库中尚无 'ai' 设置行时返回此默认值。
+// API Key 必须从环境变量 DEEPSEEK_API_KEY 读取，绝不硬编码。
+// 未设置环境变量时 apiKey 为空，AI 复评默认不可用，需用户显式配置。
+// 用户显式保存（包括 clear）后以此为准，不再回填，保留"关闭 AI 复评"的语义。
 const BUILTIN_LLM_CONFIG = {
   baseUrl: 'https://api.deepseek.com/v1',
   model: 'deepseek-chat',
-  apiKey: 'sk-6c8055436eda7b9835a9e51fe42d90d94794f7888a8f342d7eff199c6906a06a'
+  apiKey: process.env.DEEPSEEK_API_KEY || ''
 };
 
 function openStore(filename) {

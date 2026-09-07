@@ -1,4 +1,25 @@
-'use strict';
+﻿'use strict';
+
+// 轻量 .env 加载器：本地开发时从项目根目录的 .env 文件读取配置。
+// 已存在的环境变量（如 Render 面板配置）不会被 .env 覆盖。
+(function loadEnv() {
+  const envPath = require('node:path').resolve(__dirname, '..', '.env');
+  try {
+    const raw = require('node:fs').readFileSync(envPath, 'utf8');
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eq = trimmed.indexOf('=');
+      if (eq < 0) continue;
+      const key = trimmed.slice(0, eq).trim();
+      let value = trimmed.slice(eq + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (process.env[key] === undefined) process.env[key] = value;
+    }
+  } catch (_) { /* .env 文件不存在时忽略，使用系统环境变量 */ }
+})();
 
 const http = require('node:http');
 const fs = require('node:fs');

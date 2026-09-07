@@ -1,4 +1,4 @@
-# Render Blueprint — AI Master 公网部署
+﻿# Render Blueprint — AI Master 公网部署
 # 使用方法：在 Render 控制台 New → Blueprint，连接 GitHub 仓库 AIMaster-Studio/ai-master，
 # 选择本文件所在分支（master），Render 会自动读取本配置创建 Web Service。
 services:
@@ -15,3 +15,7 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 22.0.0
+      # DeepSeek API Key：必须在 Render 控制台手动填入（Environment 页签），切勿在此文件中写明文值。
+      # 获取地址：https://platform.deepseek.com/
+      - key: DEEPSEEK_API_KEY
+        sync: false

@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 function publicConfig(config) {
   return { configured: !!(config.apiKey && config.model && config.baseUrl), model: config.model || '', baseUrl: config.baseUrl || '' };
@@ -50,10 +50,11 @@ async function reviewExplanation(text, module, local, config, fetchImpl = fetch)
       feedback: result.feedback.slice(0, 1000), followUp: result.followUp.slice(0, 500),
       checks: [...local.checks, { label: 'AI 内容复评', pass: accepted, detail: result.factualCorrect ? '内容评分 ' + result.score + '/100' : '检测到需要修订的事实表述' }] };
   } catch {
-    return { ...local, mode: 'fallback-local', accepted: local.eligible,
-      feedback: 'AI 复评暂时不可用，已按本地规则判定。结果不代表 AI 语义评估，建议在网络恢复后重试 AI 复评。',
+    // AI 复评失败时不自动通关：明确告知用户需要重试，不计入完成状态。
+    return { ...local, mode: 'fallback-local', accepted: false,
+      feedback: 'AI 复评当前不可用，本次讲解未通过评审。请检查网络或模型配置后重新提交，不要以本地规则结果作为通关依据。',
       followUp: local.followUp,
-      checks: local.checks };
+      checks: [...local.checks, { label: 'AI 内容复评', pass: false, detail: 'AI 服务暂不可用，需重试后才能判定通关' }] };
   }
 }
 
