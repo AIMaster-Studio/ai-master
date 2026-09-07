@@ -1,0 +1,17 @@
+# Render Blueprint — AI Master 公网部署
+# 使用方法：在 Render 控制台 New → Blueprint，连接 GitHub 仓库 AIMaster-Studio/ai-master，
+# 选择本文件所在分支（master），Render 会自动读取本配置创建 Web Service。
+services:
+  - type: web
+    name: aimaster
+    runtime: node
+    plan: free
+    region: singapore
+    branch: master
+    autoDeploy: true
+    buildCommand: npm install --omit=dev
+    startCommand: npm run web
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_VERSION
+        value: 22.0.0

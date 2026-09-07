@@ -349,12 +349,14 @@ function createApp(options = {}) {
 if (require.main === module) {
   const app = createApp({ onError: error => console.error('[learning-server]', error.message) });
   let port = Number(process.env.PORT) || 8787;
+  // 本地开发绑 127.0.0.1；Render 等托管环境通过 PORT 环境变量触发，需绑 0.0.0.0 才能接收外部流量。
+  const host = process.env.PORT ? '0.0.0.0' : '127.0.0.1';
   app.server.on('error', error => {
-    if (error.code === 'EADDRINUSE' && port < 8810) { port++; app.server.listen(port, '127.0.0.1'); }
+    if (error.code === 'EADDRINUSE' && port < 8810) { port++; app.server.listen(port, host); }
     else { console.error(error.message); process.exitCode = 1; }
   });
-  app.server.on('listening', () => console.log(`AI Master learning workspace: http://127.0.0.1:${port}/`));
-  app.server.listen(port, '127.0.0.1');
+  app.server.on('listening', () => console.log(`AI Master learning workspace: http://${host}:${port}/`));
+  app.server.listen(port, host);
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => app.server.close());
 }
 

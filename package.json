@@ -8,6 +8,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "node server/index.js",
+    "web": "node server/index.js",
     "test:learning": "node --test tests/*.test.js",
     "pack": "electron-builder --win --x64",
     "devlog": "python scripts/auto_dev_log.py",
