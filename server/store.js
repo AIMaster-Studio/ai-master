@@ -133,10 +133,11 @@ function createTursoStore() {
     return rs.rows[0] || null;
   }
 
-  // 初始化表结构
+  // 初始化表结构（executeMultiple 在部分网络环境下 fetch failed，逐条执行更稳妥）
   (async () => {
     try {
-      await db.executeMultiple(SCHEMA_SQL);
+      const stmts = SCHEMA_SQL.split(';').map(s => s.trim()).filter(Boolean);
+      for (const sql of stmts) await db.execute(sql);
     } catch (e) {
       console.error('[turso] schema init failed:', e.message);
     }
