@@ -204,6 +204,8 @@
   });
   document.addEventListener('click',event => {
     const button = event.target.closest('button'); if (!button) return;
+    // 表单内的提交按钮交给 submit 事件处理器处理，避免在此处禁用按钮导致 submit 事件无法触发。
+    if (button.type === 'submit' && button.closest('form')) return;
     if (button.dataset.companion) { window.dispatchEvent(new CustomEvent('aimaster-companion-action',{detail:{action:button.dataset.companion}})); return; }
     if (button.dataset.stage) { if (app.busy) return; app.stage = button.dataset.stage; render(); return; }
     if (button.dataset.module) { if (!app.busy) selectModule(button.dataset.module); return; }
