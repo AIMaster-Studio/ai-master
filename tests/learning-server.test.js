@@ -231,12 +231,12 @@ test('export retains the original text and feedback for every explanation revisi
 test('SQLite persists profiles across server restart', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aimaster-test-'));
   const filename = path.join(dir, 'learning.sqlite');
-  const first = createApp({ dbPath: filename });
+  const first = createApp({ dbPath: filename, forceSqlite: true });
   const identity = await first.store.guest();
   await first.store.save(identity.user.id, { profile, plan: { title: '持久化' }, progress: {}, attempts: [], wrongAnswers: [], diagnostic: null });
   await first.store.register(identity.user.id, '持久化同学', 'test-password');
   first.store.close();
-  const second = createApp({ dbPath: filename });
+  const second = createApp({ dbPath: filename, forceSqlite: true });
   const loginResult = await second.store.login('持久化同学', 'test-password');
   assert.equal((await second.store.state(loginResult.user.id)).plan.title, '持久化');
   second.store.close();

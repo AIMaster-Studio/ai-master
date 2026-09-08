@@ -118,8 +118,10 @@ function createSqliteStore(filename) {
 // ---------------------------------------------------------------------------
 function createTursoStore() {
   const { createClient } = require('@libsql/client');
+  // libsql:// 协议在部分环境下兼容性不佳，统一转为 https://
+  const tursoUrl = (process.env.TURSO_URL || '').replace(/^libsql:\/\//, 'https://');
   const db = createClient({
-    url: process.env.TURSO_URL,
+    url: tursoUrl,
     authToken: process.env.TURSO_AUTH_TOKEN
   });
 
@@ -134,7 +136,7 @@ function createTursoStore() {
   // 初始化表结构
   (async () => {
     try {
-      await db.execMultiple(SCHEMA_SQL);
+      await db.executeMultiple(SCHEMA_SQL);
     } catch (e) {
       console.error('[turso] schema init failed:', e.message);
     }
@@ -208,8 +210,9 @@ function createTursoStore() {
   };
 }
 
-function openStore(filename) {
-  if (process.env.TURSO_URL) {
+function openStore(filename, forceSqlite = false) {
+  // 测试模式（:memory:）或 forceSqlite 时始终使用本地 SQLite，不受 TURSO_URL 影响
+  if (!forceSqlite && filename !== ':memory:' && process.env.TURSO_URL) {
     return createTursoStore();
   }
   return createSqliteStore(filename);
