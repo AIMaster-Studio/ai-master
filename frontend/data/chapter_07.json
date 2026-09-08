@@ -6,7 +6,7 @@
   "knowledge_points": [
     {
       "title": "阿里云ACP认证概述",
-      "content": ""
+      "content": "<h3>ACP 认证体系</h3><p>阿里云认证分为三个等级，呈金字塔结构：</p><table><tr><th>等级</th><th>全称</th><th>定位</th><th>适合人群</th></tr><tr><td>ACA</td><td>Alibaba Cloud Certified Associate</td><td>助理工程师</td><td>初学者、学生</td></tr><tr><td>ACP</td><td>Alibaba Cloud Certified Professional</td><td>专业工程师</td><td>有 1-2 年云经验的开发者</td></tr><tr><td>ACE</td><td>Alibaba Cloud Certified Expert</td><td>高级专家</td><td>架构师、技术负责人</td></tr></table><h3>ACP 大模型相关方向</h3><ul><li><strong>ACP 云计算架构师</strong>：涵盖 ECS、OSS、VPC、SLB 等基础云服务</li><li><strong>ACP 人工智能工程师</strong>：覆盖 PAI 平台、机器学习、深度学习、大模型应用</li><li><strong>ACP 大模型应用工程师</strong>：聚焦 DashScope、百炼平台、RAG、Prompt 工程、模型微调</li></ul><h3>考试形式</h3><ul><li>题型：单选题、多选题、判断题</li><li>题量：约 80-100 题</li><li>时长：90-120 分钟</li><li>及格线：通常 60 分（满分 100）</li><li>方式：线上或线下考点机考</li></ul><h3>备考建议</h3><ul><li>先掌握云计算基础（ECS/OSS/VPC/SLB），再深入 AI 平台</li><li>PAI 平台各组件（DSW/DLC/EAS/Studio）的功能区分是高频考点</li><li>大模型应用部分重点关注 Prompt 工程、RAG 架构、模型评估指标</li><li>多做官方模拟题，熟悉出题风格和知识点分布</li></ul>"
     },
     {
       "title": "灵积（DashScope）模型服务",
