@@ -24,7 +24,7 @@ function emptyState() {
 // 用户显式保存（包括 clear）后以此为准，不再回填，保留"关闭 AI 复评"的语义。
 const BUILTIN_LLM_CONFIG = {
   baseUrl: 'https://api.deepseek.com/v1',
-  model: 'gpt5.6sol',
+  model: 'deepseek-v4-pro',
   apiKey: process.env.DEEPSEEK_API_KEY || ''
 };
 

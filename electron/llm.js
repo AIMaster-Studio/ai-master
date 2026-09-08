@@ -6,7 +6,7 @@ const path = require('path');
 const BUILTIN_LLM_CONFIG = {
   baseUrl: 'https://api.deepseek.com/v1',
   apiKey: process.env.DEEPSEEK_API_KEY || '',
-  model: 'gpt5.6sol'
+  model: 'deepseek-v4-pro'
 };
 
 function createLlm(configFile) {
