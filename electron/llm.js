@@ -1,4 +1,4 @@
-﻿// AIMaster 真实大模型接入（OpenAI 兼容接口，如 DeepSeek / OpenAI / 阿里云等）
+// AIMaster 真实大模型接入（OpenAI 兼容接口，如 DeepSeek / OpenAI / 阿里云等）
 const fs = require('fs');
 const path = require('path');
 
@@ -6,7 +6,7 @@ const path = require('path');
 const BUILTIN_LLM_CONFIG = {
   baseUrl: 'https://api.deepseek.com/v1',
   apiKey: process.env.DEEPSEEK_API_KEY || '',
-  model: 'deepseek-chat'
+  model: 'gpt5.6sol'
 };
 
 function createLlm(configFile) {

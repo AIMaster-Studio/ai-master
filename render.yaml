@@ -19,3 +19,9 @@ services:
       # 获取地址：https://platform.deepseek.com/
       - key: DEEPSEEK_API_KEY
         sync: false
+      # Turso 远程数据库：用于数据持久化，避免 Render 休眠后数据丢失。
+      # 注册地址：https://turso.tech  免费层 500MB
+      - key: TURSO_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false

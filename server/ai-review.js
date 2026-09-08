@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 function publicConfig(config) {
   return { configured: !!(config.apiKey && config.model && config.baseUrl), model: config.model || '', baseUrl: config.baseUrl || '' };

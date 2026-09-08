@@ -1,12 +1,14 @@
 'use strict';
 
-// 轻量 .env 加载器：本地开发时从项目根目录的 .env 文件读取配置。
-// 已存在的环境变量（如 Render 面板配置）不会被 .env 覆盖。
+// 轻量 .env 加载器：本地开发读 .env，生产环境变量优先（不覆盖已设置的值）
 (function loadEnv() {
-  const envPath = require('node:path').resolve(__dirname, '..', '.env');
   try {
-    const raw = require('node:fs').readFileSync(envPath, 'utf8');
-    for (const line of raw.split(/\r?\n/)) {
+    const fs = require('node:fs');
+    const path = require('node:path');
+    const envPath = path.resolve(__dirname, '..', '.env');
+    if (!fs.existsSync(envPath)) return;
+    const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+    for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
       const eq = trimmed.indexOf('=');
@@ -18,7 +20,7 @@
       }
       if (process.env[key] === undefined) process.env[key] = value;
     }
-  } catch (_) { /* .env 文件不存在时忽略，使用系统环境变量 */ }
+  } catch (_) { /* .env 加载失败不影响启动 */ }
 })();
 
 const http = require('node:http');
@@ -166,18 +168,18 @@ function createApp(options = {}) {
       }
     }
     let token = String(req.headers.cookie || '').match(/(?:^|;\s*)aimaster_session=([a-f0-9]{64})(?:;|$)/)?.[1];
-    let user = store.session(token);
+    let user = await store.session(token);
     function setSession(next) {
       user = next.user; token = next.token;
       res.setHeader('Set-Cookie', `aimaster_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000`);
     }
-    if (!user) setSession(store.guest());
+    if (!user) setSession(await store.guest());
     const body = req.method === 'POST' ? await readBody(req) : null;
-    let state = store.state(user.id);
+    let state = await store.state(user.id);
     const send = payload => json(res, 200, { ok: true, ...payload });
     const save = () => store.save(user.id, state);
     if (req.method === 'GET') {
-      if (route === 'status') return send({ mode: 'server', ai: publicConfig(store.config()), version: 'ican-1.0' });
+      if (route === 'status') return send({ mode: 'server', ai: publicConfig(await store.config()), version: 'ican-1.0' });
       if (route === 'catalog') return send(publicCatalog(catalog));
       if (route === 'state') return send({ state, user });
       if (route === 'quiz') {
@@ -189,8 +191,8 @@ function createApp(options = {}) {
         const list = shuffled(selected).map(shuffleQuestion);
         const quiz = { id: randomUUID(), moduleId: module?.id || null, mode: diagnostic ? 'diagnostic' : 'module', questions: list,
           revision: module ? progressFor(state, module.id).revision || null : null, planRevision: state.planRevision || null };
-        store.putQuiz(quiz.id, user.id, quiz);
-        if (attemptsRemaining !== null) save();
+        await store.putQuiz(quiz.id, user.id, quiz);
+        if (attemptsRemaining !== null) await save();
         return send({ quiz: { id: quiz.id, moduleId: quiz.moduleId, mode: quiz.mode, attemptsRemaining, questions: list.map(publicQuestion) } });
       }
       if (route === 'review') {
@@ -213,17 +215,17 @@ function createApp(options = {}) {
     } else {
       if (route.startsWith('auth/')) {
         limited('auth:' + req.socket.remoteAddress, 30, 60000);
-        if (route === 'auth/logout') { store.endSession(token); setSession(store.guest()); return send({ user, state: store.state(user.id) }); }
+        if (route === 'auth/logout') { await store.endSession(token); setSession(await store.guest()); return send({ user, state: await store.state(user.id) }); }
         const name = String(body.name || '').trim();
         const password = String(body.password || '');
         if (name.length < 2 || name.length > 32 || /[\u0000-\u001f]/.test(name) || password.length < 8 || password.length > 128) fail(400, '昵称需 2–32 字，密码需 8–128 位。');
         if (route === 'auth/register') {
-          user = store.register(user.id, name, password); store.endSession(token);
-          setSession({ user, token: store.createSession(user.id) });
+          user = await store.register(user.id, name, password); await store.endSession(token);
+          setSession({ user, token: await store.createSession(user.id) });
         } else if (route === 'auth/login') {
-          const next = store.login(name, password); store.endSession(token); setSession(next);
+          const next = await store.login(name, password); await store.endSession(token); setSession(next);
         } else fail(404, '接口不存在。');
-        return send({ user, state: store.state(user.id) });
+        return send({ user, state: await store.state(user.id) });
       }
       if (route === 'plan') {
         const goal = String(body.goal || '').trim();
@@ -233,7 +235,7 @@ function createApp(options = {}) {
         state.planRevision = randomUUID();
         // A new plan invalidates unfinished evidence; completed tasks remain available.
         for (const p of Object.values(state.progress)) if (!p.completedAt) { p.explanation = null; p.quiz = null; p.revision = null; }
-        addAttempt(state, { type: 'plan', goal, level: body.level, dailyMinutes: body.dailyMinutes }); save();
+        addAttempt(state, { type: 'plan', goal, level: body.level, dailyMinutes: body.dailyMinutes }); await save();
         return send({ state });
       }
       if (route === 'explanation') {
@@ -243,17 +245,17 @@ function createApp(options = {}) {
         const revision = randomUUID();
         const p = progressFor(state, module.id);
         p.revision = revision; p.quiz = null; p.explanation = null;
-        const planRevision = state.planRevision; save();
+        const planRevision = state.planRevision; await save();
         const local = core.screenExplanation(body.text, module);
-        const result = await reviewExplanation(body.text, module, local, store.config(), options.fetchImpl);
-        state = store.state(user.id);
+        const result = await reviewExplanation(body.text, module, local, await store.config(), options.fetchImpl);
+        state = await store.state(user.id);
         if (state.planRevision !== planRevision || state.progress[module.id]?.revision !== revision) fail(409, '已有更新的讲解或计划，请查看最新结果。');
         state.progress[module.id].explanation = { ...result, text: body.text, at: stamp(), revision };
-        addAttempt(state, { type: 'explanation', moduleId: module.id, revision, text: body.text, ...result }); save();
+        addAttempt(state, { type: 'explanation', moduleId: module.id, revision, text: body.text, ...result }); await save();
         return send({ result, state });
       }
       if (route === 'quiz') {
-        const quiz = store.quiz(String(body.attemptId || ''), user.id);
+        const quiz = await store.quiz(String(body.attemptId || ''), user.id);
         if (!quiz) fail(404, '测验已过期，请重新开始。');
         if (quiz.result) fail(409, '这次测验已提交，请开始新一轮练习。');
         if (quiz.mode !== 'diagnostic') {
@@ -277,8 +279,7 @@ function createApp(options = {}) {
         }
         recordWrongAnswers(state, result, at);
         addAttempt(state, { type: 'quiz', moduleId: quiz.moduleId, mode: quiz.mode, ...result });
-        store.db.exec('BEGIN');
-        try { save(); store.putQuiz(quiz.id, user.id, { ...quiz, result }); store.db.exec('COMMIT'); } catch (error) { store.db.exec('ROLLBACK'); throw error; }
+        await store.transaction(async () => { await save(); await store.putQuiz(quiz.id, user.id, { ...quiz, result }); });
         return send({ result, state });
       }
       if (route === 'complete') {
@@ -287,7 +288,7 @@ function createApp(options = {}) {
         if (p.completedAt) return send({ state });
         if (!p.explanation?.accepted || !p.quiz?.passed || p.quiz.score < QUIZ_PASS_SCORE || p.quiz.revision !== p.revision || p.explanation.revision !== p.revision) fail(409, '需要当前讲解通过且配套测验达到 75%，才能通关。');
         p.completedAt = stamp(); p.dueAt = new Date(Date.now() + DAY).toISOString();
-        addAttempt(state, { type: 'complete', moduleId: body.moduleId, mode: p.explanation.mode, passed: true }); save();
+        addAttempt(state, { type: 'complete', moduleId: body.moduleId, mode: p.explanation.mode, passed: true }); await save();
         return send({ state });
       }
       if (route === 'review') {
@@ -301,14 +302,14 @@ function createApp(options = {}) {
         wrong.correctStreak = correct ? (wrong.correctStreak || 0) + 1 : 0;
         wrong.dueAt = new Date(Date.now() + reviewDelayDays(wrong.correctStreak) * DAY).toISOString();
         if (!correct) wrong.mistakes++;
-        addAttempt(state, { type: 'review', moduleId: question.moduleId, ...result }); save();
+        addAttempt(state, { type: 'review', moduleId: question.moduleId, ...result }); await save();
         return send({ result, state });
       }
       if (route === 'ai/config') {
         limited('config:' + user.id, 20, 60000);
         let config;
-        try { config = validateConfig(body, store.config()); } catch (error) { fail(400, error.message); }
-        store.saveConfig(config); return send({ ai: publicConfig(config) });
+        try { config = validateConfig(body, await store.config()); } catch (error) { fail(400, error.message); }
+        await store.saveConfig(config); return send({ ai: publicConfig(config) });
       }
     }
     fail(404, '接口不存在。');

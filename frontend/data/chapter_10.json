@@ -1,55 +1,55 @@
-﻿{
+{
   "id": 10,
-  "title": "AI Agent 原理与实践",
+  "title": "AI Agent 原理与安全",
   "icon": "🤖",
-  "description": "理解 AI Agent 的核心架构、工具调用机制以及多智能体协作与安全边界",
+  "description": "深入理解 AI Agent 的核心组成、工具调用机制、多智能体协作模式，以及提示注入、权限越界、工具滥用等安全边界与防护策略",
   "knowledge_points": [
     {
       "title": "AI Agent 的基本概念与组成",
-      "content": "<h3>什么是 AI Agent</h3><p>AI Agent（智能体）是能够<strong>感知环境、做出决策并采取行动</strong>以实现特定目标的自主系统。与普通聊天机器人不同，Agent 不仅能生成文本，还能调用工具、访问外部资源、并根据反馈调整策略。</p><h3>Agent 的核心组成</h3><ul><li><strong>感知（Perception）</strong>：接收用户输入、环境状态和工具返回结果</li><li><strong>规划（Planning）</strong>：将复杂目标拆解为可执行的子任务，选择行动序列</li><li><strong>记忆（Memory）</strong>：短期记忆（当前对话上下文）和长期记忆（历史交互、知识库）</li><li><strong>行动（Action）</strong>：调用工具、执行代码、发送请求等具体操作</li><li><strong>反思（Reflection）</strong>：评估行动结果，修正后续策略</li></ul><h3>ReAct 模式</h3><p>当前主流 Agent 采用 <strong>ReAct（Reasoning + Acting）</strong> 模式：先推理（Reasoning）决定下一步做什么，再执行动作（Acting），然后观察结果（Observation），循环直至目标达成。这个循环体现了 Agent 与环境的持续交互。</p>"
+      "content": "<h3>什么是 AI Agent</h3><p>AI Agent 是一种能够<strong>感知环境、自主规划、调用工具执行行动、并根据结果反思调整</strong>的智能体。与传统的单轮问答不同，Agent 可以在没有人类逐步指令的情况下，自主完成多步骤复杂任务。</p><h3>Agent 五大核心组件</h3><table><tr><th>组件</th><th>职责</th><th>典型实现</th></tr><tr><td>感知（Perception）</td><td>接收用户输入和环境反馈</td><td>文本输入、工具返回值、传感器数据</td></tr><tr><td>规划（Planning）</td><td>分解目标为可执行的子步骤</td><td>LLM 推理、Chain-of-Thought、任务树</td></tr><tr><td>记忆（Memory）</td><td>存储历史信息和当前状态</td><td>短期对话历史、长期向量库、工作记忆</td></tr><tr><td>行动（Action）</td><td>调用工具与外部世界交互</td><td>函数调用、API 请求、文件操作</td></tr><tr><td>反思（Reflection）</td><td>评估结果并决定下一步</td><td>自检、重试、调整策略</td></tr></table><h3>ReAct 模式</h3><p>ReAct（Reasoning + Acting）是目前最主流的 Agent 运行范式，核心是<strong>推理与行动交替循环</strong>：</p><pre><code>Thought（思考）：我需要先查天气，再决定带不带伞\nAction（行动）：调用 get_weather(city=\"北京\")\nObservation（观察）：返回\"北京，晴，25°C\"\nThought（思考）：天气晴，不需要带伞\nFinal Answer（最终回答）：北京今天晴，建议不带伞</code></pre><p>每一步的 Thought 让 Agent 的决策过程<strong>可解释、可审计</strong>，避免黑箱式的工具调用。</p>"
     },
     {
-      "title": "工具调用与函数执行（Tool Use）",
-      "content": "<h3>为什么 Agent 需要工具</h3><p>大模型本身无法直接获取实时信息、执行计算或操作系统。工具调用（Tool Use / Function Calling）让 Agent 能够<strong>通过预定义的接口与外部世界交互</strong>，弥补模型能力的边界。</p><h3>工具调用的工作流程</h3><ol><li><strong>工具声明</strong>：开发者向模型提供工具的名称、参数格式和功能描述</li><li><strong>模型决策</strong>：模型判断是否需要调用工具，若需要则生成符合格式的调用请求（JSON）</li><li><strong>执行工具</strong>：程序解析模型输出，实际调用对应的函数或 API</li><li><strong>结果回传</strong>：将工具执行结果返回给模型，模型基于结果继续推理或给出最终回答</li></ol><h3>常见工具类型</h3><table><tr><th>类型</th><th>示例</th><th>作用</th></tr><tr><td>信息检索</td><td>搜索引擎、数据库查询</td><td>获取实时或私有数据</td></tr><tr><td>计算执行</td><td>代码解释器、计算器</td><td>完成精确计算和逻辑处理</td></tr><tr><td>操作执行</td><td>文件读写、邮件发送、API 调用</td><td>对外部系统产生实际影响</td></tr></table><h3>设计要点</h3><p>工具描述必须清晰准确，参数 schema 要严格定义。模型只能调用声明过的工具，且无法访问未授权的能力——这是 Agent 安全的基础边界。</p>"
+      "title": "工具调用与函数执行",
+      "content": "<h3>Tool Use 完整流程</h3><pre><code>1. 工具定义（Tool Definition）\n   ↓ 向 LLM 描述工具的 name、description、parameters(JSON Schema)\n2. 意图识别（Intent Recognition）\n   ↓ LLM 判断是否需要调用工具、调用哪个工具\n3. 参数提取（Argument Extraction）\n   ↓ LLM 输出结构化的工具调用参数\n4. 工具执行（Tool Execution）\n   ↓ 程序根据名称匹配并调用对应函数\n5. 结果回传（Result Return）\n   ↓ 将工具返回值作为新的上下文交给 LLM\n6. 后续决策（Next Decision）\n   ↓ LLM 根据结果决定继续调用或给出最终回答</code></pre><h3>常见工具类型</h3><ul><li><strong>检索类</strong>：搜索引擎、向量数据库查询、知识库检索</li><li><strong>计算类</strong>：计算器、代码解释器、公式求值</li><li><strong>操作类</strong>：文件读写、数据库操作、API 调用</li><li><strong>通信类</strong>：发送邮件、调用 Webhook、推送通知</li></ul><h3>工具设计要点</h3><ul><li><strong>单一职责</strong>：每个工具只做一件事，描述清晰无歧义</li><li><strong>参数校验</strong>：对 LLM 生成的参数做类型和范围校验，不可信</li><li><strong>错误处理</strong>：工具失败时返回结构化错误信息，供 LLM 决策重试或换路径</li><li><strong>幂等设计</strong>：写操作尽量幂等，避免重复调用导致副作用</li><li><strong>超时控制</strong>：每个工具设置最大执行时间，防止卡死 Agent 循环</li></ul>"
     },
     {
       "title": "多智能体协作与安全边界",
-      "content": "<h3>多智能体协作</h3><p>当任务复杂到单个 Agent 难以胜任时，可以采用<strong>多智能体（Multi-Agent）</strong>架构：多个 Agent 各司其职，通过消息传递协作完成任务。</p><h3>常见协作模式</h3><ul><li><strong>主从模式</strong>：一个调度 Agent 负责任务分配，多个执行 Agent 分别完成子任务</li><li><strong>流水线模式</strong>：Agent 按固定顺序处理任务的不同阶段（如检索 → 生成 → 审核）</li><li><strong>辩论模式</strong>：多个 Agent 对同一问题给出不同方案，通过讨论或投票达成共识</li></ul><h3>Agent 的安全风险</h3><ul><li><strong>提示注入（Prompt Injection）</strong>：外部文档或网页中嵌入的恶意指令可能诱导 Agent 偏离用户任务或泄露信息。必须将外部内容视为<strong>不可信数据</strong>，与系统指令隔离</li><li><strong>权限越界</strong>：Agent 可能被诱导执行未授权操作（如删除文件、发送邮件）。应遵循<strong>最小权限原则</strong>，敏感操作需用户确认</li><li><strong>工具滥用</strong>：模型可能错误调用工具或构造恶意参数。需要对工具输入进行校验和白名单限制</li></ul><h3>防护原则</h3><p>没有任何单一过滤器能保证完全防御。安全设计应包含：工具白名单、参数校验、敏感操作人工确认、操作审计日志，以及将外部内容与系统提示进行结构性隔离。</p>"
+      "content": "<h3>多智能体协作模式</h3><table><tr><th>模式</th><th>结构</th><th>适用场景</th></tr><tr><td>主从模式</td><td>一个 Planner 分配任务给多个 Worker</td><td>任务可明确分解、各子任务独立</td></tr><tr><td>辩论模式</td><td>多个 Agent 对同一问题给出方案并互相评审</td><td>需要多角度论证、降低单点偏见</td></tr><tr><td>流水线模式</td><td>Agent A 的输出是 Agent B 的输入</td><td>有明确先后依赖的处理流程</td></tr><tr><td>黑板模式</td><td>所有 Agent 共享一个公共状态空间，各自读写</td><td>复杂问题求解、各 Agent 关注点不同</td></tr></table><h3>三大安全风险与防护</h3><h4>1. 提示注入（Prompt Injection）</h4><p><strong>风险</strong>：用户输入或工具返回的内容中包含\"忽略之前指令\"等攻击文本，劫持 Agent 行为。</p><p><strong>防护</strong>：</p><ul><li>将不可信输入与系统指令<strong>物理隔离</strong>，用明确的分隔符和角色标记</li><li>对工具返回值做<strong>净化和转义</strong>，不直接拼入系统提示词</li><li>关键操作（转账、删除）要求<strong>二次确认</strong>，不允许仅靠 LLM 判断</li></ul><h4>2. 权限越界（Privilege Escalation）</h4><p><strong>风险</strong>：Agent 通过工具调用获得超出预期的权限，如读敏感文件、执行系统命令。</p><p><strong>防护</strong>：</p><ul><li>遵循<strong>最小权限原则</strong>，每个工具只授予完成任务所需的最低权限</li><li>在<strong>沙箱</strong>中执行代码和命令，限制文件系统和网络访问</li><li>敏感操作加<strong>审批闸门</strong>，高风险操作必须人工确认</li></ul><h4>3. 工具滥用（Tool Abuse）</h4><p><strong>风险</strong>：Agent 在错误推理下重复调用工具、调用错误工具，或被诱导执行破坏性操作。</p><p><strong>防护</strong>：</p><ul><li>设置<strong>最大循环次数</strong>和<strong>单次任务超时</strong>，防止死循环</li><li>维护<strong>工具调用白名单</strong>，未授权工具一律拒绝</li><li>记录完整的<strong>审计日志</strong>：谁、在何时、调用了什么工具、参数是什么</li></ul>"
     }
   ],
   "exercises": [
     {
-      "question": "AI Agent 与普通聊天机器人最核心的区别是什么？",
+      "question": "在 ReAct 模式中，Agent 每次循环的正确执行顺序是？",
       "options": [
-        "A. Agent 使用更大的语言模型",
-        "B. Agent 能够感知环境、调用工具并根据反馈自主决策",
-        "C. Agent 的回答速度更快",
-        "D. Agent 支持多轮对话"
+        "A. Action → Observation → Thought → Final Answer",
+        "B. Thought → Action → Observation → 下一轮 Thought 或 Final Answer",
+        "C. Observation → Thought → Action → Final Answer",
+        "D. Thought → Final Answer → Action → Observation"
       ],
       "answer": 1,
-      "explanation": "普通聊天机器人主要生成文本回复，而 Agent 的核心特征是能感知环境、规划行动、调用工具并根据结果反馈调整策略，实现与外部世界的交互。"
+      "explanation": "ReAct 的核心循环是 <strong>Thought（思考）→ Action（行动）→ Observation（观察）</strong>，然后根据观察结果进入下一轮 Thought 或给出 Final Answer。这个交替循环让 Agent 的决策过程可解释、可审计。"
     },
     {
-      "question": "在 ReAct 模式中，Agent 的行动循环顺序是？",
+      "question": "为防止提示注入攻击，最有效的做法是？",
       "options": [
-        "A. 直接行动 → 观察结果 → 结束",
-        "B. 推理 → 行动 → 观察 → 循环",
-        "C. 观察 → 行动 → 推理 → 结束",
-        "D. 行动 → 推理 → 观察 → 循环"
+        "A. 完全禁止用户输入任何文本",
+        "B. 将不可信输入与系统指令物理隔离，并用分隔符和角色标记区分",
+        "C. 让 LLM 自己判断输入是否包含攻击",
+        "D. 对所有用户输入进行关键词过滤，包含\"忽略\"就拒绝"
       ],
       "answer": 1,
-      "explanation": "ReAct = Reasoning（推理）+ Acting（行动）。Agent 先推理决定做什么，再执行动作，然后观察结果，根据观察继续下一轮推理，循环直至目标达成。"
+      "explanation": "提示注入的本质是<strong>不可信内容污染了系统指令</strong>。最有效的防护是将用户输入和工具返回值与系统提示词<strong>物理隔离</strong>，用明确的分隔符和角色标记区分，同时对工具返回值做净化转义，不直接拼入系统提示词。关键词过滤和依赖 LLM 自判都不可靠。"
     },
     {
-      "question": "关于 Agent 工具调用的安全设计，以下哪种做法是错误的？",
+      "question": "关于 AI Agent 工具调用的安全设计，下列哪项是错误的？",
       "options": [
-        "A. 使用工具白名单，只允许调用声明过的工具",
-        "B. 将外部文档内容与系统提示词放在同一角色中混合处理",
-        "C. 对工具输入参数进行格式校验",
-        "D. 敏感操作（如删除文件、发送邮件）前要求用户确认"
+        "A. 遵循最小权限原则，每个工具只授予完成任务所需的最低权限",
+        "B. 对 LLM 生成的工具参数做类型和范围校验",
+        "C. 写操作工具不需要幂等，重复调用没关系",
+        "D. 敏感操作（如转账、删除）应增加人工二次确认"
       ],
-      "answer": 1,
-      "explanation": "外部文档可能包含提示注入攻击，必须将其视为不可信数据并与系统指令进行结构性隔离（如放在 user 角色的独立字段中），不能与系统提示混合。其他三项都是正确的安全实践。"
+      "answer": 2,
+      "explanation": "写操作工具应当尽量<strong>幂等</strong>，因为 Agent 可能因重试机制重复调用同一个工具。如果写操作不幂等，重复调用可能导致数据重复插入、资金重复扣除等严重副作用。其他三项都是正确的安全设计原则。"
     }
   ]
 }

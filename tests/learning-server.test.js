@@ -14,6 +14,12 @@ const catalog = require('../frontend/data/learning-curriculum.json');
 const explanation = '大模型先把输入文本转成 token，再根据上下文预测后续片段，通过反复预测组成回答。这样的训练让它学习语言模式，但不能保证内容符合真实世界。比如我请它查询学校今年的奖学金截止日期，它可能根据旧资料生成流畅的回答，甚至编造一个日期。因此我会找到学校官方网站的最新通知，核验日期和适用年级；如果没有可靠证据，就说明目前无法确定，避免把幻觉当成已经证实的事实。';
 const profile = { goal: 'RAG 知识库', level: 'basic', dailyMinutes: 45 };
 
+// Mock AI provider：返回成功的复评结果，使测试不依赖真实网络与密钥
+const mockAiProvider = async () => ({
+  ok: true,
+  json: async () => ({ choices: [{ message: { content: JSON.stringify({ score: 90, factualCorrect: true, feedback: '解释正确，继续测验。', followUp: '如果资料过时，如何核验？' }) } }] })
+});
+
 async function start(t, options = {}) {
   const app = createApp({ dbPath: ':memory:', ...options });
   app.server.listen(0, '127.0.0.1');
@@ -68,7 +74,7 @@ test('catalog strips answers, private files are blocked, animations support byte
 });
 
 test('cannot skip tasks, cannot pass repeated text, completion requires both current gates and is idempotent', async t => {
-  const { request } = await start(t);
+  const { request } = await start(t, { fetchImpl: mockAiProvider });
   assert.equal((await request('/api/complete', { moduleId: 'llm-basics' })).status, 409);
   await request('/api/plan', profile);
   assert.equal((await request('/api/quiz?module=rag-evaluation')).status, 409);
@@ -87,10 +93,10 @@ test('completed modules remain reviewable after changing tracks without unlockin
   const { request, store } = await start(t);
   const initial = (await request('/api/state')).data;
   await request('/api/plan', profile);
-  const state = store.state(initial.user.id);
+  const state = await store.state(initial.user.id);
   const completedAt = new Date(Date.now() - 3 * 86400000).toISOString();
   state.progress['rag-retrieval'] = { completedAt, dueAt: completedAt, reviewCount: 0 };
-  store.save(initial.user.id, state);
+  await store.save(initial.user.id, state);
   const updated = await request('/api/plan', { ...profile, goal: 'Agent tools' });
   assert.ok(!updated.data.state.plan.modules.includes('rag-retrieval'));
   const due = (await request('/api/review')).data.dueModules;
@@ -170,7 +176,7 @@ test('guest registration preserves progress; logout/login and separate browser p
 test('malformed stored password hashes fail as a normal unauthorized login', async t => {
   const { request, store } = await start(t);
   const guest = (await request('/api/state')).data.user;
-  store.register(guest.id, '损坏哈希用户', 'testing-123456');
+  await store.register(guest.id, '损坏哈希用户', 'testing-123456');
   const row = store.db.prepare('SELECT id FROM users WHERE login=?').get('损坏哈希用户');
   store.db.prepare('UPDATE users SET password=? WHERE id=?').run('not-a-valid-scrypt-record', row.id);
   assert.equal((await request('/api/auth/login', { name: '损坏哈希用户', password: 'testing-123456' })).status, 401);
@@ -203,7 +209,7 @@ test('failed reviews reset spacing and cannot postpone the first successful revi
 });
 
 test('export retains the original text and feedback for every explanation revision', async t => {
-  const { request } = await start(t);
+  const { request } = await start(t, { fetchImpl: mockAiProvider });
   await request('/api/plan', profile);
   const firstText = '因为'.repeat(180);
   const first = await request('/api/explanation', { moduleId: 'llm-basics', text: firstText });
@@ -226,12 +232,13 @@ test('SQLite persists profiles across server restart', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aimaster-test-'));
   const filename = path.join(dir, 'learning.sqlite');
   const first = createApp({ dbPath: filename });
-  const identity = first.store.guest();
-  first.store.save(identity.user.id, { profile, plan: { title: '持久化' }, progress: {}, attempts: [], wrongAnswers: [], diagnostic: null });
-  first.store.register(identity.user.id, '持久化同学', 'test-password');
+  const identity = await first.store.guest();
+  await first.store.save(identity.user.id, { profile, plan: { title: '持久化' }, progress: {}, attempts: [], wrongAnswers: [], diagnostic: null });
+  await first.store.register(identity.user.id, '持久化同学', 'test-password');
   first.store.close();
   const second = createApp({ dbPath: filename });
-  assert.equal(second.store.state(second.store.login('持久化同学', 'test-password').user.id).plan.title, '持久化');
+  const loginResult = await second.store.login('持久化同学', 'test-password');
+  assert.equal((await second.store.state(loginResult.user.id)).plan.title, '持久化');
   second.store.close();
   fs.rmSync(dir, { recursive: true });
 });
@@ -318,16 +325,16 @@ test('changing model endpoints requires an explicit new key and cannot silently 
     for (const apiKey of ['', '   ', undefined]) {
       const rejected = await request('/api/ai/config', { baseUrl, model: 'test-model', apiKey });
       assert.equal(rejected.status, 400);
-      assert.equal(store.config().baseUrl, original.baseUrl);
-      assert.equal(store.config().apiKey, original.apiKey);
+      assert.equal((await store.config()).baseUrl, original.baseUrl);
+      assert.equal((await store.config()).apiKey, original.apiKey);
     }
   }
   const sameEndpoint = await request('/api/ai/config', { baseUrl: 'https://ORIGINAL.example:443/v1/', model: 'new-model', apiKey: '' });
   assert.equal(sameEndpoint.status, 200);
-  assert.equal(store.config().apiKey, original.apiKey);
+  assert.equal((await store.config()).apiKey, original.apiKey);
   const changed = await request('/api/ai/config', { baseUrl: 'https://different.example/v1', model: 'test-model', apiKey: 'synthetic-new-key' });
   assert.equal(changed.status, 200);
-  assert.equal(store.config().apiKey, 'synthetic-new-key');
+  assert.equal((await store.config()).apiKey, 'synthetic-new-key');
   assert.ok(!JSON.stringify(changed.data).includes('synthetic-new-key'));
 });
 
@@ -335,7 +342,7 @@ test('an in-flight AI result cannot overwrite a newer plan', async t => {
   let resolveAI;
   const provider = () => new Promise(resolve => { resolveAI = resolve; });
   const { request, store } = await start(t, { fetchImpl: provider });
-  store.saveConfig({ baseUrl: 'https://example.com/v1', model: 'test', apiKey: 'test' });
+  await store.saveConfig({ baseUrl: 'https://example.com/v1', model: 'test', apiKey: 'test' });
   await request('/api/plan', profile);
   const pending = request('/api/explanation', { moduleId: 'llm-basics', text: explanation });
   while (!resolveAI) await new Promise(resolve => setTimeout(resolve, 5));

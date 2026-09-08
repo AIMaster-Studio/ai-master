@@ -16,6 +16,7 @@
     "devlog:install": "python scripts/install_devlog_hooks.py"
   },
   "dependencies": {
+    "@libsql/client": "^0.14.0",
     "fzstd": "^0.1.1"
   },
   "devDependencies": {
