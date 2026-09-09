@@ -20,7 +20,7 @@
     { id: 'rag', title: 'RAG 技术详解', objective: '理解检索增强生成的原理与工程实践', bloom: ['理解', '应用'], learnUrl: '../static/rag_cg/index.html', summary: ['RAG = 检索 + 生成', '向量数据库存储文档嵌入', '减少幻觉，提供可溯源答案'], concepts: [{ label: '向量检索' }, { label: '上下文拼接' }, { label: '引用溯源' }], prompt: '解释 RAG 的工作流程：从用户提问到生成回答，经过哪些步骤？RAG 如何减少幻觉？' }
   ];
 
-  // 简单的本地讲解检查规则
+  // 简单的本地讲解检查规则（AI 不可用时的降级）
   function checkExplanation(text) {
     const checks = [];
     const minLen = 20;
@@ -44,6 +44,82 @@
       checks,
       followUp: accepted ? null : '试着从"是什么、怎么工作、有什么局限"三个角度组织你的讲解。'
     };
+  }
+
+  // 调用 DeepSeek API 进行 AI 复评；失败时降级到本地规则
+  async function aiReviewExplanation(text, moduleId) {
+    const cfg = (window.AI_CONFIG || {});
+    if (!cfg.apiKey || !cfg.baseUrl || !cfg.model) {
+      return checkExplanation(text);
+    }
+
+    const prompt = [
+      { role: 'system', content: '你是 AI Master 的学习教练。对学员的讲解进行严格、客观、建设性的评分。返回 JSON 格式：{"accepted":true/false,"score":0-100,"feedback":"具体改进建议","strengths":["优点1"],"improvements":["可改进点1"]}。accepted=true 当且仅当 score>=75。' },
+      { role: 'user', content: '模块ID：' + moduleId + '\n学员讲解：\n' + text + '\n\n请评估：1) 是否准确；2) 是否覆盖核心要点；3) 是否举例；4) 是否提到局限性。给出 0-100 分和具体反馈。' }
+    ];
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), cfg.timeoutMs || 30000);
+
+    try {
+      const response = await fetch(cfg.baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + cfg.apiKey
+        },
+        body: JSON.stringify({
+          model: cfg.model,
+          messages: prompt,
+          max_tokens: cfg.maxTokens || 1024,
+          temperature: cfg.temperature || 0.3,
+          response_format: { type: 'json_object' }
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error('DeepSeek API ' + response.status + ': ' + errText.slice(0, 200));
+      }
+
+      const data = await response.json();
+      const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      if (!content) throw new Error('AI 返回内容为空');
+
+      let parsed;
+      try {
+        parsed = typeof content === 'string' ? JSON.parse(content) : content;
+      } catch (e) {
+        // 兼容非 JSON 输出：降级到本地规则
+        const localResult = checkExplanation(text);
+        localResult.mode = 'ai-fallback-parse-error';
+        localResult.aiRaw = content;
+        return localResult;
+      }
+
+      const score = typeof parsed.score === 'number' ? parsed.score : (parsed.accepted ? 80 : 50);
+      const accepted = typeof parsed.accepted === 'boolean' ? parsed.accepted : score >= 75;
+
+      return {
+        accepted: accepted,
+        score: score,
+        mode: 'ai-deepseek',
+        model: cfg.model,
+        feedback: parsed.feedback || (accepted ? '讲解通过，继续完成测验。' : '请根据反馈修改后重新提交。'),
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+        improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
+        followUp: accepted ? null : (parsed.feedback || '请补充缺失的要点。')
+      };
+    } catch (error) {
+      // 任何错误都降级到本地规则
+      const localResult = checkExplanation(text);
+      localResult.mode = 'fallback-local-' + (error.name === 'AbortError' ? 'timeout' : 'api-error');
+      localResult.aiError = error.message;
+      return localResult;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   // 生成简单的本地测验
@@ -173,9 +249,9 @@
         return { ok: true, quiz: quiz };
       }
     },
-    explanation: function (body) {
+    explanation: async function (body) {
       const state = loadState();
-      const result = checkExplanation(body.text);
+      const result = await aiReviewExplanation(body.text, body.moduleId);
       state.progress = state.progress || {};
       state.progress[body.moduleId] = state.progress[body.moduleId] || {};
       state.progress[body.moduleId].explanation = result;

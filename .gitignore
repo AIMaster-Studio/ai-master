@@ -45,6 +45,15 @@ release/
 .netlify/
 .vercel/
 
+# Cloudflare Pages 本地部署产物与备份
+frontend-deploy.zip
+bgm_original.mp3
+*.pages.dev/
+
+# 含密钥的配置文件（不提交，使用 *.example.* 作为模板）
+frontend/static/js/ai-config.js
+frontend/static/js/firebase-config.js
+
 # DevLog local state
 devlog/.last_commit
 devlog/.cache_pdf/
