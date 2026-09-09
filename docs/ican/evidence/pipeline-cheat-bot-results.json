@@ -1,0 +1,43 @@
+{
+  "title": "全流水线作弊 bot 复现",
+  "generatedAt": "2026-09-09T10:26:37.758Z",
+  "moduleId": "llm-basics",
+  "elapsedMs": 96,
+  "cheatedSteps": {
+    "explanation": {
+      "method": "grammar 模板",
+      "passed": true
+    },
+    "quiz": {
+      "method": "读取题库源码 answer 字段并按文本匹配",
+      "score": 100
+    },
+    "complete": {
+      "method": "POST /api/complete",
+      "passed": true
+    }
+  },
+  "recordedEvidence": {
+    "completedAt": "2026-09-09T10:26:37.729Z",
+    "attemptsInExport": [
+      {
+        "type": "plan",
+        "at": "2026-09-09T10:26:37.695Z"
+      },
+      {
+        "type": "explanation",
+        "at": "2026-09-09T10:26:37.702Z"
+      },
+      {
+        "type": "quiz",
+        "at": "2026-09-09T10:26:37.727Z"
+      },
+      {
+        "type": "complete",
+        "at": "2026-09-09T10:26:37.729Z"
+      }
+    ],
+    "notice": "通关已写入 state,可被 /api/export 导出"
+  },
+  "bounds": "服务端模式不下发答案(publicCatalog 剥离 answer),读标答攻击仅在静态版成立;讲解语义闸门依赖 AI 复评上线。"
+}
