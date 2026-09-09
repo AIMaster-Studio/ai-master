@@ -353,3 +353,34 @@ test('an in-flight AI result cannot overwrite a newer plan', async t => {
   assert.equal(state.plan.track, 'agent');
   assert.equal(state.progress['llm-basics'].explanation, null);
 });
+
+test('public host and https origin are only accepted when remote access is enabled', async t => {
+  const http = require('node:http');
+  const publicRequest = (app, route, body) => new Promise((resolve, reject) => {
+    const url = new URL(app.base + route);
+    const headers = { Host: 'aimaster.example.com', 'X-Forwarded-Proto': 'https' };
+    if (body !== undefined) Object.assign(headers, { 'Content-Type': 'application/json', Origin: 'https://aimaster.example.com' });
+    const req = http.request({ host: url.hostname, port: url.port, path: url.pathname + url.search,
+      method: body === undefined ? 'GET' : 'POST', headers }, res => {
+      const chunks = []; res.on('data', chunk => chunks.push(chunk));
+      res.on('end', () => {
+        const text = Buffer.concat(chunks).toString('utf8');
+        let data; try { data = JSON.parse(text); } catch { data = text; }
+        resolve({ status: res.statusCode, data });
+      });
+    });
+    req.on('error', reject);
+    if (body !== undefined) req.write(JSON.stringify(body));
+    req.end();
+  });
+  // 未开启公网访问时，公网 Host 一律 403（本机白名单语义保留）——显式传 allowRemote:false，避免测试环境残留 PORT 变量导致误判。
+  const local = await start(t, { allowRemote: false });
+  assert.equal((await publicRequest(local, '/api/status')).status, 403);
+  assert.equal((await publicRequest(local, '/api/plan', profile)).status, 403);
+  // 开启 allowRemote 后，公网 Host + HTTPS Origin 可正常访问（含 POST）。
+  const remote = await start(t, { allowRemote: true });
+  assert.equal((await publicRequest(remote, '/api/status')).status, 200);
+  const plan = await publicRequest(remote, '/api/plan', profile);
+  assert.equal(plan.status, 200);
+  assert.equal(plan.data.ok, true);
+});

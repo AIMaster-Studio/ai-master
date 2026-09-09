@@ -13,8 +13,9 @@ services:
     startCommand: npm run web
     healthCheckPath: /api/status
     envVars:
+      # node:sqlite 需要 Node 22.5+（22.5–23.x 还需要实验性开关），项目文档要求 Node 24，这里与要求保持一致。
       - key: NODE_VERSION
-        value: 22.0.0
+        value: 24
       # DeepSeek API Key：必须在 Render 控制台手动填入（Environment 页签），切勿在此文件中写明文值。
       # 获取地址：https://platform.deepseek.com/
       - key: DEEPSEEK_API_KEY

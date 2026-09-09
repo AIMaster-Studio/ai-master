@@ -36,11 +36,19 @@ const QUIZ_PASS_SCORE = 75;
 const DAILY_QUIZ_LIMIT = 3;
 const MAX_ATTEMPTS = 2000;
 const BODY_LIMIT = 64000;
+const AI_REVIEW_IP_LIMIT = 20; // 同一客户端 IP 每分钟可发起的 AI 复评次数
+const AI_REVIEW_DAILY_BUDGET = 5000; // 全服务每日 AI 复评总预算，超出后按限流处理，防止公网被刷量
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml',
   '.webm': 'video/webm', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.md': 'text/plain; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 const fail = (status, message) => { throw Object.assign(new Error(message), { status }); };
 const stamp = () => new Date().toISOString();
+function clientIp(req) {
+  // 代理环境下取 X-Forwarded-For 首段作为真实客户端 IP，其次退回 socket 地址。
+  const forwarded = req.headers['x-forwarded-for'];
+  const first = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '';
+  return first || req.socket.remoteAddress || '';
+}
 function reviewDelayDays(correctStreak) {
   const schedule = [1, 3, 7, 14, 30];
   const index = Math.min(Math.max(Number(correctStreak || 1) - 1, 0), schedule.length - 1);
@@ -83,6 +91,9 @@ function csvCell(value) {
 }
 
 function createApp(options = {}) {
+  // 公网部署：Render 等托管平台通过 PORT 暴露网络时放开本机 Host 限制；本机模式保持白名单，防 DNS rebinding / 跨站调用。测试可通过 allowRemote 覆盖此值。
+  const allowRemote = options.allowRemote !== undefined ? options.allowRemote
+    : Boolean(process.env.PORT) || process.env.AIMASTER_ALLOW_REMOTE === '1';
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
   const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
@@ -239,6 +250,8 @@ function createApp(options = {}) {
         return send({ state });
       }
       if (route === 'explanation') {
+        limited('expl-ip:' + clientIp(req), AI_REVIEW_IP_LIMIT, 60000);
+        limited('expl-budget:' + quizDay(), AI_REVIEW_DAILY_BUDGET, 86400000);
         limited('explanation:' + user.id, 12, 60000);
         const module = moduleFor(state, body.moduleId);
         if (typeof body.text !== 'string' || body.text.length > 6000) fail(400, '讲解内容需为文本，最多 6000 字。');
@@ -358,7 +371,7 @@ function createApp(options = {}) {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     try {
       const host = req.headers.host || '';
-      if (!options.skipHostCheck && !/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host)) fail(403, '服务仅供本机使用。');
+      if (!options.skipHostCheck && !allowRemote && !/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host)) fail(403, '服务仅供本机使用。');
       const url = new URL(req.url, 'http://' + host);
       if (url.pathname.startsWith('/api/')) await api(req, res, url); else staticFile(req, res, url);
     } catch (error) {
