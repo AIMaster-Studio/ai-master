@@ -128,11 +128,7 @@ function showToast(message, type) {
     const password = document.getElementById('login-password').value;
     if (!username || !password) { showToast('请填写用户名和密码', 'error'); return; }
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
+      const data = await AIMasterAPI.auth.login(username, password);
       if (data.success) { showToast('登录成功！正在跳转...', 'success'); setTimeout(() => { window.location.href = '../../transition/index.html'; }, 600); }
       else showToast(data.message, 'error');
     } catch (err) { showToast('网络错误，请稍后重试', 'error'); }
@@ -149,11 +145,7 @@ function showToast(message, type) {
     if (password.length < 6) { showToast('密码至少6个字符', 'error'); return; }
     if (password !== confirm) { showToast('两次输入的密码不一致', 'error'); return; }
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
+      const data = await AIMasterAPI.auth.register(username, password);
       if (data.success) { showToast('注册成功！请登录', 'success'); tabBtns[0].click(); document.getElementById('login-username').value = username; registerForm.reset(); }
       else showToast(data.message, 'error');
     } catch (err) { showToast('网络错误，请稍后重试', 'error'); }
@@ -229,20 +221,14 @@ function submitChoiceEx(btn, chapterId, kpIndex, exIndex) {
   if (chosenIdx === correctIdx) {
     selected.classList.add('correct');
     showToast('✅ 回答正确！', 'success');
-    fetch('/api/submit-answer', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: chapterId, kp_index: kpIndex, ex_index: exIndex,
-        correct: true, question, user_answer: userAnswer, correct_answer: correctAnswer })
-    });
+    AIMasterAPI.user.submitAnswer({ chapter_id: chapterId, kp_index: kpIndex, ex_index: exIndex,
+        correct: true, question, user_answer: userAnswer, correct_answer: correctAnswer });
     checkKPCompletion(chapterId, kpIndex, card);
   } else {
     selected.classList.add('wrong');
     showToast('❌ 回答错误，已记录到错题本', 'error');
-    fetch('/api/submit-answer', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: chapterId, kp_index: kpIndex, ex_index: exIndex,
-        correct: false, question, user_answer: userAnswer, correct_answer: correctAnswer })
-    });
+    AIMasterAPI.user.submitAnswer({ chapter_id: chapterId, kp_index: kpIndex, ex_index: exIndex,
+        correct: false, question, user_answer: userAnswer, correct_answer: correctAnswer });
   }
 }
 
@@ -295,11 +281,8 @@ async function runCodeEx() {
   try {
     const kpItem = document.querySelector(`.kp-item[data-kp-index="${codeExState.kpIndex}"]`);
     const kpTitle = kpItem ? kpItem.querySelector('.kp-title')?.textContent?.trim() || '' : '';
-    const res = await fetch('/api/run-code', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, kp_title: kpTitle })
-    });
-    const data = await res.json();
+    // Web 模式下代码执行降级：模拟输出
+    const data = { success: true, exit_code: 0, output: '（Web 模式下代码运行功能暂不可用，已自动通过）', simulated: true };
 
     if (data.success && data.exit_code === 0) {
       let simBadge = '';
@@ -319,18 +302,8 @@ async function runCodeEx() {
       output.innerHTML += '<div id="score-status" style="color:var(--cyan);margin-top:8px;">🤖 AI 正在评分中，请稍候...</div>';
       let score = 70, feedback = '', strengths = '', weaknesses = '';
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s 前端超时
-        const scoreRes = await fetch('/api/score-code', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            kp_title: kpTitle, code, output: data.output,
-            prompt: promptText
-          }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        const scoreData = await scoreRes.json();
+        // Web 模式下 AI 评分降级：默认通过
+        const scoreData = { success: true, score: 75, feedback: '🎉 代码已提交！Web 模式下 AI 评分暂不可用，默认通过。', strengths: '', weaknesses: '' };
         if (scoreData.success) {
           score = scoreData.score;
           feedback = scoreData.feedback;
@@ -357,13 +330,10 @@ async function runCodeEx() {
         status.style.color = 'var(--green)';
         showToast(`🎉 AI评分 ${score}分，知识点已标记完成`, 'success');
 
-        fetch('/api/submit-answer', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chapter_id: codeExState.chapterId,
+        AIMasterAPI.user.submitAnswer({ chapter_id: codeExState.chapterId,
             kp_index: codeExState.kpIndex, ex_index: codeExState.exIndex,
             correct: true, question: '代码练习: ' + codeExState.chapterId + '_' + codeExState.kpIndex,
-            user_answer: '代码运行成功', correct_answer: '代码运行成功' })
-        });
+            user_answer: '代码运行成功', correct_answer: '代码运行成功' });
 
         await completeKP(codeExState.chapterId, codeExState.kpIndex);
 
@@ -401,10 +371,7 @@ async function runCodeEx() {
 // --- KP Completion ---
 async function completeKP(chapterId, kpIndex) {
   try {
-    await fetch('/api/complete-kp', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: chapterId, kp_index: kpIndex })
-    });
+    await AIMasterAPI.user.completeKP(chapterId, kpIndex);
   } catch (e) {}
 }
 
@@ -483,11 +450,7 @@ async function checkChapterComplete(chapterId) {
 // --- Favorites ---
 async function toggleFav(chapterId, exIndex, question) {
   try {
-    const res = await fetch('/api/toggle-favorite', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: chapterId, ex_index: exIndex, question })
-    });
-    const data = await res.json();
+    const data = await AIMasterAPI.user.toggleFavorite({ chapter_id: chapterId, ex_index: exIndex, question });
     if (data.success) {
       const stars = document.querySelectorAll('.btn-fav-star');
       stars.forEach(s => {
@@ -507,8 +470,7 @@ async function showFavorites() {
   if (!modal || !list) return;
 
   try {
-    const res = await fetch('/api/user');
-    const data = await res.json();
+    const data = await AIMasterAPI.user.getUserData();
     const favs = data.favorites || [];
 
     if (favs.length === 0) {
@@ -536,8 +498,7 @@ async function showWrongBook() {
   if (!modal || !list) return;
 
   try {
-    const res = await fetch('/api/user');
-    const data = await res.json();
+    const data = await AIMasterAPI.user.getUserData();
     const wrong = data.wrong_answers || [];
 
     if (wrong.length === 0) {
@@ -564,10 +525,7 @@ async function showWrongBook() {
 
 async function dismissWrong(index) {
   try {
-    await fetch('/api/clear-wrong', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ indices: [index] })
-    });
+    await AIMasterAPI.user.clearWrong([index]);
     showToast('错题已移除', 'success');
     showWrongBook();
   } catch (e) {}
@@ -592,8 +550,7 @@ function toggleNotes(btn) {
 
 async function loadNote(kpKey, textarea) {
   try {
-    const res = await fetch('/api/user');
-    const data = await res.json();
+    const data = await AIMasterAPI.user.getUserData();
     const notes = data.notes || {};
     if (notes[kpKey]) textarea.value = notes[kpKey];
   } catch (e) {}
@@ -606,11 +563,7 @@ async function saveNote(chapterId, kpIndex, btn) {
   const content = textarea.value;
 
   try {
-    const res = await fetch('/api/save-note', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: chapterId, kp_index: kpIndex, content })
-    });
-    const data = await res.json();
+    const data = await AIMasterAPI.user.saveNote(chapterId, kpIndex, content);
     if (data.success) {
       if (hint) { hint.style.display = 'inline'; setTimeout(() => { hint.style.display = 'none'; }, 2000); }
       showToast('📝 笔记已保存', 'success');
@@ -627,11 +580,7 @@ async function toggleMode() {
   const newMode = checkbox.checked ? 'all_unlocked' : 'explore';
 
   try {
-    const res = await fetch('/api/set-mode', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: newMode })
-    });
-    const data = await res.json();
+    const data = await AIMasterAPI.user.setMode(newMode);
     if (data.success) {
       label.textContent = newMode === 'all_unlocked' ? '🔓 全部解锁' : '🔒 探索模式';
       showToast(newMode === 'all_unlocked' ? '🔓 已切换为全部解锁模式' : '🔒 已切换为探索模式', 'success');
@@ -706,8 +655,8 @@ async function openComic(chapterId, kpIndex, kpTitle) {
   nav.style.display = 'none'; bottom.style.display = 'none'; autoPlayWrap.style.display = 'none'; settingsHint.style.display = 'none';
   overlay.classList.add('active'); document.body.style.overflow = 'hidden';
   try {
-    const res = await fetch(`/api/comic/${chapterId}/${kpIndex}`);
-    const data = await res.json();
+    // Web 模式：漫画生成降级为静态提示
+    const data = { success: false, message: 'Web 模式下漫画生成暂不可用' };
     if (!data.success) { panelsContainer.innerHTML = `<div class="comic-loading"><p>😔 ${data.message || '生成失败，请稍后重试'}</p></div>`; return; }
     const comic = data.comic; comicState.panels = comic.panels;
     document.getElementById('comic-title').textContent = comic.title;
@@ -765,13 +714,9 @@ function speakPanel(panelIdx) {
 async function tryServerTTS(panelIdx, text, character) {
   const panel = comicState.panels[panelIdx]; const chId = comicState.chapterId; const kpId = comicState.kpIndex; const pId = panel.panel_id;
   try {
-    const statusRes = await fetch('/api/tts/status'); const statusData = await statusRes.json();
-    if (!statusData.edge_tts_available && !statusData.doubao_available) { const u = new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u._panelIdx=panelIdx; speakWithBrowserTTS(u,panelIdx); return; }
-    const url = `/api/tts/panel/${chId}/${kpId}/${pId}`; const audio = new Audio(url); audio._panelIdx = panelIdx;
-    audio.onplay = () => { isSpeaking=true; currentSpeech=audio; updateAllVoiceButtons(); };
-    audio.onended = () => { isSpeaking=false; currentSpeech=null; updateAllVoiceButtons(); const autoPlay=document.getElementById('comic-autoplay'); if(autoPlay&&autoPlay.checked){const next=panelIdx+1;if(next<comicState.panels.length){setTimeout(()=>{navigateComic(1);setTimeout(()=>speakPanel(next),500);},600);}} };
-    audio.onerror = () => { isSpeaking=false; currentSpeech=null; const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u._panelIdx=panelIdx; speakWithBrowserTTS(u,panelIdx); };
-    audio.play().catch(() => { const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u._panelIdx=panelIdx; speakWithBrowserTTS(u,panelIdx); });
+    // Web 模式：直接使用浏览器 TTS，不走服务器
+    const u = new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u._panelIdx=panelIdx;
+    speakWithBrowserTTS(u, panelIdx);
   } catch(e) { const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN'; u._panelIdx=panelIdx; speakWithBrowserTTS(u,panelIdx); }
 }
 
@@ -795,7 +740,7 @@ function closeComicSettings() { document.getElementById('comic-settings-modal').
 async function saveComicConfig() {
   const k=document.getElementById('comic-api-key').value.trim(); const b=document.getElementById('comic-api-base').value.trim(); const m=document.getElementById('comic-model').value.trim();
   if(!k){showToast('请填写 API Key','error');return;}
-  try{const r=await fetch('/api/comic/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:k,api_base:b,model:m||'gpt-4o'})});const d=await r.json();if(d.success){showToast('配置已保存！','success');closeComicSettings();document.getElementById('comic-settings-hint').style.display='none';}else showToast('配置保存失败','error');}catch(e){showToast('网络错误','error');}
+  try{showToast('Web 模式下漫画配置暂不可用','info');closeComicSettings();}catch(e){showToast('网络错误','error');}
 }
 
 // ==================== Comic Helpers ====================
@@ -841,12 +786,8 @@ async function autoJJChapterGuide() {
   if (typeof CHAPTER_KP_TITLES === 'undefined') return;
 
   try {
-    const res = await fetch('/api/jj-chapter-guide', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: CHAPTER_ID, chapter_title: CHAPTER_TITLE, kp_titles: CHAPTER_KP_TITLES })
-    });
-    const data = await res.json();
-    if (!data.success) return;
+    // Web 模式：JJ 章节指引降级为静态提示
+    const data = { success: true, answer: '欢迎来到' + CHAPTER_TITLE + '！完成本章节所有知识点即可解锁下一步指引。' };
 
     // Show JJ chat with the guide
     const msgDiv = document.getElementById('jj-messages');
@@ -871,16 +812,8 @@ async function autoJJChapterComplete() {
   if (typeof CHAPTER_KP_TITLES === 'undefined') return;
 
   try {
-    const res = await fetch('/api/jj-chapter-complete', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chapter_id: CHAPTER_ID, chapter_title: CHAPTER_TITLE,
-        kp_titles: CHAPTER_KP_TITLES,
-        wrong_answers: typeof CHAPTER_WRONG !== 'undefined' ? CHAPTER_WRONG : []
-      })
-    });
-    const data = await res.json();
-    if (!data.success) return;
+    // Web 模式：JJ 章节完成降级为静态提示
+    const data = { success: true, answer: '🎉 恭喜完成' + CHAPTER_TITLE + '！你已掌握了本章节的核心知识点。继续探索下一章节吧！' };
 
     const msgDiv = document.getElementById('jj-messages');
     if (msgDiv) {
@@ -935,8 +868,7 @@ async function openMyMindmap() {
   });
 
   try {
-    const res = await fetch('/api/mindmap/get?chapter_id=' + CHAPTER_ID);
-    const data = await res.json();
+    const data = await AIMasterAPI.mindmap.get(CHAPTER_ID);
     let initData = null;
 
     if (data.success && data.content) {
@@ -982,11 +914,7 @@ async function myMindmapSave() {
   try {
     const data = myMindmapInstance.getData();
     const content = JSON.stringify(data);
-    const res = await fetch('/api/mindmap/save', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: CHAPTER_ID, content })
-    });
-    const result = await res.json();
+    const result = await AIMasterAPI.mindmap.save(CHAPTER_ID, content);
     if (result.success) showToast('\U0001f4be 思维导图已保存！', 'success');
     else showToast('保存失败', 'error');
   } catch (e) { showToast('网络错误', 'error'); }
@@ -1030,11 +958,7 @@ function myMindmapLoadFile(event) {
 async function myMindmapDelete() {
   if (!confirm('确定删除自定义思维导图？')) return;
   try {
-    const res = await fetch('/api/mindmap/delete', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chapter_id: CHAPTER_ID })
-    });
-    const data = await res.json();
+    const data = await AIMasterAPI.mindmap.delete(CHAPTER_ID);
     if (data.success) {
       if (myMindmapInstance) {
         const defaultData = {
@@ -1381,9 +1305,10 @@ async function showGlossary() {
   list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">加载中...</div>';
 
   try {
-    const res = await fetch('/api/glossary');
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message);
+    // Web 模式：直接加载静态 JSON 文件
+    const res = await fetch('../data/glossary_ai.json');
+    const terms = await res.json();
+    const data = { success: true, terms: terms };
 
     list.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;">';
     data.terms.forEach(function(term) {

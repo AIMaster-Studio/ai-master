@@ -127,12 +127,11 @@ ctaBtn.href = 'jj_interview.html?ch=' + CHAPTER_ID;
 
 async function fetchRevelation(){
   try {
-    const res = await fetch('/api/chapter-revelation/' + CHAPTER_ID);
-    const data = await res.json();
-    if (data.success) {
-      chapterLabel.textContent = 'CHAPTER ' + String(CHAPTER_ID).padStart(2,'0');
-      return { title: data.title, text: data.text };
-    }
+    // Web 模式：直接加载静态章节数据
+    const res = await fetch('../data/chapter_' + String(CHAPTER_ID).padStart(2,'0') + '.json');
+    const chapterData = await res.json();
+    chapterLabel.textContent = 'CHAPTER ' + String(CHAPTER_ID).padStart(2,'0');
+    return { title: chapterData.title || '星辰指引', text: chapterData.revelation || '🌌 你已穿越了知识的星云，每一段代码都是通向星辰的航迹。继续前行，冒险者。' };
   } catch(e){}
   return { title: '星辰指引', text: '🌌 你已穿越了知识的星云，每一段代码都是通向星辰的航迹。继续前行，冒险者。' };
 }

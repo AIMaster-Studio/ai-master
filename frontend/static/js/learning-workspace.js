@@ -20,14 +20,19 @@
   let toastTimer;
 
   async function api(path, body) {
+    // 优先尝试后端 API；不可用时降级到本地 localStorage 模式
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(),95000);
+    const timeout = setTimeout(() => controller.abort(),8000);
     try {
       const response = await fetch('/api/' + path,{method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',headers:body === undefined ? {} : {'Content-Type':'application/json'},body:body === undefined ? undefined : JSON.stringify(body),signal:controller.signal});
-      const data = await response.json().catch(() => { throw new Error('学习服务尚未启动，请从项目的本地学习服务入口打开。'); });
+      const data = await response.json().catch(() => { throw new Error('JSON_PARSE_FAIL'); });
       if (!response.ok || !data.ok) throw new Error(typeof data.error === 'string' ? data.error : '请求未完成，请稍后重试。');
       return data;
     } catch (error) {
+      // 后端不可用 → 降级到本地模式
+      if (window.LearningLocalAPI && window.LearningLocalAPI.canHandle(path)) {
+        return window.LearningLocalAPI.handle(path, body);
+      }
       if (error.name === 'AbortError') throw new Error('请求超时，内容已保留，可以再次提交。');
       throw error;
     } finally { clearTimeout(timeout); }
@@ -156,7 +161,7 @@
     const attempts = Array.isArray(app.state.attempts) ? app.state.attempts : [];
     const done = Object.values(app.state.progress || {}).filter(item => item.completedAt).length;
     const quizzes = attempts.filter(item => item.type === 'quiz' || item.kind === 'quiz' || item.result && item.result.total);
-    main.innerHTML = '<header class="page-heading"><div><p class="eyebrow">留下真实的学习过程</p><h1>学习记录</h1><p>' + esc(app.user.isGuest !== false ? '访客档案' : app.user.name) + ' · 本机保存</p></div></header><div class="metric-grid"><div class="metric"><strong>' + done + '</strong><span>已通关模块</span></div><div class="metric"><strong>' + attempts.length + '</strong><span>累计练习记录</span></div><div class="metric"><strong>' + quizzes.length + '</strong><span>客观测验记录</span></div></div><h2>记录导出</h2><div class="export-links"><a class="button-link" href="/api/export" download>↓ 学习档案 JSON</a><a class="button-link" href="/api/export?format=csv" download>↓ 测验记录 CSV</a></div><p class="small muted" style="margin-top:10px">只包含当前档案的实际作答与反馈。</p><section class="section-band"><h2>最近练习</h2>' + (attempts.length ? '<div class="table-wrap"><table class="record-table"><thead><tr><th>学习内容</th><th>练习</th><th>结果</th><th>时间</th></tr></thead><tbody>' + attempts.slice().reverse().slice(0,40).map(a => {
+    main.innerHTML = '<header class="page-heading"><div><p class="eyebrow">留下真实的学习过程</p><h1>学习记录</h1><p>' + esc(app.user.isGuest !== false ? '访客档案' : app.user.name) + ' · 本机保存</p></div></header><div class="metric-grid"><div class="metric"><strong>' + done + '</strong><span>已通关模块</span></div><div class="metric"><strong>' + attempts.length + '</strong><span>累计练习记录</span></div><div class="metric"><strong>' + quizzes.length + '</strong><span>客观测验记录</span></div></div><h2>记录导出</h2><div class="export-links"><button type="button" class="button-link" data-action="export-json">↓ 学习档案 JSON</button></div><p class="small muted" style="margin-top:10px">只包含当前档案的实际作答与反馈。</p><section class="section-band"><h2>最近练习</h2>' + (attempts.length ? '<div class="table-wrap"><table class="record-table"><thead><tr><th>学习内容</th><th>练习</th><th>结果</th><th>时间</th></tr></thead><tbody>' + attempts.slice().reverse().slice(0,40).map(a => {
       const r = a.result || a; const kind = a.type || a.kind || (r.total ? 'quiz' : 'explanation'); const item = moduleById(a.moduleId); const isQuiz = kind === 'quiz' || kind === 'diagnostic' || r.total;
       return '<tr><td>' + esc(item ? item.title : kind === 'diagnostic' || a.mode === 'diagnostic' ? '基础诊断' : kind === 'plan' ? a.goal || '学习航线' : '学习练习') + '</td><td>' + (kind === 'plan' ? '计划调整' : kind === 'complete' ? '通关' : kind === 'review' ? '错题复习' : isQuiz ? '客观测验' : '讲解') + '</td><td>' + (kind === 'plan' ? '已保存' : kind === 'complete' ? '✓ 已完成' : isQuiz ? esc(r.score == null ? '—' : r.score + '%') : esc(modeLabel(r.mode))) + '</td><td>' + date(a.createdAt || a.at || a.timestamp) + '</td></tr>';
     }).join('') + '</tbody></table></div>' : '<div class="empty-state"><p>还没有练习记录。</p><button type="button" data-view="learn">开始学习</button></div>') + '</section>';
@@ -178,7 +183,7 @@
     showDialog('模型复评设置','<p class="dialog-subtitle">讲解内容将发送给你配置的模型服务。未配置时使用本地练习规则。</p><form id="settings-form"><label class="field">接口地址<input type="url" name="baseUrl" required value="' + esc(ai.baseUrl || 'https://api.deepseek.com/v1') + '"></label><label class="field">模型名称<input name="model" required value="' + esc(ai.model || 'deepseek-chat') + '" maxlength="120"></label><label class="field">API Key<input type="password" name="apiKey" autocomplete="off" placeholder="' + (ai.configured ? '留空保留当前密钥' : '输入模型服务密钥') + '"><small>保存在本机，不在学习记录中导出。</small></label><div class="form-footer">' + (ai.configured ? '<button type="button" data-action="clear-ai">关闭 AI 复评</button>' : '<span class="muted">当前：未配置</span>') + '<button type="submit" class="primary">保存设置</button></div><p class="dialog-error" role="alert"></p></form>');
   }
   function accountDialog() {
-    if (app.user.isGuest === false) return showDialog('我的学习档案','<h3>' + esc(app.user.name) + '</h3><p class="dialog-subtitle">当前账号的学习记录保存在这台电脑。</p><div class="button-row"><a class="button-link" href="/api/export" download>↓ 导出档案</a><button type="button" data-action="logout">退出账号</button></div><p class="dialog-error" role="alert"></p>');
+    if (app.user.isGuest === false) return showDialog('我的学习档案','<h3>' + esc(app.user.name) + '</h3><p class="dialog-subtitle">当前账号的学习记录保存在这台电脑。</p><div class="button-row"><button type="button" class="button-link" data-action="export-json">↓ 导出档案</button><button type="button" data-action="logout">退出账号</button></div><p class="dialog-error" role="alert"></p>');
     showDialog('本机学习档案','<div class="dialog-tabs"><button type="button" data-auth-mode="login" class="' + (app.authMode === 'login' ? 'selected' : '') + '">登录</button><button type="button" data-auth-mode="register" class="' + (app.authMode === 'register' ? 'selected' : '') + '">创建账号</button></div><p class="dialog-subtitle">' + (app.authMode === 'register' ? '为这台电脑上的学习档案设置账号。' : '登录这台电脑上已有的学习账号。') + '</p><form id="account-form"><label class="field">名称<input name="name" autocomplete="username" required minlength="2" maxlength="40"></label><label class="field">密码<input type="password" name="password" autocomplete="' + (app.authMode === 'register' ? 'new-password' : 'current-password') + '" required minlength="8" maxlength="128"><small>至少 8 位</small></label><div class="form-footer"><button type="button" data-action="close-dialog">继续使用访客档案</button><button type="submit" class="primary">' + (app.authMode === 'register' ? '创建账号' : '登录') + '</button></div><p class="dialog-error" role="alert"></p></form>');
   }
   function diagnosticDialog() {
@@ -219,6 +224,7 @@
     if (action === 'plan') return showDialog('调整学习计划',planForm(true));
     if (action === 'diagnostic-done') return showDialog('设置学习计划',planForm(true));
     if (action === 'next-module') { const next = modules().find(id => !progress(id).completedAt); if (next) selectModule(next); else { app.view = 'records'; render(); toast('当前学习航线已完成，记得按期复习。'); } return; }
+    if (action === 'export-json') { try { const blob = new Blob([JSON.stringify(app.state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'aimaster-learning-' + Date.now() + '.json'; a.click(); URL.revokeObjectURL(a.href); toast('学习档案已导出。'); } catch(e) { toast('导出失败。',true); } return; }
     task(button,async () => {
       if (action === 'diagnostic') { const data = await api('quiz?mode=diagnostic'); app.diagnosticQuiz = data.quiz; app.diagnosticResult = null; diagnosticDialog(); }
       if (action === 'start-quiz') await startQuiz();
