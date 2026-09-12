@@ -12,9 +12,16 @@
  *   node scripts/check-connectivity.mjs --netlify-chain # 额外验证 Netlify 备选的 AI 链路（信息项）
  *   node scripts/check-connectivity.mjs --insecure      # 关闭 TLS 校验（自签证书端点，见 R-005）
  *
+ * 隧道端点配置（R-202：公开仓库不硬编码真实入口）：
+ *   优先级 AIMASTER_TUNNEL_URL 环境变量 > .local/tunnel-url.txt（gitignored）。
+ *   两者都没有时直接报错退出（不会降级成假地址）；真实入口见 COLLAB.md §6（内部文档，不随公开仓库分发）。
+ *
  * 退出码：0 = 必过项全部通过；1 = 有必过项失败。
  */
 import process from 'node:process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { dirname, join } from 'node:path';
 
 const argv = new Set(process.argv.slice(2));
 const INSECURE = argv.has('--insecure');
@@ -26,15 +33,33 @@ if (INSECURE) {
   console.warn('⚠  已关闭 TLS 证书校验（--insecure，对应 curl -sk）。仅用于自签证书端点验收。\n');
 }
 
-const ENDPOINTS = {
-  'GH Pages（前端主端）': 'https://aimaster-studio.github.io/ai-master/',
-  'Cloudflare（前端备用·冻结）': 'https://ai-master-aw5.pages.dev/',
-  '樱花隧道（后端主端）': 'https://frp-end.com:45695/api/status',
-  'Netlify（后端备选）': 'https://effervescent-gingersnap-d27d31.netlify.app/api/status',
-  '本机 8787（后端真源）': 'http://127.0.0.1:8787/api/status'
-};
+const TUNNEL_URL_FILE = join(dirname(fileURLToPath(import.meta.url)), '..', '.local', 'tunnel-url.txt');
 
-const TUNNEL_BASE = 'https://frp-end.com:45695';
+/**
+ * 解析隧道端点（R-202）。优先级：AIMASTER_TUNNEL_URL > .local/tunnel-url.txt；缺值时抛错指路，绝不降级成假地址。
+ * 返回值为基础地址（如 `https://<host>:<port>`），`/api/status` 由调用方拼接。
+ */
+export function resolveTunnelUrl() {
+  let raw = process.env.AIMASTER_TUNNEL_URL;
+  if (!raw) {
+    try {
+      raw = readFileSync(TUNNEL_URL_FILE, 'utf8');
+    } catch {
+      // 文件不存在时走下面的缺值报错
+    }
+  }
+  if (!raw || !raw.trim()) {
+    throw new Error([
+      '未配置隧道端点（R-202：脚本不再硬编码真实入口，真实入口见 COLLAB.md §6 —— 内部文档，不随公开仓库分发）。',
+      '设置方式（任选其一，环境变量优先于文件）：',
+      '  1) 环境变量：  export AIMASTER_TUNNEL_URL=https://<隧道入口>:<端口>   （Windows CMD: set AIMASTER_TUNNEL_URL=...）',
+      '  2) 本地文件：  echo https://<隧道入口>:<端口> > .local/tunnel-url.txt   （.local/ 已在 .gitignore）',
+      '取值可写基础地址，也可直接写完整 /api/status 地址。'
+    ].join('\n'));
+  }
+  return raw.trim().replace(/\/+$/, '').replace(/\/api\/status$/, '');
+}
+
 const LOCAL_BASE = 'http://127.0.0.1:8787';
 const NETLIFY_BASE = 'https://effervescent-gingersnap-d27d31.netlify.app';
 
@@ -135,6 +160,15 @@ async function checkAiChain(base, label, mandatory) {
 }
 
 async function main() {
+  const TUNNEL_BASE = resolveTunnelUrl();
+  const ENDPOINTS = {
+    'GH Pages（前端主端）': 'https://aimaster-studio.github.io/ai-master/',
+    'Cloudflare（前端备用·冻结）': 'https://ai-master-aw5.pages.dev/',
+    '樱花隧道（后端主端）': `${TUNNEL_BASE}/api/status`,
+    'Netlify（后端备选）': `${NETLIFY_BASE}/api/status`,
+    '本机 8787（后端真源）': `${LOCAL_BASE}/api/status`
+  };
+
   console.log('AI Master 连通测试 — ' + new Date().toISOString());
   console.log('='.repeat(64));
 
@@ -163,7 +197,11 @@ async function main() {
   return results;
 }
 
-main().catch(error => {
-  console.error('连通测试执行失败：', error.message);
-  process.exitCode = 1;
-});
+// 直接运行时才执行；被 import 时（如取值链路验证）只导出 resolveTunnelUrl，不发网络请求。
+const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isDirectRun) {
+  main().catch(error => {
+    console.error('连通测试执行失败：', error.message);
+    process.exitCode = 1;
+  });
+}
