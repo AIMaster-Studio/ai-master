@@ -16,7 +16,7 @@
 | **前端（主）** | GitHub Pages | `https://aimaster-studio.github.io/ai-master/` | ✅ 在线 | 2026-09-12 14:29 | A | HTTP **200** / 760ms | **唯一前端真源。** push `master` 触发 `.github/workflows/pages.yml` 自动部署 `frontend/`。 |
 | **前端（备用）** | Cloudflare Pages | `https://ai-master-aw5.pages.dev/` | ✅ 在线（冻结） | 2026-09-12 14:29 | A | HTTP **200** / 3092ms | **冻结，只读回滚点。** 不主动更新，不做"顺手也部署"。 |
 | **后端（主）** | 本机 8787 + 樱花隧道 | `https://frp-end.com:45695`（自签证书，需 `curl -sk`） | ✅ 在用 | 2026-09-12 14:29 | A | `/api/status` **200** / 558ms；`POST /api/explanation` → **`mode:"ai"`**（31.6s） | 真源 = 本机 `node server/index.js`（8787）。**隧道只是出口，隧道挂了等于后端挂了。** 一键启动见 `scripts/start-backend.ps1`。 |
-| **后端（备选）** | Netlify Functions | `effervescent-gingersnap-d27d31.netlify.app` | ⚠️ 配置就绪、**AI 链路未通** | 2026-09-12 14:29 | A | `/api/status` **200**；`POST /api/explanation` → **`mode:"fallback-local"`**（1.5s，快速失败） | **在 AI 复评修好前，不得作为任何验收依据。** 见 R-003。 |
+| **后端（备选）** | Netlify Functions | `effervescent-gingersnap-d27d31.netlify.app` | ⚠️ 服务已恢复（已改绑 `AIMaster-Studio/ai-master`）；**AI 链路因 Key 401 未通** | 2026-09-12 16:18 | A | 静态 `/index.html`、`/frontend/**` **200**；`/api/status` **200**；`POST /api/explanation` → **`mode:"fallback-local"` + `aiErrorCode:"provider-status-401"`** | **换 Key 前不得作为验收依据。** 根因见 §4.2 / R-003。 |
 
 > 判据：**`/api/status` 200 ≠ 后端可用**（只说明配置项存在）。AI 链路通过的唯一标准是
 > `POST /api/explanation` 返回 `mode:"ai"`（`ACCEPTANCE.md` §1.1 第 3 条）。
@@ -83,14 +83,18 @@ powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1
 - 结论：**该端"掉线"的主因是本地服务没起，不是隧道挂**。隧道由外部工具
   `SakuraFrpLauncher` 管理（配置不在仓库内），本仓库负责的是**本机服务 + 探活**。
 
-### 4.2 关于 R-003 的排查进展（未闭环，如实记录）
+### 4.2 R-003 根因（已定性）
 
-- 实测：Netlify `/api/explanation` **1.5s 内**返回 `mode:"fallback-local"`，属**快速失败**
-  （不是超时）；同一份讲解在本机 + 隧道链路返回 `mode:"ai"`。
-- 已落地的诊断能力：降级响应新增 `aiErrorCode` 字段，输出失败**类别**而非上游正文或密钥
-  （`provider-status-401/403/429`、`network`、`timeout`、`invalid-output`、`invalid-schema`）。
-  下一步在 Netlify 上复跑即可从该字段读出根因类别（Key 失效 / 出网受限 / 其他）。
-- **根因尚未定位，未做任何"删调试代码"动作。**
+- **根因：Netlify 侧 `DEEPSEEK_API_KEY` 被上游拒绝（401 Unauthorized）** —— Key 失效 / 过期 / 被截断，
+  或与本地那把不是同一把。**不是出网受限、也不是超时**（否则 `aiErrorCode` 会是 `network` / `timeout`）。
+- 定性依据（两次独立复现，结果一致，2026-09-12 16:18）：
+  - `POST /api/explanation` → `mode:"fallback-local"` + **`aiErrorCode: "provider-status-401"`**（1.22s / 1.42s 快速失败）
+  - `GET /api/status?probe=1` → **`aiReachable: false`**
+  - 对照（本机 + 樱花隧道，同一份代码同一条链路）：`?probe=1` → **`aiReachable: true`**；`POST /api/explanation` → **`mode:"ai"`**
+- 诊断能力：降级响应带 `aiErrorCode`（只输出失败**类别**，不含密钥与上游正文）。
+- **修复动作（人类侧，一步）**：Netlify `站点配置 → 环境变量`，把 `DEEPSEEK_API_KEY` 换成一把有效 Key
+  （可直接用本地那把——本地实测 `mode:"ai"`），保存后重新部署即可。
+- 未做任何"删调试代码"动作。
 
 ---
 
@@ -98,12 +102,12 @@ powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1
 
 | 编号 | 阻断项 | 严重度 | 状态 |
 | :--- | :--- | :--- | :--- |
-| R-001 | `verify_frontend_demo.py` 在干净仓库必然失败 | P0 | **已修复并上线**（`master` = `6ac6763`；线上 `static/js/ai-config.js` → HTTP 200） |
+| R-001 | `verify_frontend_demo.py` 在干净仓库必然失败 | P0 | **已修复并上线**（`master` = `b76d370`；线上 `static/js/ai-config.js` → HTTP 200） |
 | R-002 | 本地后端 + 樱花隧道不通、无自愈 | P0 | **已修复**（一键启动 + 探活脚本；根因 = 本机服务未起） |
-| R-003 | Netlify AI 复评不可用，根因未定位 | P1 | **部分**：诊断字段已加，根因待 Netlify 侧复跑确认 |
+| R-003 | Netlify AI 复评不可用，根因未定位 | P1 | **根因已定性**：Netlify 侧 `DEEPSEEK_API_KEY` 返回 **401**（见 §4.2）；待换 Key |
 | R-004 | 契约表缺"最后实测时间 / 实测人" | P1 | **已修复**（本文件 §1 两列齐备） |
 | R-005 | 自签证书端点验收条件未显式化 | P2 | **已修复**（本文件 §2） |
-| R-006 | 前端双端无版本标记 | P2 | **已修复并上线**（线上 `static/js/build-info.js` 实测 `sha:"6ac6763"`） |
+| R-006 | 前端双端无版本标记 | P2 | **已修复并上线**（线上 `static/js/build-info.js` 实测 `sha:"b76d370"`） |
 
 ### 5.1 上线后的线上复核（2026-09-12 15:12，执行人：A）
 
@@ -114,3 +118,20 @@ powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1
 | 前端主端入口页 | `curl .../learning-center/` | 页面已含 `build-info.js` | ✅ |
 
 > 推送前已在干净克隆内复跑 G1（pass 33 / fail 0）与前端校验（退出码 0）。
+
+### 5.2 合并 + Netlify 改绑后的复核（2026-09-12 16:18，执行人：A）
+
+**背景**：Netlify 站点原绑错仓库（`433525/ai-master`，私有分叉），内容停在 9/8；已改绑为
+`AIMaster-Studio/ai-master` / `master`、发布目录 `.`。
+
+| 项目 | 命令 | 实测结果 | 判定 |
+| :--- | :--- | :--- | :--- |
+| 前端主端 build 标记 | `curl .../static/js/build-info.js`（GH Pages） | `sha:"b76d370"` | ✅ R-006（标记随 push 变化） |
+| 前端备用（Cloudflare） | `curl .../static/js/build-info.js` | 文件不存在 → 无标记 | ✅ 分叉可辨（符合契约） |
+| Netlify 静态服务 | `curl /index.html`、`/frontend/learning-center/` | HTTP **200** | ✅ 改绑后恢复 |
+| Netlify 新代码到位 | `curl /frontend/static/js/ai-config.js`、`build-info.js` | HTTP **200** | ✅ 跑上 `b76d370` |
+| Netlify `/api/status` | `curl` | HTTP **200**，`model: deepseek-v4-pro` | ✅ |
+| **Netlify AI 链路** | `POST /api/plan` → `POST /api/explanation`（×2） | `mode:"fallback-local"` + **`aiErrorCode:"provider-status-401"`** | ❌ **Key 401（根因）** |
+| Netlify 真探活 | `curl "/api/status?probe=1"` | **`aiReachable:false`** | ❌ 与 401 一致 |
+| 对照：隧道真探活 | `curl -sk ".../api/status?probe=1"` | **`aiReachable:true`** | ✅ Key 正常 |
+| 对照：隧道 AI 链路 | `POST /api/explanation` | **`mode:"ai"`** | ✅ |
