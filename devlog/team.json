@@ -1,30 +1,38 @@
 {
   "members": [
     {
-      "name": "433525",
-      "email": "433525@users.noreply.github.com",
-      "region": "CN",
-      "role": "项目负责人 / 全栈开发",
-      "note": "请按实际成员信息修改"
+      "name": "覃志高",
+      "role": "项目负责人 / 全栈开发（前端页面、桌宠模块、服务端、开发日志与提交材料）",
+      "gitHandles": ["433525"],
+      "email": "1097464874@qq.com",
+      "region": "CN"
     },
     {
-      "name": "US-Member-1",
-      "email": "us-member-1@example.com",
-      "region": "US",
-      "role": "前端 / 文档",
-      "note": "示例美国成员，请替换为真实成员"
+      "name": "农格安",
+      "role": "前端开发 / 交互与页面缺陷修复（导航跳转、白屏、动效与内容显隐）",
+      "gitHandles": ["An9020"],
+      "email": "1782694139@qq.com",
+      "region": "CN"
     },
     {
-      "name": "US-Member-2",
-      "email": "us-member-2@example.com",
-      "region": "US",
-      "role": "测试 / 实验",
-      "note": "示例美国成员，请替换为真实成员"
+      "name": "李世凯",
+      "role": "前端页面开发 / 视觉与美术效果（open class 扩展页面、星图美术）",
+      "gitHandles": ["L2464"],
+      "email": "18278912296@163.com",
+      "region": "CN"
+    },
+    {
+      "name": "周川力",
+      "role": "版本上传与集成（含协作流程产生的提交；与李世凯共同负责上传）",
+      "gitHandles": ["A"],
+      "email": "a@ai-master.local",
+      "region": "CN"
     }
   ],
+  "note": "gitHandles 把 git 作者名映射到真实成员，供开发日志 PDF 的「团队分工」章使用。未列出的作者（如 AIMaster DevLog Bot）为自动化账号，不属于团队成员。",
   "reminder": {
     "enabled": true,
-    "region": "US",
-    "template": "请补充本次改进的详细开发日志，并附上截图、实验数据或会议纪要等佐证材料。"
+    "region": "CN",
+    "template": "请补充本次改进的详细开发日志，并附上截图、实验数据等佐证材料。"
   }
 }
