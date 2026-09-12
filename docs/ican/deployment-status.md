@@ -6,6 +6,9 @@
 > **口径**：图片描述的是意图，本文件的「实测」列才是事实；两者冲突时以实测为准并开一条验收意见。
 > 本文件随仓库公开（`docs/ican/**` 属于公开材料）；协作文件 `COLLAB.md` / `REVIEW.md` /
 > `ACCEPTANCE.md` 不随仓库公开。文中 R-00x 为内部验收条目编号，仅作索引。
+>
+> ⚠️ **本文件是内部运维/部署文档，不属于答辩或巡展的评审材料，不应放入提交包。**
+> 为符合 iCAN 双盲要求，文中已移除组织名、账号名等可识别标识（对应 R-107）。
 
 ---
 
@@ -16,7 +19,7 @@
 | **前端（主）** | GitHub Pages | `https://aimaster-studio.github.io/ai-master/` | ✅ 在线 | 2026-09-12 14:29 | A | HTTP **200** / 760ms | **唯一前端真源。** push `master` 触发 `.github/workflows/pages.yml` 自动部署 `frontend/`。 |
 | **前端（备用）** | Cloudflare Pages | `https://ai-master-aw5.pages.dev/` | ✅ 在线（冻结） | 2026-09-12 14:29 | A | HTTP **200** / 3092ms | **冻结，只读回滚点。** 不主动更新，不做"顺手也部署"。 |
 | **后端（主）** | 本机 8787 + 樱花隧道 | `https://frp-end.com:45695`（自签证书，需 `curl -sk`） | ✅ 在用 | 2026-09-12 14:29 | A | `/api/status` **200** / 558ms；`POST /api/explanation` → **`mode:"ai"`**（31.6s） | 真源 = 本机 `node server/index.js`（8787）。**隧道只是出口，隧道挂了等于后端挂了。** 一键启动见 `scripts/start-backend.ps1`。 |
-| **后端（备选）** | Netlify Functions | `effervescent-gingersnap-d27d31.netlify.app` | ⚠️ 服务已恢复（已改绑 `AIMaster-Studio/ai-master`）；**AI 链路因 Key 401 未通** | 2026-09-12 16:18 | A | 静态 `/index.html`、`/frontend/**` **200**；`/api/status` **200**；`POST /api/explanation` → **`mode:"fallback-local"` + `aiErrorCode:"provider-status-401"`** | **换 Key 前不得作为验收依据。** 根因见 §4.2 / R-003。 |
+| **后端（备选）** | Netlify Functions | `effervescent-gingersnap-d27d31.netlify.app` | ⚠️ 服务已恢复（已改绑主仓库 `master`）；**AI 链路因 Key 401 未通** | 2026-09-12 16:18 | A | 静态 `/index.html`、`/frontend/**` **200**；`/api/status` **200**；`POST /api/explanation` → **`mode:"fallback-local"` + `aiErrorCode:"provider-status-401"`** | **换 Key 前不得作为验收依据。** 根因见 §4.2 / R-003。**唯一备选端 = 本行**；另有一个新建站点（空站、从未成功发布）已废弃，不作为任何依据。 |
 
 > 判据：**`/api/status` 200 ≠ 后端可用**（只说明配置项存在）。AI 链路通过的唯一标准是
 > `POST /api/explanation` 返回 `mode:"ai"`（`ACCEPTANCE.md` §1.1 第 3 条）。
@@ -103,7 +106,7 @@ powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1
 | 编号 | 阻断项 | 严重度 | 状态 |
 | :--- | :--- | :--- | :--- |
 | R-001 | `verify_frontend_demo.py` 在干净仓库必然失败 | P0 | **已修复并上线**（`master` = `b76d370`；线上 `static/js/ai-config.js` → HTTP 200） |
-| R-002 | 本地后端 + 樱花隧道不通、无自愈 | P0 | **已修复**（一键启动 + 探活脚本；根因 = 本机服务未起） |
+| R-002 | 本地后端 + 樱花隧道不通、无自愈 | P0 | **已修复（验收口径 = 提供一键启动 + 探活）**：`scripts/start-backend.ps1` + `scripts/check-connectivity.mjs`；根因 = 本机服务未起。**注意：需人工启动，掉线不会自动恢复（非自愈）**；现场兜底见 `docs/ican/demo-fallback.md` |
 | R-003 | Netlify AI 复评不可用，根因未定位 | P1 | **根因已定性**：Netlify 侧 `DEEPSEEK_API_KEY` 返回 **401**（见 §4.2）；待换 Key |
 | R-004 | 契约表缺"最后实测时间 / 实测人" | P1 | **已修复**（本文件 §1 两列齐备） |
 | R-005 | 自签证书端点验收条件未显式化 | P2 | **已修复**（本文件 §2） |
@@ -121,8 +124,8 @@ powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1
 
 ### 5.2 合并 + Netlify 改绑后的复核（2026-09-12 16:18，执行人：A）
 
-**背景**：Netlify 站点原绑错仓库（`433525/ai-master`，私有分叉），内容停在 9/8；已改绑为
-`AIMaster-Studio/ai-master` / `master`、发布目录 `.`。
+**背景**：Netlify 站点原绑错仓库（绑到了一个私有分叉仓库，内容停在 9/8）；已改绑为主仓库
+`master`、发布目录 `.`。
 
 | 项目 | 命令 | 实测结果 | 判定 |
 | :--- | :--- | :--- | :--- |
