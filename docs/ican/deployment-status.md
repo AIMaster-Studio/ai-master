@@ -12,14 +12,48 @@
 
 ---
 
-## 1. 部署契约表（含最后实测时间 / 实测人）
+## 0. 现行状态（2026-09-13 复核，**本节优先于以下各节**）
+
+**后端上线方式已更换，旧备选端已废弃。** §1–§3 描述的是**旧方案（樱花隧道 + 自签证书 + Netlify 备选）**，
+其中"命令行验收一律用 `curl -sk`"的做法**已被明令禁止**，请勿再照做。
+
+| 项 | 旧方案（§1–§3） | **现行方案** |
+| :--- | :--- | :--- |
+| 公网出口 | 樱花隧道（frp） | **cloudflared 快速隧道**（Cloudflare Tunnel） |
+| 证书 | **自签，不受信** ⇒ 浏览器 `ERR_CERT_AUTHORITY_INVALID` **永久拦截** | **受信** ⇒ 不加任何绕过开关即 HTTP 200 |
+| 旧备选端（Netlify） | "唯一备选端" | ❌ **已废弃，不再引用**（见 §1 说明） |
+| 验收口径 | `curl -sk` | **禁止 `-k` / `--insecure` / `-SkipCertificateCheck` / 浏览器忽略证书开关** |
+| 演示可用性 | ❌ 评委浏览器打不开 | ✅ 浏览器级实测通过 |
+
+**为什么禁止绕过开关**：`-k` 关掉了证书校验，于是"能取到字节"被误当成"评委能用"。
+旧方案正是栽在这里 —— **脚本层 200，浏览器层被拦**。
+**任何为了拿到结果而关掉的开关，其结果不得用于证明该开关所保护的性质。**
+
+**现行验收（四条，缺一不可）**
+```powershell
+# ① 证书受信 + 连通（exit 60 = 不受信 = 不可用；-4 避免 IPv6 回退造成的假超时）
+curl.exe -4 -s -o NUL -w '%{http_code}' <URL>/api/status
+# ② 模型身份
+curl.exe -4 -s <URL>/api/status            # ai.model 应为 deepseek-flash
+# ③ 客户端是修复版：搜 API_TIMEOUT_MS = 60000 命中、搜 abort(),8000 不命中
+# ④ 浏览器真答一题提交：6–10 秒内出 AI 评语，且表单不被清空（必须用浏览器，不能用 curl 代替）
+```
+
+**入口地址不写入仓库**：快速隧道 URL **每次重启都会变**，不作为固定地址分发。
+现场演示当天用 `.orchestrator/scripts/start-public.ps1` 一键生成并当场验收。
+
+**👉 现场执行见 `.orchestrator/deliverables/RUNBOOK-demo-day.md`**（开演前检查、兜底顺序、演示后必须轮换密钥）。
+
+---
+
+## 1. 部署契约表（**历史记录 —— 旧方案，见 §0**）
 
 | 层 | 平台 | 地址 | 契约状态 | 最后实测时间 | 实测人 | 本轮实测结果 | 契约规则 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **前端（主）** | GitHub Pages | `https://aimaster-studio.github.io/ai-master/` | ✅ 在线 | 2026-09-12 14:29 | A | HTTP **200** / 760ms | **唯一前端真源。** push `master` 触发 `.github/workflows/pages.yml` 自动部署 `frontend/`。 |
 | **前端（备用）** | Cloudflare Pages | `https://ai-master-aw5.pages.dev/` | ✅ 在线（冻结） | 2026-09-12 14:29 | A | HTTP **200** / 3092ms | **冻结，只读回滚点。** 不主动更新，不做"顺手也部署"。 |
-| **后端（主）** | 本机 8787 + 樱花隧道 | `https://<TUNNEL_HOST>:<PORT>`（自签证书，需 `curl -sk`；**真实入口不随公开仓库分发，见内部运维文档 `COLLAB.md` §6**） | ✅ 在用 | 2026-09-12 14:29 | A | `/api/status` **200** / 558ms；`POST /api/explanation` → **`mode:"ai"`**（31.6s） | 真源 = 本机 `node server/index.js`（8787）。**隧道只是出口，隧道挂了等于后端挂了。** 一键启动见 `scripts/start-backend.ps1`。 |
-| **后端（备选）** | Netlify Functions | `effervescent-gingersnap-d27d31.netlify.app` | ⚠️ 服务已恢复（已改绑主仓库 `master`）；**AI 链路因 Key 401 未通** | 2026-09-12 16:18 | A | 静态 `/index.html`、`/frontend/**` **200**；`/api/status` **200**；`POST /api/explanation` → **`mode:"fallback-local"` + `aiErrorCode:"provider-status-401"`** | **换 Key 前不得作为验收依据。** 根因见 §4.2 / R-003。**唯一备选端 = 本行**；另有一个新建站点（空站、从未成功发布）已废弃，不作为任何依据。 |
+| **后端（主）** | 本机 8787 + **cloudflared 快速隧道** | **不写入仓库**（URL 每次重启会变；当天用 `.orchestrator/scripts/start-public.ps1` 生成） | ✅ 在用 | 2026-09-13 | 队长 | 证书**受信**（不带任何绕过开关即 HTTP 200）；`ai.model = deepseek-flash`；`POST /api/explanation` → **`mode:"ai"`**、`aiErrorCode` 空、墙钟 5.9–10.2s；浏览器级 3/3 无重置 | 真源 = 本机 `node server/index.js`（**绑 `127.0.0.1`，绝不设 `PORT`**）。**隧道只是出口，隧道挂了等于后端挂了。** ⚠️ 旧行的"樱花隧道 + 自签证书 + `curl -sk`"**已作废，见 §0**。 |
+| **后端（备选）** | ~~Netlify Functions~~ **已废弃** | ~~`effervescent-gingersnap-d27d31.netlify.app`~~ **不再引用** | ❌ **不作为演示入口** | 2026-09-13 | 队长 | 落地页唯一入口 `openmaic-ext/warp-gate.html` → **404**（评委走不到产品）；产品页本身 200；线上客户端仍为**修前构建**（含 `abort(),8000`、无 `API_TIMEOUT_MS`）；`ai.model` 仍为 `deepseek-v4-pro` | **该站点无法重新部署**（无 token、无仓库写权限、无 `.netlify` 目录），且 `netlify.toml` 的 `[build.environment]` 对函数运行时不可见 ⇒ **"不重新部署还能稳定换模型"这条路不存在**。**已从演示材料中撤下该 URL。** 若将来要重启该端，须先在站点级变量（Functions scope）设 `DEEPSEEK_MODEL=deepseek-flash` 并重新部署，部署后以 `/api/status.ai.model` 验收。 |
 
 > 判据：**`/api/status` 200 ≠ 后端可用**（只说明配置项存在）。AI 链路通过的唯一标准是
 > `POST /api/explanation` 返回 `mode:"ai"`（`ACCEPTANCE.md` §1.1 第 3 条）。
