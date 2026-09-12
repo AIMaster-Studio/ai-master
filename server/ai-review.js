@@ -24,6 +24,22 @@ function validateConfig(body, current) {
   return { baseUrl: canonicalUrl, model, apiKey };
 }
 
+/**
+ * 把上游失败归类成一个**不含密钥、不含上游响应体**的短码，用于验收定位。
+ * 背景（REVIEW.md R-003）：Netlify 备选端 `mode:"fallback-local"` 的根因一度无法定位，
+ * 因为降级响应里没有任何失败类型信息。这里补一个长期有效的诊断字段，
+ * 不输出密钥、不输出上游正文，只输出失败类别（401/429/网络/超时/输出不合规）。
+ */
+function classifyAiFailure(error) {
+  const status = error && error.providerStatus;
+  if (Number.isInteger(status)) return 'provider-status-' + status;
+  const name = error && error.name;
+  if (name === 'TimeoutError' || name === 'AbortError') return 'timeout';
+  const message = error && error.message ? String(error.message) : '';
+  if (message === 'invalid-output' || message === 'invalid-schema') return message;
+  return 'network';
+}
+
 async function reviewExplanation(text, module, local, config, fetchImpl = fetch) {
   if (!local.eligible || !publicConfig(config).configured) return { ...local, mode: 'local', accepted: local.eligible };
   try {
@@ -38,7 +54,7 @@ async function reviewExplanation(text, module, local, config, fetchImpl = fetch)
           { role: 'user', content: JSON.stringify({ task: module.prompt, objective: module.objective, concepts: module.concepts, reference: module.summary, studentExplanation: text }) }
         ] })
     });
-    if (!response.ok) throw new Error('provider-status');
+    if (!response.ok) throw Object.assign(new Error('provider-status'), { providerStatus: response.status });
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content;
     if (typeof raw !== 'string' || raw.length > 16000) throw new Error('invalid-output');
@@ -49,13 +65,38 @@ async function reviewExplanation(text, module, local, config, fetchImpl = fetch)
     return { ...local, score: result.score, accepted, mode: 'ai',
       feedback: result.feedback.slice(0, 1000), followUp: result.followUp.slice(0, 500),
       checks: [...local.checks, { label: 'AI 内容复评', pass: accepted, detail: result.factualCorrect ? '内容评分 ' + result.score + '/100' : '检测到需要修订的事实表述' }] };
-  } catch {
+  } catch (error) {
     // AI 复评失败时不自动通关：明确告知用户需要重试，不计入完成状态。
-    return { ...local, mode: 'fallback-local', accepted: false,
+    // aiErrorCode 是给验收用的失败类别（不含密钥/上游正文），见 classifyAiFailure。
+    return { ...local, mode: 'fallback-local', accepted: false, aiErrorCode: classifyAiFailure(error),
       feedback: 'AI 复评当前不可用，本次讲解未通过评审。请检查网络或模型配置后重新提交，不要以本地规则结果作为通关依据。',
       followUp: local.followUp,
       checks: [...local.checks, { label: 'AI 内容复评', pass: false, detail: 'AI 服务暂不可用，需重试后才能判定通关' }] };
   }
 }
 
-module.exports = { publicConfig, validateConfig, reviewExplanation };
+// 真正的上游探活（REVIEW.md R-003 建议 2）：/api/status 的 configured 只说明"配置项存在"，
+// 不说明"上游连通"。这里用一次极小的 chat 调用实测上游，结果缓存 1 分钟，避免被刷量。
+// 通过 /api/status?probe=1 暴露，默认不探活（默认 status 保持快速且不产生上游费用）。
+const REACHABILITY_TTL_MS = 60000;
+let reachabilityCache = { key: '', at: 0, value: false };
+
+async function probeReachable(config, fetchImpl = fetch, now = Date.now()) {
+  if (!publicConfig(config).configured) return false;
+  const key = String(config.baseUrl || '') + '|' + String(config.model || '');
+  if (reachabilityCache.key === key && now - reachabilityCache.at < REACHABILITY_TTL_MS) return reachabilityCache.value;
+  let value = false;
+  try {
+    const response = await fetchImpl(config.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + config.apiKey },
+      redirect: 'error', signal: AbortSignal.timeout(10000),
+      body: JSON.stringify({ model: config.model, temperature: 0, max_tokens: 1, messages: [{ role: 'user', content: 'ping' }] })
+    });
+    value = response.ok === true;
+  } catch { value = false; }
+  reachabilityCache = { key, at: now, value };
+  return value;
+}
+
+module.exports = { publicConfig, validateConfig, reviewExplanation, classifyAiFailure, probeReachable };
