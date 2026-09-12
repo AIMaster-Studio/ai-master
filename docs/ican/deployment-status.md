@@ -18,7 +18,7 @@
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **前端（主）** | GitHub Pages | `https://aimaster-studio.github.io/ai-master/` | ✅ 在线 | 2026-09-12 14:29 | A | HTTP **200** / 760ms | **唯一前端真源。** push `master` 触发 `.github/workflows/pages.yml` 自动部署 `frontend/`。 |
 | **前端（备用）** | Cloudflare Pages | `https://ai-master-aw5.pages.dev/` | ✅ 在线（冻结） | 2026-09-12 14:29 | A | HTTP **200** / 3092ms | **冻结，只读回滚点。** 不主动更新，不做"顺手也部署"。 |
-| **后端（主）** | 本机 8787 + 樱花隧道 | `https://frp-end.com:45695`（自签证书，需 `curl -sk`） | ✅ 在用 | 2026-09-12 14:29 | A | `/api/status` **200** / 558ms；`POST /api/explanation` → **`mode:"ai"`**（31.6s） | 真源 = 本机 `node server/index.js`（8787）。**隧道只是出口，隧道挂了等于后端挂了。** 一键启动见 `scripts/start-backend.ps1`。 |
+| **后端（主）** | 本机 8787 + 樱花隧道 | `https://<TUNNEL_HOST>:<PORT>`（自签证书，需 `curl -sk`；**真实入口不随公开仓库分发，见内部运维文档 `COLLAB.md` §6**） | ✅ 在用 | 2026-09-12 14:29 | A | `/api/status` **200** / 558ms；`POST /api/explanation` → **`mode:"ai"`**（31.6s） | 真源 = 本机 `node server/index.js`（8787）。**隧道只是出口，隧道挂了等于后端挂了。** 一键启动见 `scripts/start-backend.ps1`。 |
 | **后端（备选）** | Netlify Functions | `effervescent-gingersnap-d27d31.netlify.app` | ⚠️ 服务已恢复（已改绑主仓库 `master`）；**AI 链路因 Key 401 未通** | 2026-09-12 16:18 | A | 静态 `/index.html`、`/frontend/**` **200**；`/api/status` **200**；`POST /api/explanation` → **`mode:"fallback-local"` + `aiErrorCode:"provider-status-401"`** | **换 Key 前不得作为验收依据。** 根因见 §4.2 / R-003。**唯一备选端 = 本行**；另有一个新建站点（空站、从未成功发布）已废弃，不作为任何依据。 |
 
 > 判据：**`/api/status` 200 ≠ 后端可用**（只说明配置项存在）。AI 链路通过的唯一标准是
