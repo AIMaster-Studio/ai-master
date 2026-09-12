@@ -10,7 +10,7 @@
 
 - [它做什么](#它做什么)
 - [快速开始](#快速开始)
-- [部署](#部署cloudflare-pages--pages-functions)
+- [部署](#部署cloudflare-pages--_workerjs-代理)
 - [🔐 密钥红线](#-密钥红线必读)
 - [架构与数据](#架构与数据)
 - [验证与测试](#验证与测试)
@@ -77,7 +77,7 @@ npm run pack         # Windows x64 打包
 
 ---
 
-## 部署（Cloudflare Pages + Pages Functions）
+## 部署（Cloudflare Pages + `_worker.js` 代理）
 
 ### ⚠️ `/api/*` 是靠 `frontend/_worker.js` 实现的 —— 别搞错机制
 
@@ -144,15 +144,22 @@ curl.exe -4 -sI https://ai-master-aw5.pages.dev/api/status | findstr /i x-aimast
 
 **④ 为什么不用 `build-info.js` 的 SHA 当判据**：那个 SHA 是 **GitHub Pages 的 workflow** 在部署前改写的，**`wrangler pages deploy` 不会改它**（本地值一直是 `sha:"dev-local"`）。用它当"这次构建上线了吗"的判据，会得到**一条永远失败的检查** —— 而恒假的检查会被当噪音忽略，并连带把前三条也一起忽略掉（见 R25/R33）。
 
-**判断"这次部署真的上去了"，请用同一构建的另一产物对账**：
+**判断"这次部署真的上去了"，请用同一构建的另一产物对账 —— 但必须按归一化后的值比。**
 
-```bash
-# 线上字节数 vs 本地字节数，两个数必须一致
-curl.exe -4 -s -o NUL -w "%{size_download}\n" https://ai-master-aw5.pages.dev/static/js/learning-workspace.js
-(Get-Item frontend/static/js/learning-workspace.js).Length
+⚠️ **不要直接比字节数。** 本仓库工作树是 **CRLF**、git 里与线上是 **LF**，同一份文件会算出**两个体积**，差值恰好等于 CRLF 行数（`learning-workspace.js` 本地就有 304 个 CRLF ⇒ 一次**完美**的部署也会报"差 304"）。**这会把一条恒假的检查换成一条会假失败的检查，比原来更糟。**
+
+```powershell
+# 线上取回，把 \r 去掉后算 sha1，再与本地同法算的值比 —— 两个哈希必须一致
+curl.exe -4 -s -o $env:TEMP\dep.js https://ai-master-aw5.pages.dev/static/js/learning-workspace.js
+$remote = (Get-Content $env:TEMP\dep.js -Raw) -replace "`r", ""
+$local  = (Get-Content frontend/static/js/learning-workspace.js -Raw) -replace "`r", ""
+"remote : $(([System.BitConverter]::ToString((New-Object Security.Cryptography.SHA1Managed).ComputeHash([Text.Encoding]::UTF8.GetBytes($remote)))) -replace '-','')"
+"local  : $(([System.BitConverter]::ToString((New-Object Security.Cryptography.SHA1Managed).ComputeHash([Text.Encoding]::UTF8.GetBytes($local)))) -replace '-','')"
 ```
 
-> `/api/*` 由 `functions/api/[[path]].js` **代理到本机隧道**，所以**它依赖本机后端在线**。上游不通时它返回**明确的 502 与中文说明，不会伪装成"降级仍可用"**。
+（若嫌麻烦，**只留上面第 ④ 条的 `x-aimaster-proxied-by` 响应头也行** —— 它已经能回答"本次部署的代理层在不在跑"，而且没有行尾陷阱。）
+
+> `/api/*` 由 **`frontend/_worker.js`**（Advanced mode）**代理到本机隧道**，所以**它依赖本机后端在线**。上游不通时它返回**明确的 502 与中文说明，不会伪装成"降级仍可用"**。
 
 ---
 
@@ -188,7 +195,7 @@ curl.exe -4 -s -o NUL -w "%{size_download}\n" https://ai-master-aw5.pages.dev/st
 | 记录 | SQLite（本机）／ localStorage（静态模式） | 本机访客档案，**不声称云同步** |
 | 讲解评价 | 本地规则（7 项筛查）＋ 可选模型复评 | 显示来源；失败明确降级 |
 | 客观判题 | 服务端预设标答 | 不由模型决定答案 |
-| 公网出口 | cloudflared 隧道（URL 每次重启变化）｜ Cloudflare Pages Functions 代理 | 隧道挂了等于后端挂了 |
+| 公网出口 | cloudflared 隧道（URL 每次重启变化）｜ Cloudflare Pages `_worker.js` 代理 | 隧道挂了等于后端挂了 |
 
 ---
 
