@@ -94,6 +94,11 @@ function createApp(options = {}) {
   // 公网部署：Render 等托管平台通过 PORT 暴露网络时放开本机 Host 限制；本机模式保持白名单，防 DNS rebinding / 跨站调用。测试可通过 allowRemote 覆盖此值。
   const allowRemote = options.allowRemote !== undefined ? options.allowRemote
     : Boolean(process.env.PORT) || process.env.AIMASTER_ALLOW_REMOTE === '1';
+  // 显式 Host 允许名单（AIMASTER_ALLOWED_HOSTS，逗号分隔，如隧道入口 host:port）：
+  // 仅名单内的 Host 放行，其余仍走本机白名单。未设置该变量时为空数组，行为与原先完全一致（默认安全性不放松）；
+  // 也不影响监听绑定（本机模式始终 127.0.0.1，见文件底部 listen 逻辑）。
+  const allowedHosts = String(process.env.AIMASTER_ALLOWED_HOSTS || '')
+    .split(',').map(item => item.trim().toLowerCase()).filter(Boolean);
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
   const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
@@ -378,7 +383,7 @@ function createApp(options = {}) {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     try {
       const host = req.headers.host || '';
-      if (!options.skipHostCheck && !allowRemote && !/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host)) fail(403, '服务仅供本机使用。');
+      if (!options.skipHostCheck && !allowRemote && !allowedHosts.includes(host.toLowerCase()) && !/^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/.test(host)) fail(403, '服务仅供本机使用。');
       const url = new URL(req.url, 'http://' + host);
       if (url.pathname.startsWith('/api/')) await api(req, res, url); else staticFile(req, res, url);
     } catch (error) {

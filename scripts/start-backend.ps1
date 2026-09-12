@@ -8,6 +8,11 @@
   3) 检查樱花隧道进程（frpc.exe / SakuraFrpService.exe）是否存活
   4) 轮询公网隧道端点 /api/status 直到 200（隧道出口，自签证书走 curl -sk）
 
+  隧道可达（T6）：启动后端前，若未显式设置 AIMASTER_ALLOWED_HOSTS，则从已解析的公网入口
+  推导 host:port 传给后端进程 —— 后端按此名单放行隧道 Host，监听绑定保持 127.0.0.1 不变。
+  裸起 node server/index.js 时也可用 .env 的 AIMASTER_ALLOWED_HOSTS（逗号分隔）达成同样效果；
+  .env / 环境变量里都不要设 PORT（PORT 会把绑定推到 0.0.0.0 并整体放开 Host 校验）。
+
   任一必过环节失败 → 退出码非 0（0 成功 / 1 本机未就绪 / 2 隧道未就绪 / 3 隧道端点未配置）。
   说明：`/api/status` 200 只代表服务在跑，不代表 AI 链路可用。
   真正的 AI 链路判定请接着跑：node scripts/check-connectivity.mjs --insecure
@@ -114,6 +119,17 @@ if (Test-PortListening -PortNumber $Port) {
   Write-Host ("  已在监听 :{0}，跳过启动" -f $Port)
 } else {
   Write-Host ("  启动 node server/index.js（端口 {0}）..." -f $Port)
+  # T6 / R-202：从已解析的公网入口推导 Host 允许名单（真实入口只存在于传参/env/.local，不进脚本本体）。
+  # 仅在用户未显式设置 AIMASTER_ALLOWED_HOSTS 时推导；Start-Process 会把当前环境变量继承给后端子进程。
+  if (-not $env:AIMASTER_ALLOWED_HOSTS -and $PublicStatusUrl) {
+    try {
+      $tunnelUri = [Uri]$PublicStatusUrl
+      if ($tunnelUri.Host) {
+        if ($tunnelUri.IsDefaultPort) { $env:AIMASTER_ALLOWED_HOSTS = $tunnelUri.Host }
+        else { $env:AIMASTER_ALLOWED_HOSTS = "$($tunnelUri.Host):$($tunnelUri.Port)" }
+      }
+    } catch { }
+  }
   Start-Process -FilePath $nodePath -ArgumentList 'server/index.js' -WorkingDirectory $projectPath -WindowStyle Hidden
 }
 
