@@ -5,6 +5,11 @@
 // B 实测平台在 ~30.7–30.9s 处截断函数（HTTP 504），故应用层超时预算留 ~5s 余量提前降级，
 // 让慢请求在平台截断前走 fallback-local（HTTP 200），而不是裸 504。本机默认仍 60000。
 process.env.AI_REVIEW_TIMEOUT_MS ||= '25000';
+// 模型默认值同样焊进函数入口：netlify.toml 的 [build.environment] 变量**不会**下发到 Functions 运行时
+// （Netlify 文档：netlify.toml 声明的环境变量 not available to serverless functions；运行时须站点级且 scope 含 Functions），
+// 只靠 netlify.toml 会让冷启动回退 store.js 的 deepseek-v4-pro。这里让部署产物自带默认值，
+// 与上一行同一手法；站点级变量若已设置仍优先（||= 不覆盖已有值）。
+process.env.DEEPSEEK_MODEL ||= 'deepseek-flash';
 const { Readable } = require('node:stream');
 
 let app = null;
