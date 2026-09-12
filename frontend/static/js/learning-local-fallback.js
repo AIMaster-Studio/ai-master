@@ -251,6 +251,7 @@
     },
     explanation: async function (body) {
       const state = loadState();
+      ensurePlan(state); // 兜底 state 必须带 plan，否则 applyState 后 UI 会渲染回设置页
       const result = await aiReviewExplanation(body.text, body.moduleId);
       state.progress = state.progress || {};
       state.progress[body.moduleId] = state.progress[body.moduleId] || {};
