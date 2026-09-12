@@ -46,7 +46,7 @@ async function reviewExplanation(text, module, local, config, fetchImpl = fetch)
     const response = await fetchImpl(config.baseUrl.replace(/\/+$/, '') + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + config.apiKey },
-      redirect: 'error', signal: AbortSignal.timeout(60000),
+      redirect: 'error', signal: AbortSignal.timeout(Number(process.env.AI_REVIEW_TIMEOUT_MS) || 60000),
       body: JSON.stringify({ model: config.model, temperature: 0, max_tokens: 4096,
         response_format: { type: 'json_object' },
         messages: [
