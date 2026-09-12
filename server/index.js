@@ -28,7 +28,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID, randomInt } = require('node:crypto');
 const { openStore } = require('./store');
-const { publicConfig, validateConfig, reviewExplanation } = require('./ai-review');
+const { publicConfig, validateConfig, reviewExplanation, probeReachable } = require('./ai-review');
 
 const ROOT = path.resolve(__dirname, '..');
 const DAY = 86400000;
@@ -190,7 +190,14 @@ function createApp(options = {}) {
     const send = payload => json(res, 200, { ok: true, ...payload });
     const save = () => store.save(user.id, state);
     if (req.method === 'GET') {
-      if (route === 'status') return send({ mode: 'server', ai: publicConfig(await store.config()), version: 'ican-1.0' });
+      if (route === 'status') {
+        const config = await store.config();
+        const payload = { mode: 'server', ai: publicConfig(config), version: 'ican-1.0' };
+        // 默认不探活（保持 status 快速、零上游费用）。?probe=1 时实测上游连通性并缓存 1 分钟。
+        // 注意：即便 aiReachable=true，验收仍以 POST /api/explanation 返回 mode:"ai" 为准（ACCEPTANCE.md §1.1）。
+        if (url.searchParams.get('probe') === '1') payload.aiReachable = await probeReachable(config, options.fetchImpl);
+        return send(payload);
+      }
       if (route === 'catalog') return send(publicCatalog(catalog));
       if (route === 'state') return send({ state, user });
       if (route === 'quiz') {
