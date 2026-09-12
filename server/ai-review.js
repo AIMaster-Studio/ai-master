@@ -35,9 +35,35 @@ function classifyAiFailure(error) {
   if (Number.isInteger(status)) return 'provider-status-' + status;
   const name = error && error.name;
   if (name === 'TimeoutError' || name === 'AbortError') return 'timeout';
+  // JSON.parse 失败（SyntaxError）单列短码：典型场景是 max_tokens 撞顶导致 content 为空串。
+  // 之前一律归入 'network'，把解析失败伪装成网络故障，现场排障会被带偏。
+  if (name === 'SyntaxError') return 'invalid-json';
   const message = error && error.message ? String(error.message) : '';
   if (message === 'invalid-output' || message === 'invalid-schema') return message;
   return 'network';
+}
+
+/**
+ * 容忍 JSON 之后的尾随内容（实测约 4.8% 的合规响应因模型在 JSON 后追加说明文字而被误降级）。
+ * 先按标准 JSON.parse 解析；失败时提取第一个完整 JSON 对象（花括号配对、跳过字符串字面量），
+ * 忽略其后的一切内容。提取不出合法对象则原样抛出 SyntaxError（由 classifyAiFailure 归为 'invalid-json'）。
+ */
+function parseProviderJson(text) {
+  try { return JSON.parse(text); } catch { /* 继续尝试提取首个 JSON 对象 */ }
+  const start = text.indexOf('{');
+  if (start !== -1) {
+    let depth = 0, inString = false, escaped = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (escaped) { escaped = false; continue; }
+      if (ch === '\\') { if (inString) escaped = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === '{') depth++;
+      else if (ch === '}') { depth--; if (depth === 0) return JSON.parse(text.slice(start, i + 1)); }
+    }
+  }
+  throw new SyntaxError('Unexpected token in provider response');
 }
 
 async function reviewExplanation(text, module, local, config, fetchImpl = fetch) {
@@ -58,7 +84,7 @@ async function reviewExplanation(text, module, local, config, fetchImpl = fetch)
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content;
     if (typeof raw !== 'string' || raw.length > 16000) throw new Error('invalid-output');
-    const result = JSON.parse(raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, ''));
+    const result = parseProviderJson(raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, ''));
     if (!Number.isInteger(result.score) || result.score < 0 || result.score > 100 || typeof result.factualCorrect !== 'boolean' ||
         typeof result.feedback !== 'string' || !result.feedback.trim() || typeof result.followUp !== 'string') throw new Error('invalid-schema');
     const accepted = result.factualCorrect && result.score >= 75;

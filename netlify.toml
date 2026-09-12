@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  DEEPSEEK_MODEL = "deepseek-flash"
 
 [functions]
   directory = "netlify/functions"
