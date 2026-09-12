@@ -100,21 +100,28 @@ function csvCell(value) {
 }
 
 function createApp(options = {}) {
-  // 公网部署：Render 等托管平台通过 PORT 暴露网络时放开本机 Host 限制；本机模式保持白名单，防 DNS rebinding / 跨站调用。测试可通过 allowRemote 覆盖此值。
+  // 安全门的三项输入一律「显式 options 优先，进程环境兜底」：
+  // 判定语义（exposed / 回环要求 / 常量时间令牌比较 / fail-closed）一个字不改，只是把「环境」变成可注入的输入。
+  // 为什么必须可注入：本模块顶层会加载 .env，而测试是与应用同进程构造的；若这三项只读环境，
+  // 运行者本机 .env 里一条 AIMASTER_ALLOWED_HOSTS 就会把 exposed 翻成 true，让 /api/ai/config 写入变 403，
+  // 打死与本意无关的用例（2026-09-12 实测：ai-master-demo 树 2 例失败；ai-master-clean 无 .env 则通过）。
+  // 反过来，注入也让「已暴露」语义可被显式、确定地测试，而不是靠设置环境变量碰运气。
   const allowRemote = options.allowRemote !== undefined ? options.allowRemote
     : Boolean(process.env.PORT) || process.env.AIMASTER_ALLOW_REMOTE === '1';
   // 显式 Host 允许名单（AIMASTER_ALLOWED_HOSTS，逗号分隔，如隧道入口 host:port）：
   // 仅名单内的 Host 放行，其余仍走本机白名单。未设置该变量时为空数组，行为与原先完全一致（默认安全性不放松）；
   // 也不影响监听绑定（本机模式始终 127.0.0.1，见文件底部 listen 逻辑）。
-  const allowedHosts = String(process.env.AIMASTER_ALLOWED_HOSTS || '')
-    .split(',').map(item => item.trim().toLowerCase()).filter(Boolean);
+  const allowedHosts = (options.allowedHosts !== undefined
+    ? options.allowedHosts
+    : String(process.env.AIMASTER_ALLOWED_HOSTS || '').split(','))
+    .map(item => String(item).trim().toLowerCase()).filter(Boolean);
   // "对外暴露"判定：放开 Host 白名单或显式配置了允许名单，都说明这层保护已经不再限制来源。
   // 本机热切模型的工作流（未暴露，仅 127.0.0.1 可达）不受影响；暴露模式下回环对端不再有鉴别力，写入必须带令牌。
   const exposed = allowRemote || allowedHosts.length > 0;
   function configTokenValid(req) {
     // 暴露模式下写配置所需的显式令牌（AIMASTER_CONFIG_TOKEN）。未配置即视为不可写（fail-closed，默认安全）。
     // 用常量时间比较，且"未配置"与"令牌错误"返回同一句话，避免把服务端配置状态泄露给探测者。
-    const expected = String(process.env.AIMASTER_CONFIG_TOKEN || '');
+    const expected = options.configToken !== undefined ? String(options.configToken) : String(process.env.AIMASTER_CONFIG_TOKEN || '');
     if (!expected) return false;
     const supplied = Buffer.from(String(req.headers['x-aimaster-config-token'] || ''), 'utf8');
     const wanted = Buffer.from(expected, 'utf8');

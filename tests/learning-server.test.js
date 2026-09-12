@@ -20,8 +20,16 @@ const mockAiProvider = async () => ({
   json: async () => ({ choices: [{ message: { content: JSON.stringify({ score: 90, factualCorrect: true, feedback: '解释正确，继续测验。', followUp: '如果资料过时，如何核验？' }) } }] })
 });
 
+// 测试夹具：把安全门的三项输入显式钉死（未暴露 / 无允许名单 / 无令牌），
+// 使整套测试的结果**不依赖运行者本机 .env 或 shell 环境**。
+// 背景（2026-09-12 实测）：server/index.js 顶层会加载 .env，一旦其中有 AIMASTER_ALLOWED_HOSTS，
+// exposed 就翻成 true，/api/ai/config 写入被判 403，打死「cross-origin writes…」与
+// 「changing model endpoints…」两条本意与暴露无关的用例（该树 2 例红、无 .env 的树 33/33 绿）。
+// 需要验证「已暴露/带令牌」语义的用例，显式传 allowRemote / allowedHosts / configToken 覆盖即可，
+// 不要靠设置环境变量——那正是本次事故的成因。
+const HERMETIC_SECURITY = { allowRemote: false, allowedHosts: [], configToken: '' };
 async function start(t, options = {}) {
-  const app = createApp({ dbPath: ':memory:', ...options });
+  const app = createApp({ dbPath: ':memory:', ...HERMETIC_SECURITY, ...options });
   app.server.listen(0, '127.0.0.1');
   await once(app.server, 'listening');
   const base = 'http://127.0.0.1:' + app.server.address().port;
@@ -231,12 +239,12 @@ test('export retains the original text and feedback for every explanation revisi
 test('SQLite persists profiles across server restart', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aimaster-test-'));
   const filename = path.join(dir, 'learning.sqlite');
-  const first = createApp({ dbPath: filename, forceSqlite: true });
+  const first = createApp({ dbPath: filename, forceSqlite: true, ...HERMETIC_SECURITY });
   const identity = await first.store.guest();
   await first.store.save(identity.user.id, { profile, plan: { title: '持久化' }, progress: {}, attempts: [], wrongAnswers: [], diagnostic: null });
   await first.store.register(identity.user.id, '持久化同学', 'test-password');
   first.store.close();
-  const second = createApp({ dbPath: filename, forceSqlite: true });
+  const second = createApp({ dbPath: filename, forceSqlite: true, ...HERMETIC_SECURITY });
   const loginResult = await second.store.login('持久化同学', 'test-password');
   assert.equal((await second.store.state(loginResult.user.id)).plan.title, '持久化');
   second.store.close();
@@ -383,4 +391,55 @@ test('public host and https origin are only accepted when remote access is enabl
   const plan = await publicRequest(remote, '/api/plan', profile);
   assert.equal(plan.status, 200);
   assert.equal(plan.data.ok, true);
+});
+
+test('config writes stay gated by exposure + token + loopback peer, and are immune to ambient env', async t => {
+  const { Readable } = require('node:stream');
+  const keys = ['AIMASTER_ALLOWED_HOSTS', 'AIMASTER_ALLOW_REMOTE', 'AIMASTER_CONFIG_TOKEN', 'PORT'];
+  const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  // 故意污染进程环境：这正是「测试不 hermetic」的成因（本机 .env / shell 里的一条允许名单就够）。
+  // 下面的断言要求夹具压过这些环境值——若夹具失效（例如应用只读环境），本用例必须变红。
+  process.env.AIMASTER_ALLOWED_HOSTS = 'dead.example:1234';
+  process.env.AIMASTER_ALLOW_REMOTE = '1';
+  process.env.AIMASTER_CONFIG_TOKEN = 'ambient-token';
+  delete process.env.PORT;
+  const writeConfig = async (app, { peer = '127.0.0.1', token } = {}) => {
+    const req = Readable.from([JSON.stringify({ baseUrl: 'https://api.example.com/v1', model: 'probe-model', apiKey: 'probe-secret' })]);
+    req.method = 'POST'; req.url = '/api/ai/config';
+    req.headers = { host: '127.0.0.1', origin: 'http://127.0.0.1', 'content-type': 'application/json' };
+    if (token !== undefined) req.headers['x-aimaster-config-token'] = token;
+    req.socket = { remoteAddress: peer };
+    const chunks = [];
+    const res = {
+      statusCode: 200, headers: {}, headersSent: false,
+      setHeader(name, value) { this.headers[name.toLowerCase()] = value; },
+      getHeader(name) { return this.headers[name.toLowerCase()]; },
+      writeHead(status, headers) { this.statusCode = status; if (headers) for (const [k, v] of Object.entries(headers)) this.headers[k.toLowerCase()] = v; this.headersSent = true; },
+      write(chunk) { chunks.push(Buffer.from(chunk)); return true; },
+      end(chunk) { if (chunk) chunks.push(Buffer.from(chunk)); this.headersSent = true; },
+      on() { return this; }, once() { return this; }, removeListener() { return this; }
+    };
+    await app.handleRequest(req, res);
+    return { status: res.statusCode, body: Buffer.concat(chunks).toString('utf8') };
+  };
+  try {
+    // ① 夹具默认＝未暴露：环境里的允许名单/暴露标记/令牌都不得生效 ⇒ 回环写入放行
+    const hermetic = await start(t, {});
+    assert.equal((await writeConfig(hermetic)).status, 200);
+    // ② 显式暴露（允许名单），夹具令牌为空 ⇒ fail-closed；环境里的 ambient-token 不能解锁
+    const gated = await start(t, { allowedHosts: ['dead.example:1234'] });
+    assert.equal((await writeConfig(gated)).status, 403);
+    assert.equal((await writeConfig(gated, { token: 'ambient-token' })).status, 403);
+    // ③ 显式暴露 + 显式令牌：无令牌/错令牌 403，正确令牌 200 且不回显密钥
+    const opened = await start(t, { allowedHosts: ['dead.example:1234'], configToken: 'right-token' });
+    assert.equal((await writeConfig(opened)).status, 403);
+    assert.equal((await writeConfig(opened, { token: 'wrong-token' })).status, 403);
+    const accepted = await writeConfig(opened, { token: 'right-token' });
+    assert.equal(accepted.status, 200);
+    assert.ok(!accepted.body.includes('probe-secret'), '令牌正确时也不得回显密钥');
+    // ④ 非回环对端：即便已暴露且令牌正确，仍须 403（回环要求不得被令牌旁路）
+    assert.equal((await writeConfig(opened, { peer: '192.168.1.5', token: 'right-token' })).status, 403);
+  } finally {
+    for (const key of keys) { if (saved[key] === undefined) delete process.env[key]; else process.env[key] = saved[key]; }
+  }
 });
