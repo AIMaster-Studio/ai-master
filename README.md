@@ -42,7 +42,7 @@
 
 ### 在线体验
 
-- 主站：https://ai-master-aw5.pages.dev/
+- 主站：https://ai-master-aw5.pages.dev/ 　（这是 **URL / 子域**，不是项目名；项目名见[部署](#部署cloudflare-pages--_workerjs-代理)一节）
 - 学习教练入口：https://ai-master-aw5.pages.dev/learning-center/
 
 ### 本地：只浏览页面（零依赖、不调用 AI）
