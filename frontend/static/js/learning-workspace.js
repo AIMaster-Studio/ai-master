@@ -19,21 +19,36 @@
   const dialog = $('#workspace-dialog');
   let toastTimer;
 
+  // 客户端超时预算：不得早于服务端自己的预算，否则会在服务端仍在处理时先掐断连接，
+  // 把「还在处理」误判成「后端不可用」。
+  // 依据 server/ai-review.js:49 `AbortSignal.timeout(Number(process.env.AI_REVIEW_TIMEOUT_MS) || 60000)`：
+  //   · 本机服务端预算默认 60000ms；
+  //   · 公网 Netlify 端服务端在 25s 主动降级并返回 200，仍 < 60000ms；
+  //   · 平台 30.00s 硬杀由服务端自己承担，客户端不应对其提前设限。
+  // D-001 实测：原值 8000ms 让任何 >8s 的真实 AI 复评在浏览器端 100% 被 AbortError 掐断。
+  const API_TIMEOUT_MS = 60000;
+  // 只有「后端确实不可达」才允许降级到本地练习模式。超时与 HTTP 真实错误应答都不算——
+  // 本地兜底状态里没有服务端的学习计划，一旦拿它整体重渲染，
+  // 正在等待的讲解、学习航线与用户输入都会从界面上消失（D-001 P0）。
   async function api(path, body) {
-    // 优先尝试后端 API；不可用时降级到本地 localStorage 模式
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(),8000);
+    const timeout = setTimeout(() => controller.abort(),API_TIMEOUT_MS);
     try {
       const response = await fetch('/api/' + path,{method:body === undefined ? 'GET' : 'POST',credentials:'same-origin',headers:body === undefined ? {} : {'Content-Type':'application/json'},body:body === undefined ? undefined : JSON.stringify(body),signal:controller.signal});
-      const data = await response.json().catch(() => { throw new Error('JSON_PARSE_FAIL'); });
+      // 后端正常应答时一律返回 JSON；拿不到 JSON 说明这个源没有可用的 API
+      // （例如静态托管把 /api/* 当普通路径返回 HTML），这种情形才允许走本地模式。
+      const data = await response.json().catch(() => null);
+      if (!data || typeof data !== 'object') throw Object.assign(new Error('当前无法连接学习服务，请检查网络后重试。'),{noApi:true});
       if (!response.ok || !data.ok) throw new Error(typeof data.error === 'string' ? data.error : '请求未完成，请稍后重试。');
       return data;
     } catch (error) {
-      // 后端不可用 → 降级到本地模式
-      if (window.LearningLocalAPI && window.LearningLocalAPI.canHandle(path)) {
+      // 客户端超时：服务端可能仍在处理。明确提示并保留当前视图与用户输入，绝不降级。
+      if (error && error.name === 'AbortError') throw new Error('等待模型复评超时，你的讲解已保留，可以再次提交。');
+      // 连接被拒 / 断网（fetch 抛 TypeError）或该源没有可用 API 时，才降级到本地练习模式。
+      const unreachable = error && (error.name === 'TypeError' || error.noApi === true);
+      if (unreachable && window.LearningLocalAPI && window.LearningLocalAPI.canHandle(path)) {
         return window.LearningLocalAPI.handle(path, body);
       }
-      if (error.name === 'AbortError') throw new Error('请求超时，内容已保留，可以再次提交。');
       throw error;
     } finally { clearTimeout(timeout); }
   }
