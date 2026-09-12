@@ -26,7 +26,7 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { randomUUID, randomInt } = require('node:crypto');
+const { randomUUID, randomInt, timingSafeEqual } = require('node:crypto');
 const { openStore } = require('./store');
 const { publicConfig, validateConfig, reviewExplanation, probeReachable } = require('./ai-review');
 
@@ -48,6 +48,15 @@ function clientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
   const first = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '';
   return first || req.socket.remoteAddress || '';
+}
+function isLoopbackPeer(req) {
+  // 只看 TCP 连接的对端地址，不读任何请求头：X-Forwarded-For / X-Real-IP / Forwarded / Host 都可被调用方任意伪造，
+  // 不能作为鉴权依据；对端地址由内核在三次握手时确定，请求方无法改写。
+  // 注意（实测确认）：本机同时跑隧道连接器时，cloudflared 从 127.0.0.1 连本机，公网请求的对端也是 127.0.0.1，
+  // 所以"对端是回环"只在服务器未对外暴露时才有鉴别力；暴露模式下必须叠加显式令牌，见 createApp 内的写入判定。
+  // 取不到 socket（例如 Netlify Functions 的 mock req）时不算本机，一律走 fail-closed。
+  const address = String(req.socket?.remoteAddress || '');
+  return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
 }
 function reviewDelayDays(correctStreak) {
   const schedule = [1, 3, 7, 14, 30];
@@ -99,6 +108,18 @@ function createApp(options = {}) {
   // 也不影响监听绑定（本机模式始终 127.0.0.1，见文件底部 listen 逻辑）。
   const allowedHosts = String(process.env.AIMASTER_ALLOWED_HOSTS || '')
     .split(',').map(item => item.trim().toLowerCase()).filter(Boolean);
+  // "对外暴露"判定：放开 Host 白名单或显式配置了允许名单，都说明这层保护已经不再限制来源。
+  // 本机热切模型的工作流（未暴露，仅 127.0.0.1 可达）不受影响；暴露模式下回环对端不再有鉴别力，写入必须带令牌。
+  const exposed = allowRemote || allowedHosts.length > 0;
+  function configTokenValid(req) {
+    // 暴露模式下写配置所需的显式令牌（AIMASTER_CONFIG_TOKEN）。未配置即视为不可写（fail-closed，默认安全）。
+    // 用常量时间比较，且"未配置"与"令牌错误"返回同一句话，避免把服务端配置状态泄露给探测者。
+    const expected = String(process.env.AIMASTER_CONFIG_TOKEN || '');
+    if (!expected) return false;
+    const supplied = Buffer.from(String(req.headers['x-aimaster-config-token'] || ''), 'utf8');
+    const wanted = Buffer.from(expected, 'utf8');
+    return supplied.length === wanted.length && timingSafeEqual(supplied, wanted);
+  }
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
   const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
@@ -331,6 +352,10 @@ function createApp(options = {}) {
         return send({ result, state });
       }
       if (route === 'ai/config') {
+        // 模型配置属于本机管理接口：读（GET /api/status）对所有来源开放，写只允许本机操作者。
+        // 未暴露时对端必须是回环；暴露后（隧道/公网部署）回环对端恒真、不再有鉴别力，必须再带 AIMASTER_CONFIG_TOKEN，
+        // 否则一律 403。判定只用 TCP 对端地址 + 环境变量令牌，不接受任何可伪造的请求头。
+        if (!isLoopbackPeer(req) || (exposed && !configTokenValid(req))) fail(403, '此操作仅限在本机执行。');
         limited('config:' + user.id, 20, 60000);
         let config;
         try { config = validateConfig(body, await store.config()); } catch (error) { fail(400, error.message); }
