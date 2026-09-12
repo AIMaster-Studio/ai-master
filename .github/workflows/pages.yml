@@ -22,6 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # R-006：在产物里盖 build 标记（commit short SHA + 构建时间），并注入到各页面。
+      # 主端每次 push 标记都会变化；冻结的 Cloudflare 副本会停在旧值，一眼可辨分叉。
+      - name: Stamp build marker
+        run: python3 scripts/stamp_frontend_build.py "${GITHUB_SHA}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend

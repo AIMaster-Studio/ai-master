@@ -50,10 +50,17 @@ frontend-deploy.zip
 bgm_original.mp3
 *.pages.dev/
 
-# 含密钥的配置文件（不提交，使用 *.example.* 作为模板）
-frontend/static/js/ai-config.js
-frontend/static/js/firebase-config.js
+# 含密钥的配置文件：仓库只保留「无密钥占位版」，真实密钥只写在本地、不提交。
+# 两个占位文件（ai-config.js / firebase-config.js）均随仓库入库，apiKey 为空/占位，
+# 未配置时自动降级（AI 复评走本地规则、数据走 localStorage）。
+# 模板见同目录 *.example.js。（原先把 ai-config.js 排除、却入库 firebase-config.js，
+# 导致干净克隆跑 scripts/verify_frontend_demo.py 必然失败，见 REVIEW.md R-001。）
 
 # DevLog local state
 devlog/.last_commit
 devlog/.cache_pdf/
+
+# 双 Agent 协作文件（本机工作流，不随仓库公开）
+COLLAB.md
+REVIEW.md
+ACCEPTANCE.md
