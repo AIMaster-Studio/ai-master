@@ -98,9 +98,19 @@ powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1
 
 | 编号 | 阻断项 | 严重度 | 状态 |
 | :--- | :--- | :--- | :--- |
-| R-001 | `verify_frontend_demo.py` 在干净仓库必然失败 | P0 | **已修复**（补无密钥 `ai-config.js` 占位并入库） |
+| R-001 | `verify_frontend_demo.py` 在干净仓库必然失败 | P0 | **已修复并上线**（`master` = `6ac6763`；线上 `static/js/ai-config.js` → HTTP 200） |
 | R-002 | 本地后端 + 樱花隧道不通、无自愈 | P0 | **已修复**（一键启动 + 探活脚本；根因 = 本机服务未起） |
 | R-003 | Netlify AI 复评不可用，根因未定位 | P1 | **部分**：诊断字段已加，根因待 Netlify 侧复跑确认 |
 | R-004 | 契约表缺"最后实测时间 / 实测人" | P1 | **已修复**（本文件 §1 两列齐备） |
 | R-005 | 自签证书端点验收条件未显式化 | P2 | **已修复**（本文件 §2） |
-| R-006 | 前端双端无版本标记 | P2 | **已修复**（页脚 build 标记 + 部署时自动盖 SHA） |
+| R-006 | 前端双端无版本标记 | P2 | **已修复并上线**（线上 `static/js/build-info.js` 实测 `sha:"6ac6763"`） |
+
+### 5.1 上线后的线上复核（2026-09-12 15:12，执行人：A）
+
+| 项目 | 命令 | 实测结果 | 判定 |
+| :--- | :--- | :--- | :--- |
+| 前端主端 AI 配置 | `curl https://aimaster-studio.github.io/ai-master/static/js/ai-config.js` | HTTP **200** | ✅ R-001 生效 |
+| 前端主端 build 标记 | `curl .../static/js/build-info.js` | `window.AIMASTER_BUILD = { sha: "6ac6763", builtAt: "2026-09-12T07:12:08Z" }` | ✅ R-006 生效（CI 盖章步骤跑通） |
+| 前端主端入口页 | `curl .../learning-center/` | 页面已含 `build-info.js` | ✅ |
+
+> 推送前已在干净克隆内复跑 G1（pass 33 / fail 0）与前端校验（退出码 0）。
