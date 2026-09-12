@@ -554,6 +554,25 @@ QUESTIONS += [
 
 
 def main() -> None:
+    # 🛡 覆盖保护（2026-09-13 加）：
+    # 本脚本把 46 道题硬编码在 QUESTIONS 里，并直接 write_text 覆盖
+    # frontend/data/quiz_bank.json。而该 JSON 现已扩充到 103 题（含团队新增 57 题
+    # 与 contentNotice 字段）—— 直接运行会把它们全部抹掉，退回 46 题。
+    # 默认拒绝用更少题目覆盖更多题目的现有文件；确需以本脚本重建请显式加 --force。
+    _sys = __import__("sys")
+    if OUT.exists() and "--force" not in _sys.argv:
+        try:
+            _existing = json.loads(OUT.read_text(encoding="utf-8"))
+            _n = len(_existing.get("questions", []))
+        except Exception:
+            _n = 0
+        if _n > len(QUESTIONS):
+            print(f"拒绝覆盖：现有题库 {_n} 题 > 本生成器硬编码的 {len(QUESTIONS)} 题。")
+            print(f"  目标文件：{OUT}")
+            print("  维护方式：以该 JSON 为准增量维护（新增题目直接改 JSON），")
+            print("            或先把 QUESTIONS 补齐到不少于现有题数。")
+            print("  确需用本脚本重建（会丢失增量题目）：python scripts/build_quiz_bank.py --force")
+            raise SystemExit(2)
     ids = [q["id"] for q in QUESTIONS]
     if len(ids) != len(set(ids)):
         raise SystemExit("存在重复题目 id")
