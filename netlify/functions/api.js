@@ -2,6 +2,9 @@
 
 // Netlify Functions 入口：将 /.netlify/functions/api/* 请求转发到学习服务器。
 // 使用 in-memory SQLite（冷启动后数据重置），适合演示部署。
+// B 实测平台在 ~30.7–30.9s 处截断函数（HTTP 504），故应用层超时预算留 ~5s 余量提前降级，
+// 让慢请求在平台截断前走 fallback-local（HTTP 200），而不是裸 504。本机默认仍 60000。
+process.env.AI_REVIEW_TIMEOUT_MS ||= '25000';
 const { Readable } = require('node:stream');
 
 let app = null;
