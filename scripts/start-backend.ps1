@@ -8,15 +8,21 @@
   3) 检查樱花隧道进程（frpc.exe / SakuraFrpService.exe）是否存活
   4) 轮询公网隧道端点 /api/status 直到 200（隧道出口，自签证书走 curl -sk）
 
-  任一必过环节失败 → 退出码非 0（0 成功 / 1 本机未就绪 / 2 隧道未就绪）。
+  任一必过环节失败 → 退出码非 0（0 成功 / 1 本机未就绪 / 2 隧道未就绪 / 3 隧道端点未配置）。
   说明：`/api/status` 200 只代表服务在跑，不代表 AI 链路可用。
   真正的 AI 链路判定请接着跑：node scripts/check-connectivity.mjs --insecure
+
+  公网隧道端点按以下优先级解析（R-202：公开仓库不硬编码真实入口）：
+    1) -PublicStatusUrl 显式传参
+    2) 环境变量 AIMASTER_TUNNEL_URL
+    3) .local/tunnel-url.txt（gitignored）
+  三者都没有 → 退出码 3 并给出设置指引（真实入口见 COLLAB.md §6，内部文档不随公开仓库分发）。
 
 .PARAMETER Port
   本机后端端口，默认 8787。
 
 .PARAMETER PublicStatusUrl
-  公网隧道端点，默认 https://frp-end.com:45695/api/status。
+  公网隧道端点，显式传入时优先级最高；未传时从 AIMASTER_TUNNEL_URL 或 .local/tunnel-url.txt 解析。
 
 .PARAMETER TimeoutSeconds
   等待公网隧道端点就绪的最长秒数，默认 90。
@@ -27,13 +33,37 @@
 [CmdletBinding()]
 param(
   [int]$Port = 8787,
-  [string]$PublicStatusUrl = 'https://frp-end.com:45695/api/status',
+  [string]$PublicStatusUrl = '',
   [int]$TimeoutSeconds = 90
 )
 
 $ErrorActionPreference = 'Stop'
 $projectPath = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectPath
+
+# R-202：真实隧道入口不进公开仓库。优先级：显式传参 > AIMASTER_TUNNEL_URL > .local/tunnel-url.txt；缺值快速失败。
+if (-not $PublicStatusUrl) {
+  $tunnelBase = $env:AIMASTER_TUNNEL_URL
+  if (-not $tunnelBase) {
+    $tunnelFile = Join-Path $projectPath '.local\tunnel-url.txt'
+    if (Test-Path -LiteralPath $tunnelFile) { $tunnelBase = Get-Content -LiteralPath $tunnelFile -Raw }
+  }
+  if ($tunnelBase -and $tunnelBase.Trim()) {
+    $tunnelBase = $tunnelBase.Trim().TrimEnd('/')
+    if ($tunnelBase -match '/api/status$') { $tunnelBase = $tunnelBase -replace '/api/status$', '' }
+    $PublicStatusUrl = "$tunnelBase/api/status"
+  } else {
+    [Console]::Error.WriteLine(@'
+未配置隧道端点（R-202：脚本不再硬编码真实入口，真实入口见 COLLAB.md §6 —— 内部文档，不随公开仓库分发）。
+设置方式（优先级从高到低）：
+  1) 显式传参：  powershell -ExecutionPolicy Bypass -File scripts/start-backend.ps1 -PublicStatusUrl https://<隧道入口>:<端口>/api/status
+  2) 环境变量：  set AIMASTER_TUNNEL_URL=https://<隧道入口>:<端口>
+  3) 本地文件：  echo https://<隧道入口>:<端口> > .local/tunnel-url.txt   （.local/ 已在 .gitignore）
+取值可写基础地址，也可直接写完整 /api/status 地址。
+'@)
+    exit 3
+  }
+}
 
 function Get-HttpCode {
   param([string]$Url, [switch]$Insecure)
