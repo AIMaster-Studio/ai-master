@@ -157,7 +157,7 @@ DeepTutor 的 L2/L3 由 LLM 摘要产出。本项目的 L2/L3 是**确定性聚�
 | --- | --- | --- |
 | GET | `/api/rag/status` | 公开 |
 | GET | `/api/rag/kbs`、`/api/rag/kb?kbId=` | 公开 |
-| POST | `/api/rag/search` | 公开 |
+| GET｜POST | `/api/rag/search` | 公开 |
 | POST | `/api/rag/kb`、`/kb/documents`、`/kb/upload`、`/kb/index`、`/kb/activate`、`/kb/remove`、`/course/seed` | **管理** |
 | GET | `/api/memory/inspect`、`/graph`、`/l1`、`/l2`、`/l3`、`/surfaces` | 公开（按用户隔离） |
 | POST | `/api/memory/refresh`、`/synthesize`、`/preference` | 公开（按用户隔离） |
@@ -170,6 +170,13 @@ DeepTutor 的 L2/L3 由 LLM 摘要产出。本项目的 L2/L3 是**确定性聚�
 **「管理」的含义**：与 `/api/ai/config` 同一道门 —— 服务未对外暴露时要求回环对端；
 一旦暴露（隧道 / 公网），必须额外带 `AIMASTER_CONFIG_TOKEN`，否则一律 403。
 未配置该令牌时，暴露模式下这些接口全部不可写（fail-closed）。
+
+**`/api/rag/search` 为什么同时接受 GET 与 POST**：检索是只读操作，只认 POST 会让它成为
+本模块唯一一处「只读却必须写请求体」的接口，与同模块的 `status` / `kbs` / `kb` 自相矛盾
+（2026-09-15 走查记录：直接拼 URL 会拿到 405）。两条路径共用同一份参数校验与失败语义，
+同参数下结果完全一致，由 `tests/grounding.test.js` 钉住。
+**GET 的边界**：参数走 URL，会被反向代理、隧道与访问日志记录，且受 URL 长度限制 ——
+不想让查询词进日志、或查询很长时用 POST。GET 不提供任何 POST 没有的能力。
 
 ---
 

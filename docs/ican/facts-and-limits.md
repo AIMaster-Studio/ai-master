@@ -14,6 +14,7 @@
 | API 密钥 | 所有模型密钥通过环境变量注入，代码中无硬编码密钥 | `server/store.js`、`.env.example`、`render.yaml` |
 | AI 复评 | 推理模型需较大 max_tokens（4096）与 60s 超时；失败时明确拒绝而非自动通关；21 组双盲测试准确率 90.5%、零假阳性 | `server/ai-review.js`、`tests/ai-rubric-validation-results.json` |
 | RAG 检索 | 默认用**本机哈希嵌入**：零依赖、不联网，但只反映词面重合，**不是语义检索**，同义改写会漏召回；该事实由 `embedder.semantic=false` 与索引清单的 notice 对外暴露 | `server/rag/embedder.js`、`server/rag/kb-store.js` |
+| 检索接口的方法 | `/api/rag/search` 同时接受 GET 与 POST，两条路径参数与失败语义相同、结果一致；**GET 不提供任何额外能力**，且查询词会进入 URL（可被反向代理、隧道与访问日志记录），长查询仍应用 POST | `server/rag-routes.js`、`tests/grounding.test.js` |
 | 索引后端 | `sqlite-vec` 为首选、纯 JS 余弦为兜底；装不上时自动降级并把原因写进索引清单。`sqlite-vec` 列为 optionalDependencies，故「干净克隆无需 npm install 即可 verify」仍成立 | `server/rag/vector-store.js`、`package.json` |
 | 检索引擎 | `local-index` 可用；`remote-embedding` 需配置；`pageindex`、`graphrag` **未实现并已说明原因** | `server/rag/engines.js` |
 | 文档解析 | 只支持纯文本类格式；PDF/Office/图片**明确报错并说明缺哪个解析引擎**，不产出空文档 | `server/rag/parser.js` |
@@ -49,6 +50,7 @@
 | 手机端流畅、低端设备适配完成 | 仅报告实际测试设备、浏览器和视口的结果 |
 | 本地保存，所以任何数据都不会出机 | 学习记录可存本机 SQLite 或远程 Turso；开启远程模型后相关输入会发往服务商 |
 | 已经支持语义检索 | 默认是本机哈希嵌入，只做词面重合；配了远程嵌入模型才是语义检索，且换模型必须重建索引 |
+| 检索接口接受 GET，说明检索能力升级了 | 只是让只读接口的方法自洽（原先只有它是「只读却必须 POST」）；嵌入方式、召回质量、命中排序一个字没改 |
 | 讲解复评能判断学生是否真正理解 | 复评基于课程证据并要求模型回报引用号，引用号会被复核；但复核只能确认引用真实存在，不能确认结论被证据支持，也仍不能杜绝背题与代答 |
 | 记忆会归纳你的学习风格 | L2/L3 是计数与比例的确定性聚合，不做语义归纳，不会产生「你偏好类比式讲解」这类推断 |
 | 记忆能跨设备同步 | 记忆是本机文件，按用户隔离，不存在云端副本 |

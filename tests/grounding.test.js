@@ -232,3 +232,35 @@ test('re-seeding the course base replaces documents instead of piling them up', 
   const kb = await request('/api/rag/kb?kbId=' + first.data.kbId);
   assert.deepEqual(kb.data.kb.versions.map(v => v.version), [1, 2], '旧版本必须保留');
 });
+
+// 检索是只读操作，却曾经只认 POST —— 同模块的 status / kbs / kb 都是 GET，
+// 于是「直接拼 URL 试一下」的人会拿到 405。本用例把这个不一致钉住：
+// 一旦有人把 GET 拿掉、或让两条路径给出不同结果，verify 会失败。
+test('search is read-only: GET works, POST still works, and both agree', async t => {
+  const request = await start(t);
+  // 尚未灌库、又没给 kbId：必须是 400 且说清缺什么，不能是 405（只读接口不该只认 POST）。
+  const noKb = await request('/api/rag/search?query=token');
+  assert.equal(noKb.status, 400);
+  assert.match(noKb.data.error, /kbId/);
+
+  const seeded = await request('/api/rag/course/seed', {});
+  const query = encodeURIComponent('token 与上下文预测');
+  const viaGet = await request('/api/rag/search?query=' + query + '&limit=3');
+  assert.equal(viaGet.status, 200);
+  assert.ok(viaGet.data.result.hits.length > 0);
+  assert.equal(viaGet.data.result.kbId, seeded.data.kbId, 'GET 省略 kbId 时同样回落到课程知识库');
+  assert.equal(viaGet.data.result.embedder.semantic, false, 'GET 路径也不得掩盖「非语义嵌入」这一事实');
+
+  // 同参数下 GET 与 POST 必须给出同一结果，否则「两种方法等价」这句话就是假的。
+  const viaPost = await request('/api/rag/search', { query: 'token 与上下文预测', limit: 3 });
+  assert.equal(viaPost.status, 200);
+  assert.deepEqual(viaPost.data.result.hits, viaGet.data.result.hits);
+
+  // 空查询是调用方参数问题，不是服务端故障：400 说明缺什么，而不是 500「服务暂时出错」。
+  const empty = await request('/api/rag/search');
+  assert.equal(empty.status, 400);
+  assert.match(empty.data.error, /query/);
+
+  // 这次改动只放开只读检索；写接口仍然只认 POST。
+  assert.equal((await request('/api/rag/course/seed')).status, 405);
+});

@@ -31,6 +31,28 @@ function createRagRoutes(options) {
     return { created, kbId: kb.id, manifest };
   }
 
+  // 检索是**只读**操作，因此 GET 与 POST 接受同一套参数（kbId / query / limit）。
+  // 原先只认 POST，是模块里唯一一处「只读却必须写请求体」的接口 —— 与同模块的
+  // status / kbs / kb 三个 GET 接口自相矛盾，也让「直接拼 URL 试一下」的人撞到 405。
+  //
+  // GET 的边界（如实标注，不夸大）：
+  //   - 参数走 URL，会被反向代理、隧道与访问日志记录下来；不想让查询词进日志就用 POST。
+  //   - 受 URL 长度限制，超长查询用 POST。
+  //   - 两种方法的检索结果完全一致，GET 不提供任何额外能力。
+  // 参数（kbId / query / limit）与失败语义在 GET 与 POST 两条路径上完全共用，
+  // 避免两条路径各写一份校验而慢慢漂移。fail 由调用方传入：它属于请求上下文，不是模块级状态。
+  async function search({ kbId, query, limit }, fail) {
+    const text = String(query || '').trim();
+    // 空查询是调用方参数问题，不是服务端故障：必须 400 并说明缺什么，不能落到 500。
+    if (!text) fail(400, '缺少 query（检索问题不能为空）。');
+    // 不传 kbId 时回落到课程知识库 —— 与 rag_search 工具的行为保持一致，
+    // 否则同一件事在工具里能用、在 HTTP 上必须显式指定，接口之间会自相矛盾。
+    const requested = String(kbId || '');
+    const course = requested ? null : findCourseKb();
+    if (!requested && !course) fail(400, '缺少 kbId，且尚未建立课程知识库。');
+    return rag.store.search(requested || course.id, text, Number(limit) || undefined);
+  }
+
   return async function handleRag({ req, url, route, body, send, fail }) {
     const action = route.slice(4); // 去掉 'rag/'
     const isPost = req.method === 'POST';
@@ -46,7 +68,16 @@ function createRagRoutes(options) {
       if (!kbId) fail(400, '缺少 kbId。');
       return send({ kb: rag.store.info(kbId) });
     }
-    if (!isPost) fail(405, '该接口需要 POST。');
+    if (!isPost) {
+      if (action === 'search') {
+        return send({ result: await search({
+          kbId: url.searchParams.get('kbId'),
+          query: url.searchParams.get('query'),
+          limit: url.searchParams.get('limit')
+        }, fail) });
+      }
+      fail(405, '该接口需要 POST。');
+    }
 
     if (action === 'kb') {
       requireAdmin(req);
@@ -92,13 +123,7 @@ function createRagRoutes(options) {
       return send({ manifest: rag.store.activate(String(body.kbId || ''), Number(body.version)) });
     }
     if (action === 'search') {
-      // 不传 kbId 时回落到课程知识库 —— 与 rag_search 工具的行为保持一致，
-      // 否则同一件事在工具里能用、在 HTTP 上必须显式指定，接口之间会自相矛盾。
-      const requested = String(body.kbId || '');
-      const course = requested ? null : findCourseKb();
-      if (!requested && !course) fail(400, '缺少 kbId，且尚未建立课程知识库。');
-      const result = await rag.store.search(requested || course.id, body.query, Number(body.limit) || undefined);
-      return send({ result });
+      return send({ result: await search({ kbId: body.kbId, query: body.query, limit: body.limit }, fail) });
     }
     if (action === 'course/seed') {
       requireAdmin(req);

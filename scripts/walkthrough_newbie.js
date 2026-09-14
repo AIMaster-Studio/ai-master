@@ -105,7 +105,7 @@ async function runRound(round) {
       else if (step.startsWith('memory/l3')) note = 'profile 内容=' + (r.data.markdown === null ? '（未生成）' : '有');
       else if (step === 'rag/status') note = '引擎=' + (((r.data.rag || {}).engines) || []).map(e => e.id + ':' + e.status).join(' ') + ' | 课程库=' + (r.data.courseKbId ? '有' : '无');
       else if (step === 'rag/kbs') note = '知识库数=' + ((r.data.kbs || []).length);
-      else if (step === 'rag/search') note = r.data && r.data.error ? r.data.error : '（应报错：缺 kbId）';
+      else if (step === 'rag/search') note = r.data && r.data.error ? r.data.error : '（应报错：缺 query）';
       else if (step === 'agent/capabilities') note = '模型就绪=' + r.data.modelReady + ' 能力=' + ((r.data.capabilities || []).map(c => c.id + ':' + c.status).join(' '));
       else if (step === 'agent/tools') note = '工具=' + ((r.data.tools || []).map(t => t.name).join(', '));
       observations.push({ step, status: r.status, note });
