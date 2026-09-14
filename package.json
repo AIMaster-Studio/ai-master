@@ -21,6 +21,9 @@
     "@libsql/client": "^0.14.0",
     "fzstd": "^0.1.1"
   },
+  "optionalDependencies": {
+    "sqlite-vec": "^0.1.9"
+  },
   "devDependencies": {
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
