@@ -289,22 +289,33 @@
     const memory = app.memory.memory || {};
     const surfaces = memory.surfaces || [];
     const l3 = (memory.l3 || []).filter(item => item && item.markdown);
+    // 「有没有事件」是这一页唯一的空判据，且必须用 l1Total，不能用 surfaces.length：
+    // surfaces 是**全部已登记的记忆面**（无活动时 events 为 0），长度恒等于面数、永不为 0。
+    // 原先的空分支写成 surfaces.length 的反面，因此永远不会出现 —— 走查看到的「5 个面全空」
+    // 才是真实渲染结果，而那一屏没有任何指向「去做什么会产生记录」的入口（2026-09-15 走查待办 3）。
+    const hasEvents = Number(memory.l1Total || 0) > 0;
+    const noActivityHtml = '<div class="empty-state"><p>还没有任何学习活动记录。L2 事实与 L3 综合都从 L1 事件派生 —— 没有事件，就没有可聚合的依据。</p>'
+      + '<button type="button" class="primary" data-view="learn">去完成一次讲解</button></div>';
     main.innerHTML = head + '<p>' + esc(memory.l1Total || 0) + ' 条事件轨迹 · ' + esc(surfaces.length) + ' 个记忆面</p></div>' +
       '<button type="button" class="icon-button" title="刷新记忆" aria-label="刷新记忆" data-action="refresh-memory">↻</button></header>' +
       '<div class="notice">' + esc(memory.notice || '') +
         '<br>L2/L3 由事件轨迹<strong>确定性聚合</strong>（计数与比例），不是模型摘要，也没有语义归纳能力 —— 它不会得出「你偏好类比式讲解」这类结论。' +
         '<br>数据只存在这台电脑，不跨设备同步；清空记忆需要本机管理权限。</div>' +
       '<section class="section-band"><h2>记忆图谱</h2>' + memoryGraphHtml(app.memory.graph) + '</section>' +
-      '<section class="section-band"><h2>记忆面（L1 → L2）</h2>' + (surfaces.length ? surfaces.map(item =>
+      '<section class="section-band"><h2>记忆面（L1 → L2）</h2>' + surfaces.map(item =>
         '<div class="memory-surface"><div class="memory-surface-head"><strong>' + esc(item.label) + '</strong>' +
         '<span class="muted small">' + esc(item.events) + ' 条事件' + (item.dates ? ' · 覆盖 ' + esc(item.dates) + ' 天' : '') + '</span></div>' +
         '<p class="small muted">' + esc(item.describe || '') + '</p>' +
         (item.l2 ? '<details><summary>查看 L2 事实</summary><pre class="memory-md">' + esc(item.l2) + '</pre></details>'
                  : '<p class="small muted">还没有 L2 事实 —— 该面尚无活动记录。</p>') + '</div>').join('')
-        : '<p class="muted">还没有任何学习活动记录。完成一次讲解或测验后，这里会出现轨迹。</p>') + '</section>' +
+        + (hasEvents ? '' : noActivityHtml) + '</section>' +
       '<section class="section-band"><h2>跨面综合（L3）</h2>' + (l3.length ? l3.map(item =>
         '<details class="memory-l3"><summary>' + esc(item.slot) + '</summary><pre class="memory-md">' + esc(item.markdown) + '</pre></details>').join('')
-        : '<p class="muted">还没有生成 L3 综合。L3 <strong>按需生成</strong>，不会自动运行 —— 空白不代表你没有学习记录。</p><button type="button" class="primary" data-action="synthesize-memory">按当前 L2 事实生成</button>') + '</section>' +
+        : hasEvents
+          ? '<p class="muted">还没有生成 L3 综合。L3 <strong>按需生成</strong>，不会自动运行 —— 空白不代表你没有学习记录。</p><button type="button" class="primary" data-action="synthesize-memory">按当前 L2 事实生成</button>'
+          // 零事件时不给生成按钮：在零事件上生成的综合是一份「0 次、通过率 0%」的文件，
+          // 容易被读成「学得不好」，而实际情况是「还没开始」。这里给出的是下一步，不是一步无效操作。
+          : '<p class="muted">还没有 L1 事件，L3 没有可汇总的依据，因此这里不提供生成按钮 —— 在零事件上生成的综合只会是一份全 0 的空文件，容易被误读成学习结果不佳。先完成一次讲解或测验。</p>') + '</section>' +
       '<section class="section-band"><h2>显式偏好</h2>' + (memory.preferences
         ? '<pre class="memory-md">' + esc(memory.preferences) + '</pre>'
         : '<p class="muted">尚未写入偏好。偏好只能显式写入，既不参与自动综合，也不会被 L3 生成覆盖。</p>') + '</section>';

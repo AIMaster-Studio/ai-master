@@ -142,3 +142,32 @@ test('the memory graph is rendered from the graph endpoint and shows empty surfa
   // 内联 SVG，不引图表库（前端没有构建步骤）。
   assert.match(script, /<svg class="memory-graph"/, '应生成内联 SVG');
 });
+
+test('the memory empty state is reachable and offers a next step, not a no-op', () => {
+  const script = fs.readFileSync(WORKSPACE_JS, 'utf8');
+  const css = fs.readFileSync(WORKSPACE_CSS, 'utf8');
+
+  // 这条用例钉的是一个**已经发生过一次的具体退化**（docs/ican/walkthrough-2026-09-15.md 待办 3）：
+  // 空分支原先写成 `surfaces.length ? 面卡片 : 空文案`，但 surfaces 是**全部已登记的记忆面**
+  // （无活动时 events 为 0），长度恒等于面数、永不为 0 —— 所以那句空文案永远不会渲染。
+  // 新访客实际看到的是一屏「5 个面全空」，而那一屏没有任何指向「去做什么会产生记录」的入口。
+  //
+  // 断言的是**结构**（判据字段 / 入口存在 / 生成按钮只在有事件时出现）。
+  // 它证明不了「用户因此更满意」——那需要真实点击与满意度测量，本文件不声称覆盖。
+
+  // ① 空判据必须来自事件总数；用 surfaces 长度判空必然写出不可达分支。
+  assert.match(script, /const hasEvents = Number\(memory\.l1Total \|\| 0\) > 0/, '记忆空判据未使用 l1Total');
+  assert.doesNotMatch(script, /surfaces\.length \?/, '记忆面仍以 surfaces.length 判空，空分支不可达');
+
+  // ② 空状态必须给出可点击的下一步，而不是只有一句解释。
+  const noActivity = script.match(/const noActivityHtml =[\s\S]*?data-view="learn"[\s\S]*?<\/div>';/);
+  assert.ok(noActivity, '记忆空状态没有指向学习视图的入口');
+  assert.ok(css.includes('.empty-state'), '样式表缺少 .empty-state');
+
+  // ③ 零事件时不提供 L3 生成：在零事件上生成的综合是一份「0 次、通过率 0%」的文件，
+  //    会被读成「学得不好」，而实际情况是「还没开始」。
+  assert.equal((script.match(/data-action="synthesize-memory"/g) || []).length, 1, 'L3 生成入口应只出现一次');
+  const synthesizeAt = script.indexOf('data-action="synthesize-memory"');
+  const zeroEventNoteAt = script.indexOf('在零事件上生成的综合');
+  assert.ok(synthesizeAt > 0 && zeroEventNoteAt > synthesizeAt, 'L3 生成按钮未限定在有事件的分支，或未说明零事件为何不生成');
+});
