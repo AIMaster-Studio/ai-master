@@ -33,6 +33,8 @@ const { createRagService } = require('./rag');
 const { createRagRoutes } = require('./rag-routes');
 const { retrieveEvidence } = require('./grounding');
 const { COURSE_KB_NAME } = require('./rag/course-seed');
+const { createMemoryStore } = require('./memory/store');
+const { createMemoryRoutes } = require('./memory-routes');
 
 const ROOT = path.resolve(__dirname, '..');
 const DAY = 86400000;
@@ -156,6 +158,19 @@ function createApp(options = {}) {
     if (!isLoopbackPeer(request) || (exposed && !configTokenValid(request))) fail(403, '此操作仅限在本机执行。');
   };
   const ragRoutes = createRagRoutes({ rag, requireAdmin });
+  // 记忆按用户隔离，各自一份文件；同进程内按 userId 缓存实例，避免重复建目录。
+  const memoryRoot = options.memoryDataRoot || path.join(ROOT, '.local/memory');
+  const memoryStores = new Map();
+  const memoryFor = userId => {
+    if (!memoryStores.has(userId)) memoryStores.set(userId, createMemoryStore({ dataRoot: path.join(memoryRoot, userId) }));
+    return memoryStores.get(userId);
+  };
+  const memoryRoutes = createMemoryRoutes({ memoryFor, requireAdmin });
+  // 记忆写入失败不得中断学习流程：轨迹是旁路记录，不是通关判定的必要条件。
+  const recordMemory = (userId, surface, event) => {
+    try { memoryFor(userId).record(surface, event); }
+    catch (error) { if (options.onError) options.onError(error); }
+  };
   const modules = new Map(catalog.modules.map(m => [m.id, m]));
   const questions = new Map(catalog.modules.flatMap(m => m.questions.map(q => [q.id, { ...q, moduleId: m.id }])));
   const rate = new Map();
@@ -249,6 +264,7 @@ function createApp(options = {}) {
     const send = payload => json(res, 200, { ok: true, ...payload });
     const save = () => store.save(user.id, state);
     if (route.startsWith('rag/')) return ragRoutes({ req, url, route, body, send, fail });
+    if (route.startsWith('memory/')) return memoryRoutes({ req, url, route, body, send, fail, user });
     if (req.method === 'GET') {
       if (route === 'status') {
         const config = await store.config();
@@ -314,6 +330,7 @@ function createApp(options = {}) {
         // A new plan invalidates unfinished evidence; completed tasks remain available.
         for (const p of Object.values(state.progress)) if (!p.completedAt) { p.explanation = null; p.quiz = null; p.revision = null; }
         addAttempt(state, { type: 'plan', goal, level: body.level, dailyMinutes: body.dailyMinutes }); await save();
+        recordMemory(user.id, 'plan', { goal, level: body.level, dailyMinutes: body.dailyMinutes, modules: state.plan.modules });
         return send({ state });
       }
       if (route === 'explanation') {
@@ -344,6 +361,13 @@ function createApp(options = {}) {
         if (state.planRevision !== planRevision || state.progress[module.id]?.revision !== revision) fail(409, '已有更新的讲解或计划，请查看最新结果。');
         state.progress[module.id].explanation = { ...result, text: body.text, at: stamp(), revision };
         addAttempt(state, { type: 'explanation', moduleId: module.id, revision, text: body.text, ...result }); await save();
+        recordMemory(user.id, 'explain', {
+          moduleId: module.id, revision, mode: result.mode, accepted: result.accepted === true,
+          score: typeof result.score === 'number' ? result.score : null,
+          grounded: result.grounded === true, evidenceIntegrity: result.evidenceIntegrity || '',
+          citations: result.citations || [], evidenceCount: (result.evidence || []).length,
+          checks: (result.checks || []).map(check => ({ label: check.label, pass: check.pass }))
+        });
         return send({ result, state });
       }
       if (route === 'quiz') {
@@ -372,6 +396,10 @@ function createApp(options = {}) {
         recordWrongAnswers(state, result, at);
         addAttempt(state, { type: 'quiz', moduleId: quiz.moduleId, mode: quiz.mode, ...result });
         await store.transaction(async () => { await save(); await store.putQuiz(quiz.id, user.id, { ...quiz, result }); });
+        recordMemory(user.id, 'quiz', {
+          moduleId: quiz.moduleId, mode: quiz.mode, score: result.score, passed: result.passed === true,
+          correct: result.correct, total: result.total
+        });
         return send({ result, state });
       }
       if (route === 'complete') {
@@ -395,6 +423,7 @@ function createApp(options = {}) {
         wrong.dueAt = new Date(Date.now() + reviewDelayDays(wrong.correctStreak) * DAY).toISOString();
         if (!correct) wrong.mistakes++;
         addAttempt(state, { type: 'review', moduleId: question.moduleId, ...result }); await save();
+        recordMemory(user.id, 'review', { questionId: question.id, moduleId: question.moduleId, correct, reviewCount: wrong.reviewCount });
         return send({ result, state });
       }
       if (route === 'ai/config') {
