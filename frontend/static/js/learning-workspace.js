@@ -149,9 +149,24 @@
     const saved = readDraft(item.id) || (p.explanation && p.explanation.text) || '';
     return '<h2>换成自己的话，说清楚</h2><p class="explanation-prompt">' + esc(item.prompt) + '</p><form id="explanation-form"><label class="field" for="explanation-text">我的讲解<textarea id="explanation-text" name="text" required minlength="20" maxlength="6000" placeholder="从概念开始，说明它为什么这样工作，再给出一个具体例子和它的局限。">' + esc(saved) + '</textarea></label><div class="form-footer"><span class="muted" id="draft-status">' + saved.length + ' / 6000 字 · 草稿保存在此浏览器</span><button type="submit" class="primary">提交讲解</button></div></form>' + (!(app.status.ai || {}).configured ? '<p class="notice">当前为本地练习，检查表达覆盖与基础规则，不代表模型已理解你的讲解。通关还需通过客观测验。</p>' : '') + (p.quiz ? '<p class="small muted" style="margin-top:12px">重新提交讲解后，需要重新测验。</p>' : '') + (p.explanation ? feedbackPanel(p.explanation) : '');
   }
+  // 把「这次评审依据了哪些课程原文」显式展示出来 —— 这是证据驱动复评唯一对学习者可见的产出。
+  // 刻意区分三种状态（无证据 / 引用复核失败 / 有证据），避免把「没证据」显示得像「有证据」。
+  function evidencePanel(result) {
+    const grounding = result.grounding || {};
+    const evidence = Array.isArray(result.evidence) ? result.evidence : [];
+    const cited = new Set(Array.isArray(result.citations) ? result.citations : []);
+    if (result.evidenceIntegrity === 'fabricated-reference') {
+      return '<div class="evidence evidence-warn"><strong>证据引用复核未通过</strong><p class="small">模型引用了本次检索中不存在的编号，这次评审结果不可采信，未计入通过。</p></div>';
+    }
+    if (!evidence.length) {
+      return '<div class="evidence evidence-none"><strong>本次没有可引用的课程证据</strong><p class="small">' + esc(grounding.reason || '课程知识库尚未建立，或本模块没有检索到相关内容。') + '本次判定基于模型自身知识，依据强度低于有证据的评审。</p></div>';
+    }
+    return '<div class="evidence"><strong>依据的课程证据</strong><ul class="evidence-list">' + evidence.map(item => '<li' + (cited.has(item.ref) ? ' class="cited"' : '') + '><span class="evidence-ref">' + esc(item.ref) + (cited.has(item.ref) ? ' · 已引用' : '') + '</span><span class="evidence-title">' + esc(item.title || '') + '</span><span class="evidence-path">' + esc(item.source || '') + '</span></li>').join('') + '</ul><p class="small muted">引用复核只能确认编号真实存在，不能确认结论被证据支持。</p></div>';
+  }
+
   function feedbackPanel(result) {
     const feedback = Array.isArray(result.feedback) ? result.feedback.join('；') : result.feedback;
-    return '<div class="feedback"><div class="feedback-title"><strong>' + (result.accepted ? '讲解练习已通过' : result.mode === 'fallback-local' || result.mode === 'fallback' ? 'AI 复评暂未完成' : '再完善一下讲解') + '</strong><span class="badge ' + (result.accepted ? 'green' : 'amber') + '">' + esc(modeLabel(result.mode)) + '</span></div><p class="small">' + esc(feedback || (result.accepted ? '继续完成测验。' : '请依据下方反馈修订。')) + '</p><ul class="checks">' + (result.checks || []).map(c => '<li class="check' + (c.pass ? ' pass' : '') + '"><strong>' + (c.pass ? '✓ ' : '○ ') + esc(c.label) + '</strong><span>' + esc(c.detail) + '</span></li>').join('') + '</ul>' + (result.followUp ? '<div class="follow-up"><strong>再想一层</strong><br>' + esc(Array.isArray(result.followUp) ? result.followUp.join('；') : result.followUp) + '</div>' : '') + (result.accepted ? '<div class="button-row" style="margin-top:18px"><button type="button" class="primary" data-stage="quiz">进入测验 →</button></div>' : '') + '</div>';
+    return '<div class="feedback"><div class="feedback-title"><strong>' + (result.accepted ? '讲解练习已通过' : result.mode === 'fallback-local' || result.mode === 'fallback' ? 'AI 复评暂未完成' : '再完善一下讲解') + '</strong><span class="badge ' + (result.accepted ? 'green' : 'amber') + '">' + esc(modeLabel(result.mode)) + '</span></div><p class="small">' + esc(feedback || (result.accepted ? '继续完成测验。' : '请依据下方反馈修订。')) + '</p><ul class="checks">' + (result.checks || []).map(c => '<li class="check' + (c.pass ? ' pass' : '') + '"><strong>' + (c.pass ? '✓ ' : '○ ') + esc(c.label) + '</strong><span>' + esc(c.detail) + '</span></li>').join('') + '</ul>' + (result.followUp ? '<div class="follow-up"><strong>再想一层</strong><br>' + esc(Array.isArray(result.followUp) ? result.followUp.join('；') : result.followUp) + '</div>' : '') + evidencePanel(result) + (result.accepted ? '<div class="button-row" style="margin-top:18px"><button type="button" class="primary" data-stage="quiz">进入测验 →</button></div>' : '') + '</div>';
   }
   function questionsHtml(quiz,result) {
     return quiz.questions.map((q,index) => {
