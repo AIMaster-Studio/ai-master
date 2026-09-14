@@ -92,7 +92,12 @@ function createRagRoutes(options) {
       return send({ manifest: rag.store.activate(String(body.kbId || ''), Number(body.version)) });
     }
     if (action === 'search') {
-      const result = await rag.store.search(String(body.kbId || ''), body.query, Number(body.limit) || undefined);
+      // 不传 kbId 时回落到课程知识库 —— 与 rag_search 工具的行为保持一致，
+      // 否则同一件事在工具里能用、在 HTTP 上必须显式指定，接口之间会自相矛盾。
+      const requested = String(body.kbId || '');
+      const course = requested ? null : findCourseKb();
+      if (!requested && !course) fail(400, '缺少 kbId，且尚未建立课程知识库。');
+      const result = await rag.store.search(requested || course.id, body.query, Number(body.limit) || undefined);
       return send({ result });
     }
     if (action === 'course/seed') {

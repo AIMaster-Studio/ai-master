@@ -197,6 +197,16 @@ test('seeding the course base then reviewing an explanation produces cited, grou
   assert.ok(search.data.result.hits[0].source.length > 0);
   assert.equal(search.data.result.embedder.semantic, false, '默认嵌入必须自述为非语义');
 
+  // 省略 kbId 时应回落到课程知识库 —— 与 rag_search 工具的行为保持一致。
+  const implicit = await request('/api/rag/search', { query: 'token 与上下文预测', limit: 2 });
+  assert.equal(implicit.status, 200);
+  assert.equal(implicit.data.result.kbId, seeded.data.kbId);
+  assert.ok(implicit.data.result.hits.length > 0);
+  // 证据文本必须是正文，不能残留章节 JSON 里的 HTML 标记。
+  for (const hit of implicit.data.result.hits) {
+    assert.equal(/<\/?(p|div|li|h[1-6]|strong)\b/i.test(hit.text), false, '证据残留 HTML：' + hit.title);
+  }
+
   await request('/api/plan', { goal: 'RAG 知识库', level: 'basic', dailyMinutes: 45 });
   // 复评要走 AI 通道必须先配置模型；未配置时会明确停在本地规则（mode:"local"），这不是本用例要测的路径。
   const configured = await request('/api/ai/config', { baseUrl: 'https://provider.example/v1', model: 'm', apiKey: 'k' });
