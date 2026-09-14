@@ -74,3 +74,27 @@ test('the memory view is reachable from the nav and states its generation mode',
     assert.ok(css.includes('.' + className), '样式表缺少类名：' + className);
   }
 });
+
+test('the knowledge base view states whether retrieval is semantic', () => {
+  const script = fs.readFileSync(WORKSPACE_JS, 'utf8');
+  const css = fs.readFileSync(WORKSPACE_CSS, 'utf8');
+  const html = fs.readFileSync(WORKSPACE_HTML, 'utf8');
+
+  assert.ok(html.includes('data-view="rag"'), '导航里没有知识库入口');
+  assert.match(script, /function renderRag\(/, '知识库视图函数缺失');
+  assert.match(script, /app\.view === 'rag'\) return renderRag\(\)/, '知识库视图未接入 render 分发');
+  assert.match(script, /rag\/search/, '未调用检索接口');
+  assert.match(script, /rag\/course\/seed/, '未提供课程库建立入口');
+
+  // 默认嵌入只做词面重合。页面必须让「检索不到」不被误读成「课程里没有」。
+  assert.match(script, /同义改写/, '未提示词面重合嵌入的召回局限');
+  assert.match(script, /不代表课程里没有/, '未把召回局限与内容缺失区分开');
+  // 引擎与后端的不可用状态必须显示原因，而不是只显示「不可用」。
+  assert.match(script, /degradeReason/, '未展示索引后端降级原因');
+  assert.match(script, /engine\.reason/, '未展示引擎不可用原因');
+
+  for (const className of ['rag-results', 'rag-hit', 'rag-hit-head']) {
+    assert.ok(script.includes(className), 'JS 未使用类名：' + className);
+    assert.ok(css.includes('.' + className), '样式表缺少类名：' + className);
+  }
+});

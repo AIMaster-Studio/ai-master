@@ -14,7 +14,7 @@
     if (window.lucide) window.lucide.createIcons({attrs:{'stroke-width':1.8}});
   };
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},busy:false,authMode:'login',memory:null,memoryError:''};
+  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},busy:false,authMode:'login',memory:null,memoryError:'',rag:null,ragError:'',ragQuery:'',ragResults:null,ragKbId:''};
   const main = $('#main-content');
   const dialog = $('#workspace-dialog');
   let toastTimer;
@@ -127,6 +127,7 @@
     if (app.view === 'review') return renderReviews();
     if (app.view === 'records') return renderRecords();
     if (app.view === 'memory') return renderMemory();
+    if (app.view === 'rag') return renderRag();
     if (!app.state.plan || !current()) return renderSetup();
     renderLesson();
     } finally { renderIcons(); }
@@ -243,6 +244,59 @@
         ? '<pre class="memory-md">' + esc(memory.preferences) + '</pre>'
         : '<p class="muted">尚未写入偏好。偏好只能显式写入，既不参与自动综合，也不会被 L3 生成覆盖。</p>') + '</section>';
   }
+  // 知识库视图。
+  // 关键设计：**把「本集嵌入是不是语义检索」放在最显眼处**。
+  // 默认用的是本机哈希嵌入，只做词面重合；不写清楚的话，检索不到同义改写的结果
+  // 会被当成「课程里没有这个内容」，而不是「检索方式本身的局限」。
+  async function loadRag() {
+    try {
+      const status = await api('rag/status');
+      app.rag = status; app.ragError = '';
+      if (!app.ragKbId) app.ragKbId = status.courseKbId || ((status.kbs || [])[0] || {}).id || '';
+      const list = await api('rag/kbs');
+      app.rag.kbs = list.kbs || [];
+      if (!app.ragKbId && app.rag.kbs.length) app.ragKbId = app.rag.kbs[0].id;
+    } catch (error) { app.rag = null; app.ragError = (error && error.message) || '知识库状态读取失败。'; }
+  }
+  function renderRag() {
+    const head = '<header class="page-heading"><div><p class="eyebrow">本机知识库</p><h1>知识库与检索</h1>';
+    if (app.ragError) {
+      main.innerHTML = head + '</div></header><div class="notice error">' + esc(app.ragError) + '<br>知识库由本机后端提供；静态模式下不可用，这不影响学习流程。</div>';
+      return;
+    }
+    if (!app.rag) { main.innerHTML = '<div class="loading-state"><span class="loading-spinner"></span><p>正在读取知识库状态…</p></div>'; return; }
+    const rag = app.rag.rag || {};
+    const engines = rag.engines || [];
+    const backends = rag.backends || [];
+    const kbs = app.rag.kbs || [];
+    const current = rag.currentEmbedder || {};
+    const statusBadge = status => '<span class="badge ' + (status === 'ready' ? 'green' : status === 'needs-config' ? 'amber' : '') + '">' + esc(status) + '</span>';
+    const courseKb = app.rag.courseKbId;
+    main.innerHTML = head + '<p>' + esc(kbs.length) + ' 个知识库 · 当前嵌入：' + esc(current.label || '未知') + '</p></div>' +
+      '<button type="button" class="icon-button" title="刷新" aria-label="刷新知识库状态" data-action="refresh-rag">↻</button></header>' +
+      '<div class="notice ' + (current.semantic ? 'success' : '') + '">' + esc(current.note || '') +
+        (current.semantic ? '' : '<br><strong>因此：同义改写、换个说法提问会检索不到</strong> —— 这是检索方式的局限，不代表课程里没有这个内容。') + '</div>' +
+      '<section class="section-band"><h2>检索引擎</h2>' + engines.map(engine =>
+        '<div class="memory-surface"><div class="memory-surface-head"><strong>' + esc(engine.label) + '</strong>' + statusBadge(engine.status) + '</div>' +
+        '<p class="small muted">' + esc(engine.summary || '') + (engine.reason ? ' · ' + esc(engine.reason) : '') + '</p></div>').join('') + '</section>' +
+      '<section class="section-band"><h2>索引后端</h2>' + backends.map(backend =>
+        '<div class="memory-surface"><div class="memory-surface-head"><strong>' + esc(backend.label) + '</strong>' + statusBadge(backend.available ? 'ready' : 'not-installed') + '</div>' +
+        '<p class="small muted">' + (backend.available ? '可用' + (backend.version ? ' · ' + esc(backend.version) : '') : esc(backend.reason || '') + (backend.install ? '（' + esc(backend.install) + '）' : '')) + '</p></div>').join('') + '</section>' +
+      '<section class="section-band"><h2>知识库</h2>' + (kbs.length ? kbs.map(kb =>
+        '<div class="memory-surface"><div class="memory-surface-head"><strong>' + esc(kb.name) + '</strong><span class="muted small">' + esc(kb.documentCount) + ' 篇文档 · ' + esc((kb.versions || []).length) + ' 个索引版本 · 当前 v' + esc(kb.activeVersion || '—') + '</span></div>' +
+        (kb.activeManifest ? '<p class="small muted">' + esc(kb.activeManifest.chunkCount) + ' 个可引用块 · 引擎 ' + esc(kb.activeManifest.engine) + ' · 嵌入 ' + esc(kb.activeManifest.embedder.id) + (kb.activeManifest.backend.degraded ? ' · <strong>索引后端已降级</strong>：' + esc(kb.activeManifest.backend.degradeReason) : '') + '</p>' +
+          '<p class="small muted">' + esc(kb.activeManifest.notice || '') + '</p>' : '<p class="small muted">尚未建立索引。</p>') + '</div>').join('')
+        : '<p class="muted">还没有知识库。</p><button type="button" class="primary" data-action="seed-course">用仓库自带课程内容建立课程知识库</button>') +
+        (kbs.length && !courseKb ? '<p style="margin-top:12px"><button type="button" data-action="seed-course">建立课程知识库</button></p>' : '') + '</section>' +
+      '<section class="section-band"><h2>检索试一下</h2>' +
+        '<form id="rag-search-form"><label class="field">知识库<select name="kbId">' + kbs.map(kb => '<option value="' + esc(kb.id) + '"' + (kb.id === app.ragKbId ? ' selected' : '') + '>' + esc(kb.name) + '</option>').join('') + '</select></label>' +
+        '<label class="field">问题<input name="query" required maxlength="200" value="' + esc(app.ragQuery) + '" placeholder="例如：token 是什么"></label>' +
+        '<div class="form-footer"><span class="muted">检索在本机完成，不发送到外部服务。</span><button type="submit" class="primary">检索</button></div></form>' +
+        (app.ragResults ? '<div class="rag-results"><h3>命中 ' + esc(app.ragResults.hits.length) + ' 条（索引 v' + esc(app.ragResults.version) + '）</h3>' +
+          (app.ragResults.hits.length ? app.ragResults.hits.map(hit => '<div class="rag-hit"><div class="rag-hit-head"><strong>' + esc(hit.title) + '</strong><span class="muted small">' + esc(hit.source) + ' · 相似度 ' + esc(hit.score) + '</span></div><p class="small">' + esc(hit.text) + '</p></div>').join('')
+            : '<p class="muted small">没有命中。注意：默认嵌入只做词面重合，换个更贴近原文的说法再试。</p>') +
+          (app.ragResults.rebuilt ? '<p class="small muted">索引文件缺失，本次已从可读真源（chunks.jsonl）就地重建。</p>' : '') + '</div>' : '') + '</section>';
+  }
   function showDialog(title,html) {
     $('#dialog-content').innerHTML = '<div class="dialog-heading"><h2 id="dialog-title">' + esc(title) + '</h2><button type="button" class="icon-button" aria-label="关闭" title="关闭" data-action="close-dialog">' + icon('x') + '</button></div>' + html;
     renderIcons();
@@ -285,7 +339,7 @@
     if (button.dataset.stage) { if (app.busy) return; app.stage = button.dataset.stage; render(); return; }
     if (button.dataset.module) { if (!app.busy) selectModule(button.dataset.module); return; }
     if (button.dataset.authMode) { if (!app.busy) { app.authMode = button.dataset.authMode; accountDialog(); } return; }
-    if (button.dataset.view) return void task(button,async () => { app.view = button.dataset.view; if (app.view === 'review') await loadReviews(); if (app.view === 'memory') { app.memory = null; render(); await loadMemory(); } render(); });
+    if (button.dataset.view) return void task(button,async () => { app.view = button.dataset.view; if (app.view === 'review') await loadReviews(); if (app.view === 'memory') { app.memory = null; render(); await loadMemory(); } if (app.view === 'rag') { app.rag = null; render(); await loadRag(); } render(); });
     const action = button.dataset.action;
     if (action === 'close-dialog') return dialog.close();
     if (app.busy) return;
@@ -297,6 +351,12 @@
     if (action === 'export-json') { try { const blob = new Blob([JSON.stringify(app.state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'aimaster-learning-' + Date.now() + '.json'; a.click(); URL.revokeObjectURL(a.href); toast('学习档案已导出。'); } catch(e) { toast('导出失败。',true); } return; }
     if (action === 'refresh-memory') return void task(button,async () => { await loadMemory(); render(); });
     if (action === 'synthesize-memory') return void task(button,async () => { await api('memory/synthesize',{}); await loadMemory(); render(); toast('L3 综合已按 L2 事实生成。'); });
+    if (action === 'refresh-rag') return void task(button,async () => { await loadRag(); render(); });
+    if (action === 'seed-course') return void task(button,async () => {
+      const result = await api('rag/course/seed',{});
+      app.ragKbId = result.kbId; app.ragResults = null; await loadRag(); render();
+      toast('课程知识库已建立（v' + result.manifest.version + '，' + result.manifest.chunkCount + ' 个可引用块）。');
+    });
     task(button,async () => {
       if (action === 'diagnostic') { const data = await api('quiz?mode=diagnostic'); app.diagnosticQuiz = data.quiz; app.diagnosticResult = null; diagnosticDialog(); }
       if (action === 'start-quiz') await startQuiz();
@@ -309,10 +369,16 @@
   });
   document.addEventListener('submit',event => {
     const form = event.target;
-    if (!['plan-form','plan-dialog-form','explanation-form','quiz-form','diagnostic-form','settings-form','account-form'].includes(form.id) && !form.dataset.reviewForm) return;
+    if (!['plan-form','plan-dialog-form','explanation-form','quiz-form','diagnostic-form','settings-form','account-form','rag-search-form'].includes(form.id) && !form.dataset.reviewForm) return;
     event.preventDefault();
     task($('button[type="submit"]',form),async () => {
       const values = new FormData(form);
+      if (form.id === 'rag-search-form') {
+        app.ragKbId = String(values.get('kbId') || ''); app.ragQuery = String(values.get('query') || '');
+        const data = await api('rag/search',{kbId:app.ragKbId,query:app.ragQuery,limit:5});
+        app.ragResults = data.result; render();
+        return;
+      }
       if (form.id === 'plan-form' || form.id === 'plan-dialog-form') {
         applyState(await api('plan',{goal:String(values.get('goal')).trim(),level:values.get('level'),dailyMinutes:Number(values.get('dailyMinutes')),deadline:values.get('deadline') || undefined}));
         setLearnView(); resetQuiz(); dialog.close(); render(); toast('学习计划已保存。');
