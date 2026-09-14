@@ -14,7 +14,7 @@
     if (window.lucide) window.lucide.createIcons({attrs:{'stroke-width':1.8}});
   };
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},busy:false,authMode:'login'};
+  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},busy:false,authMode:'login',memory:null,memoryError:''};
   const main = $('#main-content');
   const dialog = $('#workspace-dialog');
   let toastTimer;
@@ -126,6 +126,7 @@
     try {
     if (app.view === 'review') return renderReviews();
     if (app.view === 'records') return renderRecords();
+    if (app.view === 'memory') return renderMemory();
     if (!app.state.plan || !current()) return renderSetup();
     renderLesson();
     } finally { renderIcons(); }
@@ -203,6 +204,45 @@
       return '<form class="review-item" data-review-form="' + esc(id) + '"><h3>' + (index+1) + '. ' + esc(q.prompt || q.question || entry.prompt) + '</h3><div class="quiz-options">' + (q.options || entry.options || []).map((option,i) => '<label class="quiz-option"><input type="radio" name="answer" value="' + i + '" required' + (r ? ' disabled' : '') + '><span>' + esc(option) + '</span></label>').join('') + '</div>' + (r ? '<p class="notice ' + (r.correct ? 'success' : '') + '">' + (r.correct ? '✓ 回答正确。' : '再巩固一次。') + esc(r.explanation || r.feedback || '') + '</p><button type="button" data-action="refresh-review">继续复习</button>' : '<button type="submit">提交复习</button>') + '</form>';
     }).join('') : '<div class="empty-state"><h3>暂时没有待巩固错题</h3><p>完成测验后，答错的题目会出现在这里。</p><button type="button" data-view="learn">返回学习</button></div>') + '</section>';
   }
+  // 学习记忆视图。
+  // 这个页面的设计要点是**不能让人以为它比实际更聪明**，所以两件事写在正文而不是脚注里：
+  //   ① L2/L3 是确定性聚合（计数与比例），不是模型摘要，没有语义归纳能力；
+  //   ② 数据只在这台电脑，不跨设备同步。
+  // 另外 L3 是**按需生成**的，不是自动跑 —— 页面上必须让人看见「还没生成」这个状态，
+  // 否则空白会被误读成「你的记忆是空的」。
+  async function loadMemory() {
+    try { app.memory = await api('memory/inspect'); app.memoryError = ''; }
+    catch (error) { app.memory = null; app.memoryError = (error && error.message) || '记忆读取失败。'; }
+  }
+  function renderMemory() {
+    const head = '<header class="page-heading"><div><p class="eyebrow">本机学习记忆</p><h1>学习记忆</h1>';
+    if (app.memoryError) {
+      main.innerHTML = head + '</div></header><div class="notice error">' + esc(app.memoryError) + '<br>记忆由本机后端提供；静态模式（没有后端）下不可用，这不影响学习流程。</div>';
+      return;
+    }
+    if (!app.memory) { main.innerHTML = '<div class="loading-state"><span class="loading-spinner"></span><p>正在读取学习记忆…</p></div>'; return; }
+    const memory = app.memory.memory || {};
+    const surfaces = memory.surfaces || [];
+    const l3 = (memory.l3 || []).filter(item => item && item.markdown);
+    main.innerHTML = head + '<p>' + esc(memory.l1Total || 0) + ' 条事件轨迹 · ' + esc(surfaces.length) + ' 个记忆面</p></div>' +
+      '<button type="button" class="icon-button" title="刷新记忆" aria-label="刷新记忆" data-action="refresh-memory">↻</button></header>' +
+      '<div class="notice">' + esc(memory.notice || '') +
+        '<br>L2/L3 由事件轨迹<strong>确定性聚合</strong>（计数与比例），不是模型摘要，也没有语义归纳能力 —— 它不会得出「你偏好类比式讲解」这类结论。' +
+        '<br>数据只存在这台电脑，不跨设备同步；清空记忆需要本机管理权限。</div>' +
+      '<section class="section-band"><h2>记忆面（L1 → L2）</h2>' + (surfaces.length ? surfaces.map(item =>
+        '<div class="memory-surface"><div class="memory-surface-head"><strong>' + esc(item.label) + '</strong>' +
+        '<span class="muted small">' + esc(item.events) + ' 条事件' + (item.dates ? ' · 覆盖 ' + esc(item.dates) + ' 天' : '') + '</span></div>' +
+        '<p class="small muted">' + esc(item.describe || '') + '</p>' +
+        (item.l2 ? '<details><summary>查看 L2 事实</summary><pre class="memory-md">' + esc(item.l2) + '</pre></details>'
+                 : '<p class="small muted">还没有 L2 事实 —— 该面尚无活动记录。</p>') + '</div>').join('')
+        : '<p class="muted">还没有任何学习活动记录。完成一次讲解或测验后，这里会出现轨迹。</p>') + '</section>' +
+      '<section class="section-band"><h2>跨面综合（L3）</h2>' + (l3.length ? l3.map(item =>
+        '<details class="memory-l3"><summary>' + esc(item.slot) + '</summary><pre class="memory-md">' + esc(item.markdown) + '</pre></details>').join('')
+        : '<p class="muted">还没有生成 L3 综合。L3 <strong>按需生成</strong>，不会自动运行 —— 空白不代表你没有学习记录。</p><button type="button" class="primary" data-action="synthesize-memory">按当前 L2 事实生成</button>') + '</section>' +
+      '<section class="section-band"><h2>显式偏好</h2>' + (memory.preferences
+        ? '<pre class="memory-md">' + esc(memory.preferences) + '</pre>'
+        : '<p class="muted">尚未写入偏好。偏好只能显式写入，既不参与自动综合，也不会被 L3 生成覆盖。</p>') + '</section>';
+  }
   function showDialog(title,html) {
     $('#dialog-content').innerHTML = '<div class="dialog-heading"><h2 id="dialog-title">' + esc(title) + '</h2><button type="button" class="icon-button" aria-label="关闭" title="关闭" data-action="close-dialog">' + icon('x') + '</button></div>' + html;
     renderIcons();
@@ -245,7 +285,7 @@
     if (button.dataset.stage) { if (app.busy) return; app.stage = button.dataset.stage; render(); return; }
     if (button.dataset.module) { if (!app.busy) selectModule(button.dataset.module); return; }
     if (button.dataset.authMode) { if (!app.busy) { app.authMode = button.dataset.authMode; accountDialog(); } return; }
-    if (button.dataset.view) return void task(button,async () => { app.view = button.dataset.view; if (app.view === 'review') await loadReviews(); render(); });
+    if (button.dataset.view) return void task(button,async () => { app.view = button.dataset.view; if (app.view === 'review') await loadReviews(); if (app.view === 'memory') { app.memory = null; render(); await loadMemory(); } render(); });
     const action = button.dataset.action;
     if (action === 'close-dialog') return dialog.close();
     if (app.busy) return;
@@ -255,6 +295,8 @@
     if (action === 'diagnostic-done') return showDialog('设置学习计划',planForm(true));
     if (action === 'next-module') { const next = modules().find(id => !progress(id).completedAt); if (next) selectModule(next); else { app.view = 'records'; render(); toast('当前学习航线已完成，记得按期复习。'); } return; }
     if (action === 'export-json') { try { const blob = new Blob([JSON.stringify(app.state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'aimaster-learning-' + Date.now() + '.json'; a.click(); URL.revokeObjectURL(a.href); toast('学习档案已导出。'); } catch(e) { toast('导出失败。',true); } return; }
+    if (action === 'refresh-memory') return void task(button,async () => { await loadMemory(); render(); });
+    if (action === 'synthesize-memory') return void task(button,async () => { await api('memory/synthesize',{}); await loadMemory(); render(); toast('L3 综合已按 L2 事实生成。'); });
     task(button,async () => {
       if (action === 'diagnostic') { const data = await api('quiz?mode=diagnostic'); app.diagnosticQuiz = data.quiz; app.diagnosticResult = null; diagnosticDialog(); }
       if (action === 'start-quiz') await startQuiz();
