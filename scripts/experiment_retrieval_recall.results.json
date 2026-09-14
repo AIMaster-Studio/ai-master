@@ -1,0 +1,101 @@
+{
+  "ranAt": "2026-09-14T16:59:45.206Z",
+  "embedder": {
+    "id": "local-hash-256",
+    "dimensions": 256,
+    "semantic": false,
+    "label": "本机哈希嵌入",
+    "note": "零依赖、不联网、确定性。只反映词面重合，不是语义嵌入：同义改写与跨语言检索会漏召回。"
+  },
+  "backend": {
+    "id": "sqlite-vec",
+    "label": "SQLite 向量索引",
+    "file": "vectors.sqlite",
+    "degraded": false,
+    "degradeReason": ""
+  },
+  "documents": 74,
+  "chunks": 93,
+  "k": 3,
+  "cases": [
+    {
+      "id": "E1",
+      "expect": "chapter_01",
+      "verbatimHit": true,
+      "verbatimTop1": true,
+      "paraphraseHit": true,
+      "paraphraseTop1": false,
+      "paraphraseTop": "chapter_08.json#description"
+    },
+    {
+      "id": "E2",
+      "expect": "chapter_01",
+      "verbatimHit": true,
+      "verbatimTop1": true,
+      "paraphraseHit": false,
+      "paraphraseTop1": false,
+      "paraphraseTop": "chapter_08.json#kp"
+    },
+    {
+      "id": "E3",
+      "expect": "chapter_01",
+      "verbatimHit": false,
+      "verbatimTop1": false,
+      "paraphraseHit": true,
+      "paraphraseTop1": true,
+      "paraphraseTop": "chapter_01.json#kp"
+    },
+    {
+      "id": "E4",
+      "expect": "chapter_02",
+      "verbatimHit": true,
+      "verbatimTop1": true,
+      "paraphraseHit": false,
+      "paraphraseTop1": false,
+      "paraphraseTop": "chapter_03.json#kp"
+    },
+    {
+      "id": "E5",
+      "expect": "chapter_03",
+      "verbatimHit": true,
+      "verbatimTop1": true,
+      "paraphraseHit": true,
+      "paraphraseTop1": true,
+      "paraphraseTop": "chapter_03.json#kp"
+    },
+    {
+      "id": "E6",
+      "expect": "chapter_05",
+      "verbatimHit": true,
+      "verbatimTop1": true,
+      "paraphraseHit": true,
+      "paraphraseTop1": true,
+      "paraphraseTop": "chapter_05.json#kp"
+    },
+    {
+      "id": "E7",
+      "expect": "chapter_08",
+      "verbatimHit": true,
+      "verbatimTop1": true,
+      "paraphraseHit": false,
+      "paraphraseTop1": false,
+      "paraphraseTop": "chapter_03.json#kp"
+    },
+    {
+      "id": "E8",
+      "expect": "chapter_10",
+      "verbatimHit": true,
+      "verbatimTop1": true,
+      "paraphraseHit": false,
+      "paraphraseTop1": false,
+      "paraphraseTop": "chapter_01.json#kp"
+    }
+  ],
+  "summary": {
+    "verbatimHit": 7,
+    "paraphraseHit": 4,
+    "verbatimTop1": 7,
+    "paraphraseTop1": 3,
+    "total": 8
+  }
+}

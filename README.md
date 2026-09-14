@@ -275,6 +275,7 @@ npm run verify          # 无需 npm install，无需 .env 或 .local/
 | [docs/ican/rag-memory-agent.md](docs/ican/rag-memory-agent.md) | RAG / 记忆 / 能力运行时的设计依据、刻意未照搬之处与逐条边界 |
 | [docs/ican/deeptutor-comparison.md](docs/ican/deeptutor-comparison.md) | 与 DeepTutor 的逐项能力对照：借了什么、没借什么、为什么 |
 | [docs/ican/content-audit-2026-09-15.md](docs/ican/content-audit-2026-09-15.md) | 课程事实审校报告：七项逐条结论、依据与核实日期、答案键风险面扫描 |
+| [docs/ican/experiment-2026-09-15.md](docs/ican/experiment-2026-09-15.md) | 实验记录：非语义嵌入的召回代价量化、界面渲染验证（含截图与过程中发现的缺陷） |
 
 ---
 

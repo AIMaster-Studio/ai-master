@@ -161,6 +161,15 @@
     if (result.evidenceIntegrity === 'fabricated-reference') {
       return '<div class="evidence evidence-warn"><strong>证据引用复核未通过</strong><p class="small">模型引用了本次检索中不存在的编号，这次评审结果不可采信，未计入通过。</p></div>';
     }
+    // 未走模型时（模型未配置，或本地规则直接没放行），证据根本不会被使用。
+    // 这时**不能**显示成「没有证据」—— 课程库可能好端端地检索到了一堆证据，只是这次判定没走模型。
+    // 把两种情况混为一谈，会让读者以为课程库是空的，从而去修一个并不存在的问题。
+    if (result.mode === 'local') {
+      return '<div class="evidence evidence-none"><strong>本次判定来自本地规则，未使用课程证据</strong>'
+        + '<p class="small">本地规则是完整性筛查，不做语义判断，因此不引用证据。'
+        + (grounding.evidenceCount ? '本次实际检索到 ' + esc(grounding.evidenceCount) + ' 条课程证据，但没有送入模型。' : '')
+        + '</p></div>';
+    }
     if (!evidence.length) {
       return '<div class="evidence evidence-none"><strong>本次没有可引用的课程证据</strong><p class="small">' + esc(grounding.reason || '课程知识库尚未建立，或本模块没有检索到相关内容。') + '本次判定基于模型自身知识，依据强度低于有证据的评审。</p></div>';
     }
@@ -442,7 +451,7 @@
     if (button.dataset.stage) { if (app.busy) return; app.stage = button.dataset.stage; render(); return; }
     if (button.dataset.module) { if (!app.busy) selectModule(button.dataset.module); return; }
     if (button.dataset.authMode) { if (!app.busy) { app.authMode = button.dataset.authMode; accountDialog(); } return; }
-    if (button.dataset.view) return void task(button,async () => { app.view = button.dataset.view; if (app.view === 'review') await loadReviews(); if (app.view === 'memory') { app.memory = null; render(); await loadMemory(); } if (app.view === 'rag') { app.rag = null; render(); await loadRag(); } if (app.view === 'research') { app.research = null; render(); await loadResearch(); } render(); });
+    if (button.dataset.view) return void task(button,async () => { await openView(button.dataset.view); });
     const action = button.dataset.action;
     if (action === 'close-dialog') return dialog.close();
     if (app.busy) return;
@@ -533,11 +542,34 @@
   dialog.addEventListener('click',event => {
     if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); }
   });
+  // 视图切换集中在一处，并同步到 URL hash。
+  // 此前只有「点侧栏按钮」一条路径：刷新会回到默认视图，也没法把某个视图直接发给别人。
+  // 加上 hash 之后，`#memory` / `#rag` / `#research` 可以直接打开 —— 顺带也让无头浏览器能截图。
+  const VIEWS = ['learn','review','records','memory','rag','research'];
+  async function openView(view, options = {}) {
+    if (!VIEWS.includes(view)) return;
+    app.view = view;
+    if (options.syncHash !== false && location.hash.slice(1) !== view) {
+      try { history.replaceState(null, '', '#' + view); } catch (_) { location.hash = view; }
+    }
+    if (view === 'review') await loadReviews();
+    if (view === 'memory') { app.memory = null; render(); await loadMemory(); }
+    if (view === 'rag') { app.rag = null; render(); await loadRag(); }
+    if (view === 'research') { app.research = null; render(); await loadResearch(); }
+    render();
+  }
+  window.addEventListener('hashchange', () => {
+    const view = location.hash.slice(1) || 'learn';
+    if (VIEWS.includes(view) && view !== app.view) void openView(view, { syncHash: false });
+  });
   async function initialize() {
     try {
       // Establish the session before independent reads so first-visit cookies cannot race.
       const data = await api('state');
-      const [status,catalog] = await Promise.all([api('status'),api('catalog')]); app.status = status; app.catalog = catalog.modules || []; applyState(data); render();
+      const [status,catalog] = await Promise.all([api('status'),api('catalog')]); app.status = status; app.catalog = catalog.modules || []; applyState(data);
+      const initialView = location.hash.slice(1);
+      if (VIEWS.includes(initialView) && initialView !== 'learn') await openView(initialView, { syncHash: false });
+      else render();
     } catch (error) {
       main.innerHTML = '<div class="empty-state"><p class="eyebrow">学习服务未连接</p><h1>当前无法读取学习档案</h1><p>' + esc(error.message) + '</p><div class="button-row"><button type="button" class="primary" data-action="retry-connect">重新连接</button><a class="button-link" href="../dashboard/">先浏览课程</a></div></div>';
       $('#ai-status').innerHTML = '<span class="status-dot"></span><span>服务未连接</span>';
