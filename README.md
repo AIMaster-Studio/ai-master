@@ -222,10 +222,10 @@ npm run verify
 
 | 项 | 值 |
 | :--- | :--- |
-| 实测日期 | 2026-09-14 |
+| 实测日期 | 2026-09-15 |
 | 克隆 URL | `https://github.com/AIMaster-Studio/ai-master.git` |
-| 克隆时的 HEAD short SHA | `a5bce44` |
-| 结果 | **退出码 0**；① 80 tests / 80 pass / 0 fail；② `28 pages, 7 assets, 339 internal links, 10 galaxies, 57 knowledge nodes` |
+| 克隆时的 HEAD short SHA | `3281c72` |
+| 结果 | **退出码 0**；① 103 tests / 103 pass / 0 fail；② `28 pages, 7 assets, 339 internal links, 10 galaxies, 57 knowledge nodes` |
 | 该次克隆是否含 `node_modules` | **否** —— 本次新增的 `sqlite-vec` 是 optionalDependency，装不上时 RAG 索引自动降级到纯 JS 余弦，`verify` 不受影响 |
 
 ```bash
