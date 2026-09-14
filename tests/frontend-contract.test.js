@@ -122,3 +122,23 @@ test('the research view exposes the tool trace and explains that ask_user pauses
     assert.ok(css.includes('.' + className), '样式表缺少类名：' + className);
   }
 });
+
+test('the memory graph is rendered from the graph endpoint and shows empty surfaces', () => {
+  const script = fs.readFileSync(WORKSPACE_JS, 'utf8');
+  const css = fs.readFileSync(WORKSPACE_CSS, 'utf8');
+
+  assert.match(script, /function memoryGraphHtml\(/, '记忆图谱渲染函数缺失');
+  assert.match(script, /memoryGraphHtml\(app\.memory\.graph\)/, '图谱未接入 inspect 返回的 graph 字段');
+  assert.ok(css.includes('.memory-graph'), '样式表缺少 .memory-graph');
+
+  // 三条刻意的设计选择，都不该被顺手改掉：
+  //   ① 空数据要有可读文案，而不是渲染一张空图；
+  //   ② 没有事件的面要画出来（灰显），不能隐藏 —— 否则「没数据」与「不存在」看起来一样；
+  //   ③ 线宽要压缩量级（log），否则 1 条事件的线会细到看不见。
+  assert.match(script, /还没有事件轨迹/, '未处理无数据的情况');
+  assert.match(script, /暂无数据/, '未标注灰显面的状态');
+  assert.match(script, /Math\.log2/, '线宽未做量级压缩');
+  assert.match(script, /不是不存在/, '未说明灰显含义');
+  // 内联 SVG，不引图表库（前端没有构建步骤）。
+  assert.match(script, /<svg class="memory-graph"/, '应生成内联 SVG');
+});

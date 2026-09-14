@@ -216,6 +216,60 @@
     try { app.memory = await api('memory/inspect'); app.memoryError = ''; }
     catch (error) { app.memory = null; app.memoryError = (error && error.message) || '记忆读取失败。'; }
   }
+  // 记忆图谱：L3 综合 → 各 L2 记忆面，连线粗细 = 该面的事件数。
+  //
+  // 两点刻意的选择：
+  //   ① 用内联 SVG 而不是引图表库 —— 前端没有构建步骤，为一张十来节点的图加依赖不划算；
+  //   ② **没有事件的面照样画出来（灰显）**，而不是隐藏。隐藏会让「这个面还没数据」
+  //      和「这个面不存在」看起来一样；灰显本身是信息。
+  // 线宽用 log2 缩放：事件数从 1 到 100 跨度很大，线性会让 1 条的线细到看不见。
+  function memoryGraphHtml(graph) {
+    const nodes = (graph && graph.nodes) || [];
+    const root = nodes.find(node => node.id === 'L3');
+    const surfaces = nodes.filter(node => node.id !== 'L3');
+    if (!root || !surfaces.length) return '';
+    if (!root.events) return '<p class="muted">还没有事件轨迹，暂无可视化的记忆图谱。完成一次讲解或测验后，这里会出现。</p>';
+
+    const weights = new Map((graph.edges || []).map(edge => [edge.to, edge.weight]));
+    const W = 640;
+    const pad = 14;
+    const gap = 10;
+    const rootW = 200;
+    const rootH = 44;
+    const boxH = 52;
+    const topY = 12;
+    const rowY = topY + rootH + 44;
+    const H = rowY + boxH + 14;
+    const boxW = (W - pad * 2 - gap * (surfaces.length - 1)) / surfaces.length;
+    const centerX = W / 2;
+
+    let svg = '<svg class="memory-graph" viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" '
+      + 'aria-label="记忆图谱：L3 综合由各 L2 记忆面汇总，连线粗细表示事件数">';
+    surfaces.forEach((surface, index) => {
+      const weight = weights.get(surface.id) || 0;
+      if (!weight) return;
+      const x = pad + index * (boxW + gap) + boxW / 2;
+      const width = Math.max(1, Math.min(4, 1 + Math.log2(weight + 1)));
+      svg += '<line x1="' + centerX + '" y1="' + (topY + rootH) + '" x2="' + x.toFixed(1) + '" y2="' + rowY + '" '
+        + 'stroke="#8bafda" stroke-width="' + width.toFixed(2) + '" opacity="0.6"/>';
+    });
+    svg += '<rect x="' + (centerX - rootW / 2) + '" y="' + topY + '" width="' + rootW + '" height="' + rootH + '" rx="7" fill="#eef4fc" stroke="#b9d0e8" stroke-width="0.5"/>'
+      + '<text x="' + centerX + '" y="' + (topY + 18) + '" text-anchor="middle" font-size="12" font-weight="600" fill="#1f5abb">L3 综合</text>'
+      + '<text x="' + centerX + '" y="' + (topY + 33) + '" text-anchor="middle" font-size="10" fill="#6b7d8c">' + esc(root.events) + ' 条事件汇总</text>';
+    surfaces.forEach((surface, index) => {
+      const weight = weights.get(surface.id) || 0;
+      const x = pad + index * (boxW + gap);
+      const dim = weight ? '' : ' opacity="0.55"';
+      svg += '<g' + dim + '><rect x="' + x.toFixed(1) + '" y="' + rowY + '" width="' + boxW.toFixed(1) + '" height="' + boxH + '" rx="6" fill="'
+        + (weight ? '#ffffff' : '#f4f6f8') + '" stroke="' + (weight ? '#b9d0e8' : '#dde3e8') + '" stroke-width="0.5"/>'
+        + '<text x="' + (x + boxW / 2).toFixed(1) + '" y="' + (rowY + 20) + '" text-anchor="middle" font-size="11" fill="' + (weight ? '#33475a' : '#8b969f') + '">'
+        + esc(surface.label) + '</text>'
+        + '<text x="' + (x + boxW / 2).toFixed(1) + '" y="' + (rowY + 36) + '" text-anchor="middle" font-size="10" fill="#8b969f">'
+        + (weight ? esc(weight) + ' 条 · ' + esc(surface.dates) + ' 天' : '暂无数据') + '</text></g>';
+    });
+    svg += '</svg>';
+    return svg + '<p class="small muted">连线粗细按事件数取对数缩放。灰显的记忆面表示尚无数据 —— 不是不存在。</p>';
+  }
   function renderMemory() {
     const head = '<header class="page-heading"><div><p class="eyebrow">本机学习记忆</p><h1>学习记忆</h1>';
     if (app.memoryError) {
@@ -231,6 +285,7 @@
       '<div class="notice">' + esc(memory.notice || '') +
         '<br>L2/L3 由事件轨迹<strong>确定性聚合</strong>（计数与比例），不是模型摘要，也没有语义归纳能力 —— 它不会得出「你偏好类比式讲解」这类结论。' +
         '<br>数据只存在这台电脑，不跨设备同步；清空记忆需要本机管理权限。</div>' +
+      '<section class="section-band"><h2>记忆图谱</h2>' + memoryGraphHtml(app.memory.graph) + '</section>' +
       '<section class="section-band"><h2>记忆面（L1 → L2）</h2>' + (surfaces.length ? surfaces.map(item =>
         '<div class="memory-surface"><div class="memory-surface-head"><strong>' + esc(item.label) + '</strong>' +
         '<span class="muted small">' + esc(item.events) + ' 条事件' + (item.dates ? ' · 覆盖 ' + esc(item.dates) + ' 天' : '') + '</span></div>' +
