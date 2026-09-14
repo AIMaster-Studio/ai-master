@@ -11,6 +11,7 @@
     "dev": "node server/index.js",
     "web": "node server/index.js",
     "test:learning": "node --test tests/*.test.js",
+    "verify": "npm run test:learning && python scripts/verify_frontend_demo.py",
     "pack": "electron-builder --win --x64",
     "devlog": "python scripts/auto_dev_log.py",
     "devlog:pdf": "python scripts/build_project_timeline_pdf.py",

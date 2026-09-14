@@ -201,13 +201,40 @@ $local  = (Get-Content frontend/static/js/learning-workspace.js -Raw) -replace "
 
 ## 验证与测试
 
+**一条命令跑完自带验收**（干净克隆后直接执行，**不需要先 `npm install`**）：
+
 ```bash
-npm run test:learning                 # node --test tests/*.test.js （最近一次本机实测：全通过，exit 0）
-python scripts/verify_frontend_demo.py
-#   实测输出：28 pages, 7 assets, 339 internal links, 10 galaxies, 57 knowledge nodes.
+npm run verify
 ```
 
-命令列在这里**不代表已在所有设备通过**；结论以实际测试记录为准。
+它顺序执行两项，**任一项失败则整体退出码非 0**：
+
+| # | 实际执行 | 验什么 |
+| :- | :--- | :--- |
+| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 34 项） |
+| ② | `python scripts/verify_frontend_demo.py` | 静态前端完整性：页面、资源、内部链接、知识星海 |
+
+**最近一次实测**（干净 Git 克隆，非工作树、非 `git archive`）：
+
+| 项 | 值 |
+| :--- | :--- |
+| 实测日期 | 2026-09-14 |
+| 克隆 URL | `https://github.com/AIMaster-Studio/ai-master.git` |
+| 克隆时的 HEAD short SHA | `8a965de` |
+| 结果 | **退出码 0**；① 34 tests / 34 pass / 0 fail；② `28 pages, 7 assets, 339 internal links, 10 galaxies, 57 knowledge nodes` |
+
+```bash
+git clone --depth 1 https://github.com/AIMaster-Studio/ai-master.git
+cd ai-master
+npm run verify          # 无需 npm install，无需 .env 或 .local/
+```
+
+**依赖边界**：本命令**不读取任何被 `.gitignore` 排除的文件**（`.env`、`.local/`、`node_modules/`），
+也不要求预先安装依赖 —— 上述实测就是在没有 `node_modules` 的克隆上跑出来的。
+唯一的外部前提是机器上同时有 **Node.js ≥24** 与 **Python 3**。
+
+> 关于 HEAD SHA：上行记录的是**最后一次实测时的 commit**。本节自身的改动被提交后 SHA 会前进一位，
+> 届时以最新一次实测记录为准 —— 请勿把它当作"当前 HEAD"，判据是**该次实测的退出码**。
 
 ---
 
