@@ -273,6 +273,7 @@ npm run verify          # 无需 npm install，无需 .env 或 .local/
 | [docs/ican/third-party-notices.md](docs/ican/third-party-notices.md) | 版权、来源与授权限制 |
 | [docs/ican/education-study-plan.md](docs/ican/education-study-plan.md) | 教育效果研究计划 |
 | [docs/ican/rag-memory-agent.md](docs/ican/rag-memory-agent.md) | RAG / 记忆 / 能力运行时的设计依据、刻意未照搬之处与逐条边界 |
+| [docs/ican/deeptutor-comparison.md](docs/ican/deeptutor-comparison.md) | 与 DeepTutor 的逐项能力对照：借了什么、没借什么、为什么 |
 
 ---
 
