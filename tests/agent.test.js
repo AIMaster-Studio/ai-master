@@ -221,6 +221,11 @@ test('capability status is honest about missing model configuration', () => {
   const unconfigured = capabilities.list(false);
   assert.equal(unconfigured.find(item => item.id === 'research').status, 'needs-config');
   assert.equal(unconfigured.find(item => item.id === 'quiz').status, 'ready', '不需要模型的能力不应被配置拖累');
+  // 讲解复评未配置模型时也能用（走本地规则筛查），标成 needs-config 会让人以为不能用而直接放弃。
+  const explain = unconfigured.find(item => item.id === 'explain');
+  assert.equal(explain.status, 'ready', '未配置模型时讲解复评仍应可用');
+  assert.equal(explain.modelOptional, true);
+  assert.match(explain.modelNote, /本地规则/);
   assert.equal(capabilities.list(true).find(item => item.id === 'research').status, 'ready');
   assert.throws(() => capabilities.get('nope'), /未知的能力/);
   // 诚实边界：没有沙箱就不提供代码执行工具

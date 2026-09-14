@@ -133,3 +133,24 @@ test('module also exports to browsers without Node globals', () => {
   vm.runInNewContext(fs.readFileSync(path.resolve(__dirname, '../frontend/static/js/learning-core.js'), 'utf8'), context);
   assert.equal(typeof context.AIMasterLearningCore.screenExplanation, 'function');
 });
+test('an off-topic explanation is told it is off-topic, not merely incomplete', () => {
+  // 走查发现：跑题讲解原先只拿到「待补充：token 与文本编码」，
+  // 从头到尾没告诉他「你写的和本节无关」——他会以为是没讲全，而不是讲错了题。
+  const module = catalog.modules[0];
+  const offTopic = '今天学校安排了运动会。每个班级都准备了不同的队服，大家提前来到操场布置场地。因为天气比较炎热，老师为同学准备了饮水休息区。例如参加长跑的同学可以在赛前检查身体状况，但是有伤病时不应勉强参赛。大家互相照顾，按照规则完成比赛，并且在结束后整理好自己的物品。';
+  const result = core.screenExplanation(offTopic, module);
+  assert.equal(result.accepted, false);
+  assert.equal(result.offTopic, true, '一个概念都没覆盖时应标记为跑题');
+  assert.ok(result.flags.includes('off_topic'));
+  assert.match(result.feedback, /写的是别的内容/, '应明确指出跑题，而不是只说待补充');
+  assert.match(result.feedback, /确认你讲解的是/, '应提示确认讲解主题');
+
+  // 反向：只是漏讲部分概念，不应被误判成跑题。
+  const partial = validExplanation.replace('token', '词元').replace('幻觉', '');
+  const partialResult = core.screenExplanation(partial, module);
+  assert.equal(partialResult.offTopic, false, '覆盖了部分概念时不应判为跑题');
+  assert.equal(partialResult.flags.includes('off_topic'), false);
+
+  // 通过的讲解不应带跑题标记。
+  assert.equal(core.screenExplanation(validExplanation, module).offTopic, false);
+});

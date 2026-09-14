@@ -95,6 +95,12 @@
     if (repetitive) flags.push('repetition');
     if (covered < required) flags.push('missing_concepts');
     if (contradictions.length) flags.push('known_misconception');
+    // 一个概念都没提到，通常不是「漏讲」而是「讲的是别的东西」。
+    // 这两件事对学习者要采取的行动完全不同：前者是补内容，后者是换主题。
+    // 走查时发现：跑题讲解拿到的反馈只有「待补充：token 与文本编码」，
+    // 从头到尾没告诉他「你写的和本节无关」，他会以为是没讲全而不是讲错了题。
+    var offTopic = plain.length >= 100 && covered === 0;
+    if (offTopic) flags.push('off_topic');
     var checks = [
       { label: '有效内容', pass: plain.length >= 100 && text.length <= 6000, detail: plain.length >= 100 ? (text.length <= 6000 ? '已提供足够展开的内容。' : '请将讲解缩短至 6000 字以内。') : '请用自己的话展开到至少 100 个有效字符，覆盖机制、例子与限制。' },
       { label: '非重复表达', pass: !repetitive, detail: repetitive ? '检测到较多重复句子或重复片段，请删除凑字数的内容。' : '未检测到明显重复填充；本项不检测抄袭。' },
@@ -106,10 +112,17 @@
     ];
     var eligible = checks.every(function (check) { return check.pass; });
     var missing = checks.filter(function (check) { return !check.pass; });
+    var missingDetail = missing.map(function (check) { return check.detail; }).join('\n');
     return {
       eligible: eligible, accepted: eligible, checks: checks, flags: flags, mode: 'local',
-      feedback: eligible ? '讲解通过本地完整性筛查，请继续客观题验收。该结果基于文本规则，不代表 AI 语义评估或已证明掌握。' : missing.map(function (check) { return check.detail; }).join('\n'),
-      followUp: eligible ? (module.followUp || '改变例子中的一个条件，这个方法何时会失效？') : (missing[0] ? missing[0].detail : module.prompt)
+      offTopic: offTopic,
+      feedback: eligible
+        ? '讲解通过本地完整性筛查，请继续客观题验收。该结果基于文本规则，不代表 AI 语义评估或已证明掌握。'
+        : (offTopic
+            ? '这段讲解没有覆盖本节要求的任何关键概念，看起来写的是别的内容。请先确认你讲解的是「' + module.title + '」，再围绕它重写。\n' + missingDetail
+            : missingDetail),
+      followUp: eligible ? (module.followUp || '改变例子中的一个条件，这个方法何时会失效？')
+        : (offTopic ? '请先用一句话说明本节的主题是什么，再展开讲解。' : (missing[0] ? missing[0].detail : module.prompt))
     };
   }
 

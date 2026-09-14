@@ -86,7 +86,11 @@ const CAPABILITIES = [
     id: 'explain',
     label: '讲解复评',
     summary: '提交一段自己的讲解，先过本地 7 项完整性筛查，再基于课程证据做模型复评。',
-    needsModel: true,
+    // 关键：讲解复评**未配置模型时也能用**（走本地规则筛查），所以它不是 needs-config。
+    // 走查时发现原先标成 needs-config 会让人以为「没配模型就不能用」而直接放弃这个功能。
+    needsModel: false,
+    modelOptional: true,
+    modelNote: '未配置模型时走本地规则筛查（只查表达完整性，不做语义判断）；配置后追加基于课程证据的模型复评。',
     tools: [],
     kind: 'pipeline'
   },
@@ -102,6 +106,7 @@ const CAPABILITIES = [
     id: 'research',
     label: '深度研究',
     summary: '多轮检索 + 工具调用的研究回合，产出带来源标注的回答；信息不足时会先追问。',
+    // 这个能力**必须**有模型：它整个就是模型驱动的多轮工具调用，没有本地降级路径。
     needsModel: true,
     tools: ['rag_search', 'kb_list', 'read_memory', 'write_preference', ASK_USER_TOOL],
     kind: 'agent-loop'

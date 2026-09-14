@@ -215,7 +215,7 @@ npm run verify
 
 | # | 实际执行 | 验什么 |
 | :- | :--- | :--- |
-| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 109 项） |
+| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 110 项） |
 | ② | `python scripts/verify_frontend_demo.py` | 静态前端完整性：页面、资源、内部链接、知识星海 |
 
 **最近一次实测**（干净 Git 克隆，非工作树、非 `git archive`）：
@@ -276,6 +276,7 @@ npm run verify          # 无需 npm install，无需 .env 或 .local/
 | [docs/ican/deeptutor-comparison.md](docs/ican/deeptutor-comparison.md) | 与 DeepTutor 的逐项能力对照：借了什么、没借什么、为什么 |
 | [docs/ican/content-audit-2026-09-15.md](docs/ican/content-audit-2026-09-15.md) | 课程事实审校报告：七项逐条结论、依据与核实日期、答案键风险面扫描 |
 | [docs/ican/experiment-2026-09-15.md](docs/ican/experiment-2026-09-15.md) | 实验记录：非语义嵌入的召回代价量化、界面渲染验证（含截图与过程中发现的缺陷） |
+| [docs/ican/walkthrough-2026-09-15.md](docs/ican/walkthrough-2026-09-15.md) | 小白访站走查（10 轮）：每轮实际所见、感悟、汇总优化与修复前后对照 |
 
 ---
 
