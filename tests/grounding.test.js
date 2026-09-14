@@ -10,7 +10,7 @@ const { once } = require('node:events');
 const { createApp } = require('../server');
 const { retrieveEvidence, validateCitations } = require('../server/grounding');
 const { reviewExplanation } = require('../server/ai-review');
-const { buildCourseDocuments } = require('../server/rag/course-seed');
+const { buildCourseDocuments, stripHtml } = require('../server/rag/course-seed');
 const { createRagService } = require('../server/rag');
 const core = require('../frontend/static/js/learning-core');
 const catalog = require('../frontend/data/learning-curriculum.json');
@@ -48,6 +48,31 @@ test('course seeding produces documents drawn from the repo content only', () =>
   assert.ok(documents.some(d => d.source.startsWith('learning-curriculum.json#')), '应包含通关标准');
   assert.ok(documents.every(d => d.text && d.text.trim().length > 0));
   for (const document of documents) assert.ok(document.source.length > 0);
+});
+
+test('chapter HTML is stripped so evidence text is prose, not markup', () => {
+  // 章节 JSON 的 content 里确实带 HTML；标记混进证据会占用上下文，也会被模型当成正文引用。
+  const raw = require('../frontend/data/chapter_01.json');
+  assert.ok(raw.knowledge_points.some(p => /<[a-z][^>]*>/i.test(p.content)), '前置：源数据里应有 HTML，否则本用例无意义');
+
+  const documents = buildCourseDocuments({});
+  for (const document of documents) {
+    assert.equal(/<\/?(p|div|li|h[1-6]|strong|em|ul|ol|br|span|table|tr|td)\b[^>]*>/i.test(document.text), false,
+      '证据文本不应残留 HTML 标签：' + document.title);
+    assert.equal(document.text.includes('&nbsp;'), false, '不应残留 &nbsp; 实体：' + document.title);
+    assert.equal(document.text.includes('&lt;'), false, '实体应已还原：' + document.title);
+  }
+});
+
+test('stripHtml preserves literal angle brackets written as entities', () => {
+  assert.equal(stripHtml('<p>正文</p>'), '正文');
+  assert.equal(stripHtml('a<br>b'), 'a\nb');
+  assert.equal(stripHtml('<li>一</li><li>二</li>'), '一\n二');
+  assert.equal(stripHtml('<script>bad()</script>保留'), '保留');
+  assert.equal(stripHtml('&lt;div&gt; 是标签'), '<div> 是标签', '实体还原应在标签剥离之后');
+  assert.equal(stripHtml('A &amp; B'), 'A & B');
+  assert.equal(stripHtml(''), '');
+  assert.equal(stripHtml(null), '');
 });
 
 test('citation review is a deterministic check, not the model grading itself', () => {

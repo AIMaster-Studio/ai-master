@@ -13,6 +13,29 @@ const path = require('node:path');
 
 const CHAPTER_PATTERN = /^chapter_(\d+)\.json$/;
 
+// 章节 JSON 的 content 字段里带 HTML 标记（<h3>/<p>/<strong>/<li>…）。
+// 直接入库有两个真实危害：① 标记混进证据文本、白白占用上下文；
+// ② 模型会把标记当成正文的一部分去引用。
+// 这里做保守的标签剥离 + 常见实体还原。课程内容是我们自己的、结构可控，
+// 不需要通用 HTML 解析器，也就不为此引依赖。
+function stripHtml(text) {
+  return String(text == null ? '' : text)
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|h[1-6]|tr|ul|ol|blockquote)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    // 实体还原必须放在标签剥离**之后**：否则 &lt;div&gt; 会先变成 <div> 再被当成标签删掉。
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#0?39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function loadChapters(dataDir) {
   return fs.readdirSync(dataDir)
     .map(name => ({ name, match: CHAPTER_PATTERN.exec(name) }))
@@ -30,20 +53,24 @@ function chapterDocuments(chapter) {
   const documents = [];
 
   if (data.description) {
-    documents.push({
-      title: label + ' · ' + (data.title || '章节概述'),
-      source: file + '#description',
-      kind: 'course',
-      text: (data.title || '') + '\n\n' + data.description
-    });
+    const description = stripHtml(data.description);
+    if (description) {
+      documents.push({
+        title: label + ' · ' + (data.title || '章节概述'),
+        source: file + '#description',
+        kind: 'course',
+        text: stripHtml(data.title || '') + '\n\n' + description
+      });
+    }
   }
   for (const point of data.knowledge_points || []) {
-    if (!point || !point.content) continue;
+    const content = stripHtml(point && point.content);
+    if (!content) continue;
     documents.push({
       title: label + ' · ' + (point.title || '知识点'),
       source: file + '#kp',
       kind: 'course',
-      text: (point.title || '') + '\n\n' + point.content
+      text: stripHtml(point.title || '') + '\n\n' + content
     });
   }
   return documents;
@@ -82,4 +109,4 @@ function buildCourseDocuments(options = {}) {
 // 课程库的固定标识：内容更新后重建同一个库，靠版本号区分，不新建库堆垃圾。
 const COURSE_KB_NAME = 'AI Master 课程库';
 
-module.exports = { buildCourseDocuments, loadChapters, moduleDocuments, COURSE_KB_NAME };
+module.exports = { buildCourseDocuments, loadChapters, moduleDocuments, stripHtml, COURSE_KB_NAME };
