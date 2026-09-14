@@ -84,7 +84,7 @@
 | 克隆即可验证 | 需 `pip install` | **无需 `npm install`** 即可 `npm run verify` | **ai-master 更严格** | 新增依赖必须可选且有降级路径 |
 | 多用户与角色 | auth 默认关，首用户为 admin，含 Learner / Guardian 角色 | 访客 + 注册/登录，无角色体系 | **部分** | — |
 | 部署路径 | PyPI / 源码 / Docker / CLI 四条 | 本机 Node + Cloudflare Pages 代理 + Netlify + Render + Electron | **不同** | 本机服务，**不是互联网生产部署** |
-| 测试规模 | — | 112 项 + 前端完整性检查 | — | 见 README |
+| 测试规模 | — | 113 项 + 前端完整性检查 | — | 见 README |
 
 ---
 

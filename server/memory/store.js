@@ -40,8 +40,17 @@ function today(now = Date.now()) {
   return new Date(now).toISOString().slice(0, 10);
 }
 
+// 0 次事件时比例没有基数，必须返回 null（无数据），不能返回 0。
+// 返回 0 会把「还没开始」写成「通过率 0%」，读起来像「学得不好」——
+// 这是 docs/ican/walkthrough-2026-09-15.md 记下的同一类问题：把没有数据表达成 0 分。
+// null 让「无数据」与「全错（真实的 0%）」在 JSON 与渲染里都可区分。
 function pct(part, total) {
-  return total ? Math.round((part / total) * 100) : 0;
+  return total ? Math.round((part / total) * 100) : null;
+}
+
+// 渲染用：null 表示没有可算的基数，必须写成「无数据」，不得写成 0%。
+function rateText(rate) {
+  return rate === null ? '无数据' : rate + '%';
 }
 
 function createMemoryStore(options = {}) {
@@ -154,7 +163,7 @@ function createMemoryStore(options = {}) {
     ];
     if (surface === 'explain') {
       lines.push('## 讲解评审', '',
-        '- 提交 ' + facts.total + ' 次，通过 ' + facts.accepted + ' 次（' + facts.acceptedRate + '%）。',
+        '- 提交 ' + facts.total + ' 次，通过 ' + facts.accepted + ' 次（通过率 ' + rateText(facts.acceptedRate) + '）。',
         '- 判定来源分布：' + (Object.entries(facts.modes).map(([k, v]) => k + ' ' + v + ' 次').join('；') || '无') + '。',
         '- 带课程证据的评审 ' + facts.grounded + ' 次；其中引用编号造假的 ' + facts.fabricated + ' 次。', '');
       const failed = Object.entries(facts.failedChecks).sort((a, b) => b[1] - a[1]);
@@ -163,20 +172,20 @@ function createMemoryStore(options = {}) {
       for (const [label, count] of failed) lines.push('- ' + label + '：' + count + ' 次');
       lines.push('');
     } else if (surface === 'quiz') {
-      lines.push('## 测验', '', '- 测验 ' + facts.total + ' 次，通过 ' + facts.passed + ' 次（' + facts.passRate + '%）。', '');
+      lines.push('## 测验', '', '- 测验 ' + facts.total + ' 次，通过 ' + facts.passed + ' 次（通过率 ' + rateText(facts.passRate) + '）。', '');
       lines.push('## 分模块表现', '');
       const entries = Object.entries(facts.byModule);
       if (!entries.length) lines.push('- 暂无模块记录。');
       for (const [id, bucket] of entries) lines.push('- `' + id + '`：' + bucket.attempts + ' 次，通过 ' + bucket.passed + ' 次，平均分 ' + bucket.average + '。');
       lines.push('');
     } else if (surface === 'review') {
-      lines.push('## 错题复习', '', '- 复习 ' + facts.total + ' 次，答对 ' + facts.correct + ' 次（' + facts.correctRate + '%）。', '');
+      lines.push('## 错题复习', '', '- 复习 ' + facts.total + ' 次，答对 ' + facts.correct + ' 次（正确率 ' + rateText(facts.correctRate) + '）。', '');
     } else if (surface === 'plan') {
       lines.push('## 学习计划', '', '- 生成计划 ' + facts.total + ' 次。',
         '- 最近一次目标：' + (facts.latestGoal || '（无）') + '；基础：' + (facts.latestLevel || '（无）') + '。',
         '- 历史目标：' + (facts.distinctGoals.join('；') || '（无）'), '');
     } else if (surface === 'rag') {
-      lines.push('## 知识库检索', '', '- 检索 ' + facts.total + ' 次，有命中 ' + facts.withHits + ' 次（' + facts.hitRate + '%）。', '');
+      lines.push('## 知识库检索', '', '- 检索 ' + facts.total + ' 次，有命中 ' + facts.withHits + ' 次（命中率 ' + rateText(facts.hitRate) + '）。', '');
     }
     return lines.join('\n');
   }
@@ -208,14 +217,18 @@ function createMemoryStore(options = {}) {
       .map(([id, bucket]) => ({ id, average: bucket.average, attempts: bucket.attempts, passed: bucket.passed }));
     const failingChecks = Object.entries(facts.explain.failedChecks).sort((a, b) => b[1] - a[1]).map(([label, count]) => ({ label, count }));
 
+    const contributors = surfaces.filter(s => facts[s].total > 0);
     const profile = [
       '# L3 · 学习者画像', '',
       '> 生成方式：由 L2 各面事实**确定性综合**（跨面计数与比例），非模型摘要。',
-      '> 贡献来源面：' + surfaces.filter(s => facts[s].total > 0).map(s => 'L2/' + s).join('、') + '（无贡献的面不参与）。', '',
+      '> 贡献来源面：' + (contributors.length ? contributors.map(s => 'L2/' + s).join('、') + '（无贡献的面不参与）。'
+        // 零事件时不能留下悬空的「贡献来源面：」——那读起来像句子没写完，
+        // 而真实情况是「还没有任何依据」。absence 要写出来，不能留白。
+        : '无 —— 还没有任何 L1 事件，本文件是按规则生成的空模板，不含任何学习结论。'), '',
       '## 当前状态', '',
-      '- 讲解提交 ' + facts.explain.total + ' 次，通过率 ' + facts.explain.acceptedRate + '%。',
-      '- 测验 ' + facts.quiz.total + ' 次，通过率 ' + facts.quiz.passRate + '%。',
-      '- 错题复习 ' + facts.review.total + ' 次，正确率 ' + facts.review.correctRate + '%。',
+      '- 讲解提交 ' + facts.explain.total + ' 次，通过率 ' + rateText(facts.explain.acceptedRate) + '。',
+      '- 测验 ' + facts.quiz.total + ' 次，通过率 ' + rateText(facts.quiz.passRate) + '。',
+      '- 错题复习 ' + facts.review.total + ' 次，正确率 ' + rateText(facts.review.correctRate) + '。',
       '- 最近学习目标：' + (facts.plan.latestGoal || '（未设定）') + '。', '',
       '## 待加强模块（按测验平均分升序）', ''
     ];

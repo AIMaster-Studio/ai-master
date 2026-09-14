@@ -94,6 +94,38 @@ test('L3 synthesis names its contributing surfaces and lists weak modules honest
   assert.throws(() => memory.readL3('nope'), /未知的 L3 槽位/);
 });
 
+test('absence is reported as "no data", never as a 0% score', () => {
+  const memory = createMemoryStore({ dataRoot: tempRoot() });
+
+  // 这条用例钉的是一个**服务端自己产出的错误陈述**（走查待办 3 的根因，见
+  // docs/ican/walkthrough-2026-09-15.md）：curate 里 pct(0, 0) 原先返回 0，
+  // 于是零事件的 L3 文件写着「讲解提交 0 次，通过率 0%」。
+  // 它每个字都「如实」，但会被读成「学得不好」，而真实情况是「还没开始」——
+  // 把没有数据表达成 0 分。修法是让比例在无基数时返回 null，渲染成「无数据」。
+  for (const surface of Object.keys(SURFACES)) {
+    const { facts, markdown } = memory.refreshL2(surface);
+    assert.equal(facts.total, 0);
+    const rateKeys = Object.keys(facts).filter(key => /Rate$/.test(key));
+    for (const key of rateKeys) assert.equal(facts[key], null, surface + ' 的 ' + key + ' 在 0 次事件时应为 null（无数据），不能是 0');
+    assert.doesNotMatch(markdown, /0%/, surface + ' 的空面仍把无数据渲染成 0%');
+    if (rateKeys.length) assert.match(markdown, /无数据/, surface + ' 的空面未说明比例是「无数据」');
+  }
+
+  const empty = memory.synthesize();
+  assert.doesNotMatch(empty.l3.profile, /通过率 0%/, '零事件的 L3 仍写着「通过率 0%」');
+  assert.match(empty.l3.profile, /通过率 无数据/);
+  assert.match(empty.l3.profile, /贡献来源面：无/, '零事件时「贡献来源面」应显式写「无」，不能留下悬空的冒号');
+
+  // 反向断言：有事件但全未通过时，0% 是**真实比例**，必须照常显示。
+  // 它与「无数据」不是一回事，这条修法不能把两者压成同一句话。
+  memory.record('quiz', { moduleId: 'a', score: 0, passed: false });
+  const attempted = memory.refreshL2('quiz');
+  assert.equal(attempted.facts.total, 1);
+  assert.equal(attempted.facts.passRate, 0, '有事件时 0% 是真实比例，不应被改成 null');
+  assert.match(attempted.markdown, /通过率 0%/);
+  assert.doesNotMatch(attempted.markdown, /无数据/, '有事件时不应再出现「无数据」');
+});
+
 test('preferences are written explicitly only and survive re-synthesis', () => {
   const memory = createMemoryStore({ dataRoot: tempRoot() });
   assert.equal(memory.readL3('preferences'), null);
