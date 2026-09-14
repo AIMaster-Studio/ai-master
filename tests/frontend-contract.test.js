@@ -98,3 +98,27 @@ test('the knowledge base view states whether retrieval is semantic', () => {
     assert.ok(css.includes('.' + className), '样式表缺少类名：' + className);
   }
 });
+
+test('the research view exposes the tool trace and explains that ask_user pauses rather than fails', () => {
+  const script = fs.readFileSync(WORKSPACE_JS, 'utf8');
+  const css = fs.readFileSync(WORKSPACE_CSS, 'utf8');
+  const html = fs.readFileSync(WORKSPACE_HTML, 'utf8');
+
+  assert.ok(html.includes('data-view="research"'), '导航里没有深度研究入口');
+  assert.match(script, /function renderResearch\(/, '研究视图函数缺失');
+  assert.match(script, /app\.view === 'research'\) return renderResearch\(\)/, '研究视图未接入 render 分发');
+  assert.match(script, /agent\/run/, '未调用 agent 接口');
+  // 续跑必须回传 sessionId，否则会开新会话并丢掉已有工具轨迹。
+  assert.match(script, /sessionId:String\(values\.get\('sessionId'\)\)/, 'ask_user 续跑未回传 sessionId');
+
+  // 两条必须让用户看见的事实：轨迹可核对；暂停不是失败。
+  assert.match(script, /工具调用轨迹/, '未展示工具调用轨迹');
+  assert.match(script, /这是暂停，不是失败/, '未说明 ask_user 是暂停');
+  assert.match(script, /不会重跑已经完成的调用/, '未说明续跑语义');
+  assert.match(script, /不提供代码执行工具/, '未说明没有代码执行工具');
+
+  for (const className of ['tool-list', 'trace-list', 'trace-index', 'research-answer']) {
+    assert.ok(script.includes(className), 'JS 未使用类名：' + className);
+    assert.ok(css.includes('.' + className), '样式表缺少类名：' + className);
+  }
+});

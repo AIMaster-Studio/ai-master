@@ -14,7 +14,7 @@
     if (window.lucide) window.lucide.createIcons({attrs:{'stroke-width':1.8}});
   };
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},busy:false,authMode:'login',memory:null,memoryError:'',rag:null,ragError:'',ragQuery:'',ragResults:null,ragKbId:''};
+  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},busy:false,authMode:'login',memory:null,memoryError:'',rag:null,ragError:'',ragQuery:'',ragResults:null,ragKbId:'',research:null,researchResult:null,researchError:''};
   const main = $('#main-content');
   const dialog = $('#workspace-dialog');
   let toastTimer;
@@ -128,6 +128,7 @@
     if (app.view === 'records') return renderRecords();
     if (app.view === 'memory') return renderMemory();
     if (app.view === 'rag') return renderRag();
+    if (app.view === 'research') return renderResearch();
     if (!app.state.plan || !current()) return renderSetup();
     renderLesson();
     } finally { renderIcons(); }
@@ -297,6 +298,53 @@
             : '<p class="muted small">没有命中。注意：默认嵌入只做词面重合，换个更贴近原文的说法再试。</p>') +
           (app.ragResults.rebuilt ? '<p class="small muted">索引文件缺失，本次已从可读真源（chunks.jsonl）就地重建。</p>' : '') + '</div>' : '') + '</section>';
   }
+  // 「深度研究」视图：agent 循环能力的界面。
+  // 界面上必须让人看见两件在别处看不到的事：
+  //   ① 工具调用轨迹（toolTrace）—— 模型查了什么、有没有失败，是可核对的；
+  //   ② ask_user 是**暂停**而不是失败 —— 回合停在提问处，带 sessionId 续跑，不重跑已完成的调用。
+  // 少了第 ② 点的说明，用户会以为卡住了并重新提问，那样会开一个新会话、丢掉已有轨迹。
+  async function loadResearch() {
+    try { app.research = await api('agent/capabilities'); app.researchError = ''; }
+    catch (error) { app.research = null; app.researchError = (error && error.message) || '能力状态读取失败。'; }
+  }
+  function renderResearch() {
+    const head = '<header class="page-heading"><div><p class="eyebrow">多轮检索与工具调用</p><h1>深度研究</h1>';
+    if (app.researchError) {
+      main.innerHTML = head + '</div></header><div class="notice error">' + esc(app.researchError) + '</div>';
+      return;
+    }
+    if (!app.research) { main.innerHTML = '<div class="loading-state"><span class="loading-spinner"></span><p>正在读取能力状态…</p></div>'; return; }
+    const capability = (app.research.capabilities || []).find(item => item.id === 'research') || {};
+    const ready = app.research.modelReady;
+    const r = app.researchResult;
+    const tools = (capability.toolDetails || []).map(item => '<li><code>' + esc(item.name) + '</code> <span class="muted small">' + esc(item.group) + '</span></li>').join('');
+    main.innerHTML = head + '<p>能力状态：' + (ready ? '<span class="badge green">ready</span>' : '<span class="badge amber">needs-config</span>') + '</p></div></header>' +
+      (ready ? '' : '<div class="notice">模型未配置，无法运行。请先在右上角「连接中 / 模型」处配置模型服务。本页不会因为未配置而假装可用。</div>') +
+      '<section class="section-band"><h2>可用工具</h2><ul class="tool-list">' + tools + '</ul>' +
+        '<p class="small muted">本仓库没有沙箱，因此<strong>不提供代码执行工具</strong>（无 exec）。与其做一个看起来能跑代码其实没有隔离的工具，不如不提供。</p></section>' +
+      '<section class="section-band"><h2>提问</h2><form id="research-form"><label class="field">你想研究什么<input name="message" required maxlength="4000" placeholder="例如：RAG 里召回质量差会有什么后果？" value="' + esc(app.researchQuestion || '') + '"></label><div class="form-footer"><span class="muted">研究在本机编排；模型调用会发往你配置的服务。</span><button type="submit" class="primary"' + (ready ? '' : ' disabled') + '>开始研究</button></div></form></section>' +
+      (r ? '<section class="section-band"><h2>结果</h2>' + researchResultHtml(r) + '</section>' : '');
+  }
+  function researchResultHtml(r) {
+    const trace = (r.toolTrace || []).map((item,index) => '<li class="' + (item.ok ? '' : 'failed') + '"><span class="trace-index">' + (index+1) + '</span><code>' + esc(item.name) + '</code>' + (item.ok ? '' : '<span class="small">失败：' + esc(item.error || '') + '</span>') + (item.pending ? '<span class="small">（在此暂停等待你的回答）</span>' : '') + '</li>').join('');
+    const traceBlock = trace ? '<h3>工具调用轨迹（' + (r.toolTrace || []).length + ' 次）</h3><ul class="trace-list">' + trace + '</ul>' : '';
+    if (r.status === 'needs-user') {
+      const q = r.pendingQuestion || {};
+      return '<div class="notice">模型暂停了这一轮，需要你先回答下面的问题 —— <strong>这是暂停，不是失败</strong>。回答后会带着已有轨迹继续，不会重跑已经完成的调用。</div>' +
+        '<h3>' + esc(q.question) + '</h3>' + (q.reason ? '<p class="small muted">' + esc(q.reason) + '</p>' : '') +
+        '<form id="research-answer-form"><input type="hidden" name="sessionId" value="' + esc(r.sessionId) + '">' +
+        (q.options && q.options.length ? '<div class="button-row">' + q.options.map((option,i) => '<button type="button" data-research-answer="' + esc(option) + '">' + esc(option) + '</button>').join('') + '</div><p class="small muted">或自行填写：</p>' : '') +
+        '<label class="field">你的回答<input name="answer" required maxlength="2000"></label>' +
+        '<div class="form-footer"><span class="muted">会话 ' + esc(String(r.sessionId).slice(0,8)) + '… 保存在本机</span><button type="submit" class="primary">继续</button></div></form>' + traceBlock;
+    }
+    if (r.status === 'failed') {
+      return '<div class="notice error">研究未完成（' + esc(r.errorCode || 'unknown') + '）：' + esc(r.error || '') + '</div>' + traceBlock;
+    }
+    if (r.status === 'max-rounds') {
+      return '<div class="notice">达到工具调用轮次上限，未给出最终答复。这不会静默继续 —— 你可以把问题拆细后重试。</div>' + traceBlock;
+    }
+    return '<div class="research-answer">' + esc(r.answer || '') + '</div>' + traceBlock;
+  }
   function showDialog(title,html) {
     $('#dialog-content').innerHTML = '<div class="dialog-heading"><h2 id="dialog-title">' + esc(title) + '</h2><button type="button" class="icon-button" aria-label="关闭" title="关闭" data-action="close-dialog">' + icon('x') + '</button></div>' + html;
     renderIcons();
@@ -339,7 +387,7 @@
     if (button.dataset.stage) { if (app.busy) return; app.stage = button.dataset.stage; render(); return; }
     if (button.dataset.module) { if (!app.busy) selectModule(button.dataset.module); return; }
     if (button.dataset.authMode) { if (!app.busy) { app.authMode = button.dataset.authMode; accountDialog(); } return; }
-    if (button.dataset.view) return void task(button,async () => { app.view = button.dataset.view; if (app.view === 'review') await loadReviews(); if (app.view === 'memory') { app.memory = null; render(); await loadMemory(); } if (app.view === 'rag') { app.rag = null; render(); await loadRag(); } render(); });
+    if (button.dataset.view) return void task(button,async () => { app.view = button.dataset.view; if (app.view === 'review') await loadReviews(); if (app.view === 'memory') { app.memory = null; render(); await loadMemory(); } if (app.view === 'rag') { app.rag = null; render(); await loadRag(); } if (app.view === 'research') { app.research = null; render(); await loadResearch(); } render(); });
     const action = button.dataset.action;
     if (action === 'close-dialog') return dialog.close();
     if (app.busy) return;
@@ -351,6 +399,11 @@
     if (action === 'export-json') { try { const blob = new Blob([JSON.stringify(app.state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'aimaster-learning-' + Date.now() + '.json'; a.click(); URL.revokeObjectURL(a.href); toast('学习档案已导出。'); } catch(e) { toast('导出失败。',true); } return; }
     if (action === 'refresh-memory') return void task(button,async () => { await loadMemory(); render(); });
     if (action === 'synthesize-memory') return void task(button,async () => { await api('memory/synthesize',{}); await loadMemory(); render(); toast('L3 综合已按 L2 事实生成。'); });
+    if (button.dataset.researchAnswer !== undefined) return void task(button,async () => {
+      const form = button.closest('form'); const sessionId = form ? new FormData(form).get('sessionId') : null;
+      app.researchResult = await api('agent/run',{capability:'research',sessionId,answer:button.dataset.researchAnswer});
+      render();
+    });
     if (action === 'refresh-rag') return void task(button,async () => { await loadRag(); render(); });
     if (action === 'seed-course') return void task(button,async () => {
       const result = await api('rag/course/seed',{});
@@ -369,7 +422,7 @@
   });
   document.addEventListener('submit',event => {
     const form = event.target;
-    if (!['plan-form','plan-dialog-form','explanation-form','quiz-form','diagnostic-form','settings-form','account-form','rag-search-form'].includes(form.id) && !form.dataset.reviewForm) return;
+    if (!['plan-form','plan-dialog-form','explanation-form','quiz-form','diagnostic-form','settings-form','account-form','rag-search-form','research-form','research-answer-form'].includes(form.id) && !form.dataset.reviewForm) return;
     event.preventDefault();
     task($('button[type="submit"]',form),async () => {
       const values = new FormData(form);
@@ -377,6 +430,18 @@
         app.ragKbId = String(values.get('kbId') || ''); app.ragQuery = String(values.get('query') || '');
         const data = await api('rag/search',{kbId:app.ragKbId,query:app.ragQuery,limit:5});
         app.ragResults = data.result; render();
+        return;
+      }
+      if (form.id === 'research-form') {
+        app.researchQuestion = String(values.get('message') || '');
+        app.researchResult = await api('agent/run',{capability:'research',message:app.researchQuestion});
+        render();
+        return;
+      }
+      if (form.id === 'research-answer-form') {
+        // 续跑同一个会话：必须带 sessionId，否则会开新会话、丢掉已完成的工具调用。
+        app.researchResult = await api('agent/run',{capability:'research',sessionId:String(values.get('sessionId')),answer:String(values.get('answer') || '')});
+        render();
         return;
       }
       if (form.id === 'plan-form' || form.id === 'plan-dialog-form') {
