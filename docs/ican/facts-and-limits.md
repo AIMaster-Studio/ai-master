@@ -25,7 +25,7 @@
 | 能力运行时 | `explain`／`quiz`／`research` 共享一套工具注册表与会话上下文；工具按 user/context/governed 分组 | `server/capabilities/registry.js`、`server/agent/tools.js` |
 | 代码执行 | **不提供**：本仓库没有沙箱，Node 进程内做不到等价隔离。故工具列表中没有 `exec`，可经 `/api/agent/tools` 核对 | `server/capabilities/registry.js` |
 | 技能包 | SKILL.md（frontmatter + Markdown）为**声明式文本，不执行代码**；可执行后缀一律阻断；`always` 在落盘前剥离；越权话术检测是启发式正则，会漏会误报 | `server/skills/registry.js` |
-| 管理接口 | 建/删知识库、入库、重建索引、清空记忆、装卸技能，与写模型配置同一道门：未暴露时要求回环对端，暴露后必须带 `AIMASTER_CONFIG_TOKEN`，未配置则不可写 | `server/index.js` |
+| 管理接口 | 建/删知识库、入库、重建索引、清空记忆、装卸技能，与写模型配置同一道门：未暴露时要求回环对端，暴露后必须带 `AIMASTER_CONFIG_TOKEN`，未配置则不可写。门禁判定（`requireAdmin` / `isLoopbackPeer` / `configTokenValid`）在 `server/index.js`，各接口按模块分散在 `rag-routes.js`、`memory-routes.js`、`agent-routes.js` | `server/index.js`、`server/rag-routes.js`、`server/memory-routes.js`、`server/agent-routes.js` |
 | 临时实例 | 数据库非持久（`inMemory` 或 `dbPath=':memory:'`）时，**文件类存储一并转到系统临时目录**。Vercel / Netlify 的函数入口即此模式，其文件系统除 `/tmp` 外只读；若只切数据库，`createApp` 会在建目录时抛错并让**所有 `/api/*` 返回 500** | `server/index.js`、`api/[...slug].js`、`netlify/functions/api.js`、`tests/deploy-adapters.test.js` |
 | 临时实例的数据 | 冷启动即重置，**不是持久化部署**；演示可用，不能当生产环境 | `server/index.js` |
 | 原前端 | 静态课程、Three.js 星海与 Electron 入口是已有基础 | 原仓库文件 |

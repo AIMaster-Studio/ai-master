@@ -8,7 +8,7 @@
 | --- | --- |
 | AI 故障时状态是否矛盾 | `server/ai-review.js` 在远程服务超时、返回错误或 schema 不合法时返回 `mode: fallback-local`，`accepted` 与检查列表均来自同一组本地七项检查，不再追加伪造的失败 AI 检查项。 |
 | 提示注入是否有边界 | 评审提示明确把学生文本标为不可信材料，并以 JSON 数据字段传入；`tests/learning-server.test.js` 的隔离测试检查 system/user 角色、原文保留和恶意文本不进入 system 规则。 |
-| 复习间隔是否跳过首次复习 | `server/index.js` 的 `reviewDelayDays` 将连续答对次数映射为 1、3、7、14、30 天；答错会清零连续次数并安排 1 天后复习。该映射是产品策略，不宣称为研究得出的最优公式。 |
+| 复习间隔是否跳过首次复习 | `server/learning/domain.js` 的 `reviewDelayDays` 将连续答对次数映射为 1、3、7、14、30 天；答错会清零连续次数并安排 1 天后复习。该映射是产品策略，不宣称为研究得出的最优公式。 |
 | 本轮测试证据 | `npm run test:learning`：31 项测试通过，0 项失败。 |
 
 ## 模型路径的对外表述

@@ -27,37 +27,27 @@ const http = require('node:http');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { randomUUID, randomInt, timingSafeEqual } = require('node:crypto');
+const { randomUUID, timingSafeEqual } = require('node:crypto');
 const { openStore } = require('./store');
-const { publicConfig, validateConfig, reviewExplanation, probeReachable } = require('./ai-review');
+const { publicConfig, validateConfig, probeReachable } = require('./ai-review');
 const { createRagService } = require('./rag');
 const { createRagRoutes } = require('./rag-routes');
-const { retrieveEvidence } = require('./grounding');
 const { COURSE_KB_NAME } = require('./rag/course-seed');
 const { createMemoryStore } = require('./memory/store');
 const { createMemoryRoutes } = require('./memory-routes');
 const { createCapabilityRegistry } = require('./capabilities/registry');
 const { createSkillRegistry } = require('./skills/registry');
 const { createAgentRoutes, createSkillRoutes } = require('./agent-routes');
-const { createLearningDomain, reviewDelayDays } = require('./learning/domain');
+const { createLearningDomain } = require('./learning/domain');
+const { createLearningRoutes, LEARNING_ROUTE_NAMES, shuffleQuestion } = require('./learning-routes');
 
 const ROOT = path.resolve(__dirname, '..');
-const DAY = 86400000;
-const QUIZ_PASS_SCORE = 75;
 const BODY_LIMIT = 64000;
-const AI_REVIEW_IP_LIMIT = 20; // 同一客户端 IP 每分钟可发起的 AI 复评次数
-const AI_REVIEW_DAILY_BUDGET = 5000; // 全服务每日 AI 复评总预算，超出后按限流处理，防止公网被刷量
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml',
   '.webm': 'video/webm', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.md': 'text/plain; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 const fail = (status, message) => { throw Object.assign(new Error(message), { status }); };
 const stamp = () => new Date().toISOString();
-function clientIp(req) {
-  // 代理环境下取 X-Forwarded-For 首段作为真实客户端 IP，其次退回 socket 地址。
-  const forwarded = req.headers['x-forwarded-for'];
-  const first = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '';
-  return first || req.socket.remoteAddress || '';
-}
 function isLoopbackPeer(req) {
   // 只看 TCP 连接的对端地址，不读任何请求头：X-Forwarded-For / X-Real-IP / Forwarded / Host 都可被调用方任意伪造，
   // 不能作为鉴权依据；对端地址由内核在三次握手时确定，请求方无法改写。
@@ -67,16 +57,6 @@ function isLoopbackPeer(req) {
   const address = String(req.socket?.remoteAddress || '');
   return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
 }
-const shuffled = input => {
-  const result = [...input];
-  for (let i = result.length - 1; i > 0; i--) { const j = randomInt(i + 1); [result[i], result[j]] = [result[j], result[i]]; }
-  return result;
-};
-function shuffleQuestion(q) {
-  const order = shuffled(q.options.map((_, i) => i));
-  return { ...q, options: order.map(i => q.options[i]), answer: order.indexOf(q.answer) };
-}
-const publicQuestion = ({ answer, explanation, ...q }) => q;
 function publicCatalog(catalog) {
   return { ...catalog, modules: catalog.modules.map(({ questions, ...module }) => ({ ...module, questionCount: questions.length })) };
 }
@@ -96,11 +76,6 @@ async function readBody(req) {
 function json(res, status, payload) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
   res.end(JSON.stringify(payload));
-}
-function csvCell(value) {
-  let text = String(value ?? '');
-  if (/^[=+@\-\t\r]/.test(text)) text = "'" + text;
-  return '"' + text.replace(/"/g, '""') + '"';
 }
 
 function createApp(options = {}) {
@@ -197,8 +172,16 @@ function createApp(options = {}) {
   // 学习闭环的领域规则（路线校验、测验配额、判分、错题登记、限流）抽到
   // server/learning/domain.js —— 它们与 HTTP 无关，抽出去之后可以脱离服务器直接测。
   // 这些函数会就地修改 state，调用方随后 save() 落盘（既有语义，见该模块注释）。
-  const { modules, questions, limited, moduleFor, progressFor, quizDay, reserveQuizAttempt, addAttempt, checkAnswers, gradeWithContext, recordWrongAnswers } =
-    createLearningDomain({ core, catalog, fail, randomUUID, stamp });
+  const learning = createLearningDomain({ core, catalog, fail, randomUUID, stamp });
+  // 限流桶由领域模块统一持有（进程内滑动窗口），主文件剩下的 auth/* 与 ai/config 也复用它，
+  // 避免同一份限流状态被两处各建一份。
+  const { limited } = learning;
+  // 学习闭环的 HTTP 路由（plan / explanation / quiz / complete / review / export）抽到
+  // server/learning-routes.js，与 rag-routes / memory-routes / agent-routes 同一形态。
+  // 这里只把「规则 + 存储 + 旁路记录」作为依赖注入，模块本身不 require 服务器内部件。
+  const learningRoutes = createLearningRoutes({
+    store, learning, core, catalog, recordMemory, rag, courseKbId, fetchImpl: options.fetchImpl
+  });
   async function api(req, res, url) {
     const route = url.pathname.slice(5);
     if (!['GET', 'POST'].includes(req.method)) fail(405, '不支持此请求方式。');
@@ -217,13 +200,15 @@ function createApp(options = {}) {
     }
     if (!user) setSession(await store.guest());
     const body = req.method === 'POST' ? await readBody(req) : null;
-    let state = await store.state(user.id);
+    const state = await store.state(user.id);
     const send = payload => json(res, 200, { ok: true, ...payload });
-    const save = () => store.save(user.id, state);
     if (route.startsWith('rag/')) return ragRoutes({ req, url, route, body, send, fail });
     if (route.startsWith('memory/')) return memoryRoutes({ req, url, route, body, send, fail, user });
     if (route.startsWith('agent/')) return agentRoutes({ req, url, route, body, send, fail, user });
     if (route === 'skills' || route.startsWith('skills/')) return skillRoutes({ req, url, route, body, send, fail });
+    // 学习闭环：按接口名派发（不是前缀）。名单由 learning-routes 导出，两边不各写一份，避免漂移。
+    // 路由模块自己负责按 GET / POST 分方向，因此这里不区分方法。
+    if (LEARNING_ROUTE_NAMES.has(route)) return learningRoutes({ req, url, route, body, send, fail, user, state, res });
     if (req.method === 'GET') {
       if (route === 'status') {
         const config = await store.config();
@@ -235,36 +220,6 @@ function createApp(options = {}) {
       }
       if (route === 'catalog') return send(publicCatalog(catalog));
       if (route === 'state') return send({ state, user });
-      if (route === 'quiz') {
-        limited('quiz:' + user.id, 60, 60000);
-        const diagnostic = url.searchParams.get('mode') === 'diagnostic';
-        const module = diagnostic ? null : moduleFor(state, url.searchParams.get('module'));
-        const attemptsRemaining = !diagnostic && !state.progress[module.id]?.completedAt ? reserveQuizAttempt(state, module.id) : null;
-        const selected = diagnostic ? catalog.modules.map(m => m.questions[0]) : module.questions;
-        const list = shuffled(selected).map(shuffleQuestion);
-        const quiz = { id: randomUUID(), moduleId: module?.id || null, mode: diagnostic ? 'diagnostic' : 'module', questions: list,
-          revision: module ? progressFor(state, module.id).revision || null : null, planRevision: state.planRevision || null };
-        await store.putQuiz(quiz.id, user.id, quiz);
-        if (attemptsRemaining !== null) await save();
-        return send({ quiz: { id: quiz.id, moduleId: quiz.moduleId, mode: quiz.mode, attemptsRemaining, questions: list.map(publicQuestion) } });
-      }
-      if (route === 'review') {
-        const items = state.wrongAnswers.map(item => ({ ...item, question: publicQuestion(questions.get(item.questionId)), due: Date.parse(item.dueAt) <= Date.now() }));
-        const dueModules = Object.entries(state.progress).filter(([, p]) => p.completedAt && Date.parse(p.dueAt) <= Date.now()).map(([id, p]) => ({ moduleId: id, title: modules.get(id)?.title, dueAt: p.dueAt }));
-        return send({ items, dueModules });
-      }
-      if (route === 'export') {
-        const csv = url.searchParams.get('format') === 'csv';
-        const filename = csv ? 'ai-master-learning.csv' : 'ai-master-learning.json';
-        res.writeHead(200, { 'Content-Type': csv ? 'text/csv; charset=utf-8' : 'application/json; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${filename}"`, 'Cache-Control': 'no-store' });
-        if (csv) {
-          const rows = [['time', 'type', 'module', 'mode', 'score', 'passed', 'correct', 'total'], ...state.attempts.map(a => [a.at, a.type, a.moduleId, a.mode, a.score, a.passed ?? a.accepted, a.correct, a.total])];
-          return res.end('\uFEFF' + rows.map(row => row.map(csvCell).join(',')).join('\r\n'));
-        }
-        return res.end(JSON.stringify({ schema: 'aimaster-learning/1', exportedAt: stamp(), user, state,
-          notice: '本机实际操作记录；包含练习与测试操作，不代表真实用户研究或教育效果证明。', retention: '每个档案保留最近2000次交互。' }, null, 2));
-      }
     } else {
       if (route.startsWith('auth/')) {
         limited('auth:' + req.socket.remoteAddress, 30, 60000);
@@ -279,111 +234,6 @@ function createApp(options = {}) {
           const next = await store.login(name, password); await store.endSession(token); setSession(next);
         } else fail(404, '接口不存在。');
         return send({ user, state: await store.state(user.id) });
-      }
-      if (route === 'plan') {
-        const goal = String(body.goal || '').trim();
-        if (goal.length < 2 || goal.length > 500 || !['beginner', 'basic', 'experienced'].includes(body.level) || ![30, 45, 60, 90].includes(body.dailyMinutes)) fail(400, '请填写学习目标、基础和每天可用时间。');
-        state.profile = { goal, level: body.level, dailyMinutes: body.dailyMinutes, deadline: String(body.deadline || '').slice(0, 32) };
-        state.plan = core.createPlan({ ...state.profile, diagnostic: state.diagnostic }, catalog);
-        state.planRevision = randomUUID();
-        // A new plan invalidates unfinished evidence; completed tasks remain available.
-        for (const p of Object.values(state.progress)) if (!p.completedAt) { p.explanation = null; p.quiz = null; p.revision = null; }
-        addAttempt(state, { type: 'plan', goal, level: body.level, dailyMinutes: body.dailyMinutes }); await save();
-        recordMemory(user.id, 'plan', { goal, level: body.level, dailyMinutes: body.dailyMinutes, modules: state.plan.modules });
-        return send({ state });
-      }
-      if (route === 'explanation') {
-        limited('expl-ip:' + clientIp(req), AI_REVIEW_IP_LIMIT, 60000);
-        limited('expl-budget:' + quizDay(), AI_REVIEW_DAILY_BUDGET, 86400000);
-        limited('explanation:' + user.id, 12, 60000);
-        const module = moduleFor(state, body.moduleId);
-        if (typeof body.text !== 'string' || body.text.length > 6000) fail(400, '讲解内容需为文本，最多 6000 字。');
-        const revision = randomUUID();
-        const p = progressFor(state, module.id);
-        p.revision = revision; p.quiz = null; p.explanation = null;
-        const planRevision = state.planRevision; await save();
-        const local = core.screenExplanation(body.text, module);
-        // 先取课程证据，再让模型基于证据判定 —— 复评从「凭记忆判断」变成「对着课程原文判断」，
-        // 且模型必须回报引用了哪几条，引用号会在服务端复核。
-        let grounding = { available: false, reason: '未建立课程知识库。', evidence: [], queries: [] };
-        try {
-          grounding = await retrieveEvidence({ rag, kbId: courseKbId(), module, studentText: body.text });
-        } catch (error) {
-          grounding = { available: false, reason: '证据检索失败：' + error.message, evidence: [], queries: [] };
-        }
-        const result = await reviewExplanation(body.text, module, local, await store.config(), { fetchImpl: options.fetchImpl, evidence: grounding.evidence });
-        result.grounding = {
-          available: grounding.available, reason: grounding.reason || '', kbId: grounding.kbId || null,
-          version: grounding.version || null, evidenceCount: grounding.evidence.length, queries: grounding.queries || []
-        };
-        state = await store.state(user.id);
-        if (state.planRevision !== planRevision || state.progress[module.id]?.revision !== revision) fail(409, '已有更新的讲解或计划，请查看最新结果。');
-        state.progress[module.id].explanation = { ...result, text: body.text, at: stamp(), revision };
-        addAttempt(state, { type: 'explanation', moduleId: module.id, revision, text: body.text, ...result }); await save();
-        recordMemory(user.id, 'explain', {
-          moduleId: module.id, revision, mode: result.mode, accepted: result.accepted === true,
-          score: typeof result.score === 'number' ? result.score : null,
-          grounded: result.grounded === true, evidenceIntegrity: result.evidenceIntegrity || '',
-          citations: result.citations || [], evidenceCount: (result.evidence || []).length,
-          checks: (result.checks || []).map(check => ({ label: check.label, pass: check.pass }))
-        });
-        return send({ result, state });
-      }
-      if (route === 'quiz') {
-        const quiz = await store.quiz(String(body.attemptId || ''), user.id);
-        if (!quiz) fail(404, '测验已过期，请重新开始。');
-        if (quiz.result) fail(409, '这次测验已提交，请开始新一轮练习。');
-        if (quiz.mode !== 'diagnostic') {
-          moduleFor(state, quiz.moduleId);
-          if (quiz.planRevision !== state.planRevision || quiz.revision !== (progressFor(state, quiz.moduleId).revision || null)) fail(409, '讲解或计划已更新，请重新开始测验。');
-        }
-        checkAnswers(quiz.questions, body.answers);
-        const graded = gradeWithContext(quiz.questions, body.answers);
-        const result = { ...graded, passed: graded.score >= QUIZ_PASS_SCORE };
-        const at = stamp();
-        if (quiz.mode === 'diagnostic') state.diagnostic = { ...result, at };
-        else {
-          const progress = progressFor(state, quiz.moduleId);
-          progress.quiz = { ...result, at, revision: quiz.revision };
-          if (progress.completedAt) {
-            progress.reviewCount = (progress.reviewCount || 0) + 1;
-            progress.correctStreak = result.passed ? (progress.correctStreak || 0) + 1 : 0;
-            const days = reviewDelayDays(progress.correctStreak);
-            progress.dueAt = new Date(Date.now() + days * DAY).toISOString();
-          }
-        }
-        recordWrongAnswers(state, result, at);
-        addAttempt(state, { type: 'quiz', moduleId: quiz.moduleId, mode: quiz.mode, ...result });
-        await store.transaction(async () => { await save(); await store.putQuiz(quiz.id, user.id, { ...quiz, result }); });
-        recordMemory(user.id, 'quiz', {
-          moduleId: quiz.moduleId, mode: quiz.mode, score: result.score, passed: result.passed === true,
-          correct: result.correct, total: result.total
-        });
-        return send({ result, state });
-      }
-      if (route === 'complete') {
-        moduleFor(state, body.moduleId);
-        const p = progressFor(state, body.moduleId);
-        if (p.completedAt) return send({ state });
-        if (!p.explanation?.accepted || !p.quiz?.passed || p.quiz.score < QUIZ_PASS_SCORE || p.quiz.revision !== p.revision || p.explanation.revision !== p.revision) fail(409, '需要当前讲解通过且配套测验达到 75%，才能通关。');
-        p.completedAt = stamp(); p.dueAt = new Date(Date.now() + DAY).toISOString();
-        addAttempt(state, { type: 'complete', moduleId: body.moduleId, mode: p.explanation.mode, passed: true }); await save();
-        return send({ state });
-      }
-      if (route === 'review') {
-        const wrong = state.wrongAnswers.find(w => w.questionId === body.questionId);
-        const question = questions.get(body.questionId);
-        if (!wrong || !question) fail(404, '错题记录不存在。');
-        checkAnswers([question], { [question.id]: body.answer });
-        const result = gradeWithContext([question], { [question.id]: body.answer });
-        const correct = result.correct === 1;
-        wrong.reviewCount++; wrong.resolved = correct;
-        wrong.correctStreak = correct ? (wrong.correctStreak || 0) + 1 : 0;
-        wrong.dueAt = new Date(Date.now() + reviewDelayDays(wrong.correctStreak) * DAY).toISOString();
-        if (!correct) wrong.mistakes++;
-        addAttempt(state, { type: 'review', moduleId: question.moduleId, ...result }); await save();
-        recordMemory(user.id, 'review', { questionId: question.id, moduleId: question.moduleId, correct, reviewCount: wrong.reviewCount });
-        return send({ result, state });
       }
       if (route === 'ai/config') {
         // 模型配置属于本机管理接口：读（GET /api/status）对所有来源开放，写只允许本机操作者。
