@@ -193,8 +193,12 @@ $local  = (Get-Content frontend/static/js/learning-workspace.js -Raw) -replace "
 | 内容 | JSON 章节与题库（7 个核心模块有独立通关题库） | 原课程**待审校**，不自动作为标答 |
 | 学习服务 | Node.js 内置 HTTP（`server/index.js`），默认 `127.0.0.1:8787` | **本机服务，不是互联网生产部署** |
 | 记录 | SQLite（本机）／ localStorage（静态模式） | 本机访客档案，**不声称云同步** |
-| 讲解评价 | 本地规则（7 项筛查）＋ 可选模型复评 | 显示来源；失败明确降级 |
+| 讲解评价 | 本地规则（7 项筛查）＋ 可选模型复评；复评前先检索课程证据，并要求模型回报引用号，服务端逐个复核 | 显示来源；失败明确降级；引用复核只能确认「引用真实存在」，不能确认结论被证据支持 |
 | 客观判题 | 服务端预设标答 | 不由模型决定答案 |
+| 知识库（RAG） | 多引擎注册表 + `version-N` 版本化索引；`sqlite-vec` 为首选、纯 JS 余弦兜底 | 默认嵌入是**词面重合而非语义检索**；PDF/Office 解析未安装，明确报错 |
+| 记忆 | 三层：L1 事件轨迹 / L2 各面事实 / L3 跨面综合 | L2/L3 是**确定性聚合而非 LLM 摘要**，无语义归纳能力；本机文件，不跨设备同步 |
+| 能力运行时 | `explain` / `quiz` / `research` 共享工具注册表与会话上下文，含 `ask_user` 中断续跑 | **无沙箱，故不提供代码执行工具** |
+| 技能包 | SKILL.md 声明式文本 + 导入安全门 | 不执行代码；可执行后缀一律阻断；越权话术检测是启发式 |
 | 公网出口 | cloudflared 隧道（URL 每次重启变化）｜ Cloudflare Pages `_worker.js` 代理 | 隧道挂了等于后端挂了 |
 
 ---
@@ -211,7 +215,7 @@ npm run verify
 
 | # | 实际执行 | 验什么 |
 | :- | :--- | :--- |
-| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 34 项） |
+| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 80 项） |
 | ② | `python scripts/verify_frontend_demo.py` | 静态前端完整性：页面、资源、内部链接、知识星海 |
 
 **最近一次实测**（干净 Git 克隆，非工作树、非 `git archive`）：
@@ -267,6 +271,7 @@ npm run verify          # 无需 npm install，无需 .env 或 .local/
 | [docs/ican/demo-fallback.md](docs/ican/demo-fallback.md) | 演示兜底顺序 |
 | [docs/ican/third-party-notices.md](docs/ican/third-party-notices.md) | 版权、来源与授权限制 |
 | [docs/ican/education-study-plan.md](docs/ican/education-study-plan.md) | 教育效果研究计划 |
+| [docs/ican/rag-memory-agent.md](docs/ican/rag-memory-agent.md) | RAG / 记忆 / 能力运行时的设计依据、刻意未照搬之处与逐条边界 |
 
 ---
 

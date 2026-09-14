@@ -13,6 +13,19 @@
 | 存储 | 本地 SQLite 或远程 Turso 双模式；Render 免费层重启后数据通过 Turso 持久化，无 Turso 配置时回退本机 SQLite | `server/store.js`、`render.yaml` 环境变量 |
 | API 密钥 | 所有模型密钥通过环境变量注入，代码中无硬编码密钥 | `server/store.js`、`.env.example`、`render.yaml` |
 | AI 复评 | 推理模型需较大 max_tokens（4096）与 60s 超时；失败时明确拒绝而非自动通关；21 组双盲测试准确率 90.5%、零假阳性 | `server/ai-review.js`、`tests/ai-rubric-validation-results.json` |
+| RAG 检索 | 默认用**本机哈希嵌入**：零依赖、不联网，但只反映词面重合，**不是语义检索**，同义改写会漏召回；该事实由 `embedder.semantic=false` 与索引清单的 notice 对外暴露 | `server/rag/embedder.js`、`server/rag/kb-store.js` |
+| 索引后端 | `sqlite-vec` 为首选、纯 JS 余弦为兜底；装不上时自动降级并把原因写进索引清单。`sqlite-vec` 列为 optionalDependencies，故「干净克隆无需 npm install 即可 verify」仍成立 | `server/rag/vector-store.js`、`package.json` |
+| 检索引擎 | `local-index` 可用；`remote-embedding` 需配置；`pageindex`、`graphrag` **未实现并已说明原因** | `server/rag/engines.js` |
+| 文档解析 | 只支持纯文本类格式；PDF/Office/图片**明确报错并说明缺哪个解析引擎**，不产出空文档 | `server/rag/parser.js` |
+| 课程知识库 | 内容来自仓库自带章节 JSON 与通关标准，**沿用原课程、本次未审校**；原课程审校队列见本文末 | `server/rag/course-seed.js` |
+| 讲解证据 | 复评改为检索课程原文并要求模型回报引用号，服务端逐个复核是否真实存在 | `server/grounding.js`、`server/ai-review.js` |
+| 证据复核的边界 | **只能验证「引用号真实存在」，不能验证「引用内容支持该结论」**；语义是否被支撑仍需人读。编造引用或零引用一律判定不通过 | `server/grounding.js` |
+| 记忆分层 | L1 事件轨迹（append-only 真源）／L2 各面事实／L3 跨面综合；L2/L3 是**确定性聚合而非 LLM 摘要**，故无语义归纳能力，也没有「模型编造记忆」的风险 | `server/memory/store.js` |
+| 记忆范围 | 按用户隔离，**不跨设备同步**；L2/L3 不含讲解正文；轨迹无自动过期策略 | `server/memory/store.js` |
+| 能力运行时 | `explain`／`quiz`／`research` 共享一套工具注册表与会话上下文；工具按 user/context/governed 分组 | `server/capabilities/registry.js`、`server/agent/tools.js` |
+| 代码执行 | **不提供**：本仓库没有沙箱，Node 进程内做不到等价隔离。故工具列表中没有 `exec`，可经 `/api/agent/tools` 核对 | `server/capabilities/registry.js` |
+| 技能包 | SKILL.md（frontmatter + Markdown）为**声明式文本，不执行代码**；可执行后缀一律阻断；`always` 在落盘前剥离；越权话术检测是启发式正则，会漏会误报 | `server/skills/registry.js` |
+| 管理接口 | 建/删知识库、入库、重建索引、清空记忆、装卸技能，与写模型配置同一道门：未暴露时要求回环对端，暴露后必须带 `AIMASTER_CONFIG_TOKEN`，未配置则不可写 | `server/index.js` |
 | 原前端 | 静态课程、Three.js 星海与 Electron 入口是已有基础 | 原仓库文件 |
 | 私有完整版 | 当前没有可查证的私有 Flask 完整版 | 未提供对应实现与验收证据 |
 | 视觉素材 | 保留第三方鲸鱼娘原形象与动作，不能声明团队原创 | `third_party/dsh-pet/` |
@@ -33,6 +46,11 @@
 | 已经通过学校认定、评委高分验证 | 用户选择创新赛道，正式审核和真实评审记录尚未提供 |
 | 手机端流畅、低端设备适配完成 | 仅报告实际测试设备、浏览器和视口的结果 |
 | 本地保存，所以任何数据都不会出机 | 学习记录可存本机 SQLite 或远程 Turso；开启远程模型后相关输入会发往服务商 |
+| 已经支持语义检索 | 默认是本机哈希嵌入，只做词面重合；配了远程嵌入模型才是语义检索，且换模型必须重建索引 |
+| 讲解复评能判断学生是否真正理解 | 复评基于课程证据并要求模型回报引用号，引用号会被复核；但复核只能确认引用真实存在，不能确认结论被证据支持，也仍不能杜绝背题与代答 |
+| 记忆会归纳你的学习风格 | L2/L3 是计数与比例的确定性聚合，不做语义归纳，不会产生「你偏好类比式讲解」这类推断 |
+| 记忆能跨设备同步 | 记忆是本机文件，按用户隔离，不存在云端副本 |
+| 技能包可扩展执行能力 | 技能是声明式文本、不执行代码；本仓库无沙箱，故也不提供代码执行工具 |
 
 ## 课程事实审校队列
 
