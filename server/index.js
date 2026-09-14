@@ -29,6 +29,10 @@ const path = require('node:path');
 const { randomUUID, randomInt, timingSafeEqual } = require('node:crypto');
 const { openStore } = require('./store');
 const { publicConfig, validateConfig, reviewExplanation, probeReachable } = require('./ai-review');
+const { createRagService } = require('./rag');
+const { createRagRoutes } = require('./rag-routes');
+const { retrieveEvidence } = require('./grounding');
+const { COURSE_KB_NAME } = require('./rag/course-seed');
 
 const ROOT = path.resolve(__dirname, '..');
 const DAY = 86400000;
@@ -130,6 +134,28 @@ function createApp(options = {}) {
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
   const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
+  // RAG 服务：数据落在 .local/rag（已 gitignore）。嵌入配置优先取显式注入，其次环境变量，
+  // 都没有时用本机哈希嵌入 —— 学习流程不因缺配置而中断，但会用「非语义」的检索结果，并如实标注。
+  const envEmbedding = {
+    baseUrl: process.env.EMBEDDING_BASE_URL || '',
+    model: process.env.EMBEDDING_MODEL || '',
+    apiKey: process.env.EMBEDDING_API_KEY || ''
+  };
+  const readRagConfig = () => {
+    const injected = typeof options.ragConfig === 'function' ? options.ragConfig() : (options.ragConfig || {});
+    return { ...injected, embedding: { ...envEmbedding, ...(injected.embedding || {}) }, fetchImpl: options.fetchImpl };
+  };
+  const rag = options.rag || createRagService({ dataRoot: options.ragDataRoot || path.join(ROOT, '.local/rag'), root: ROOT, config: readRagConfig });
+  const courseKbId = () => {
+    const kb = rag.store.list().find(item => item.name === COURSE_KB_NAME);
+    return kb ? kb.id : null;
+  };
+  // 管理操作统一门禁，与 /api/ai/config 同一条规则：未暴露时要求回环对端；暴露后必须再带
+  // AIMASTER_CONFIG_TOKEN。不这样做就会出现「配置写不了、但知识库能被任意访客重建」的缺口。
+  const requireAdmin = request => {
+    if (!isLoopbackPeer(request) || (exposed && !configTokenValid(request))) fail(403, '此操作仅限在本机执行。');
+  };
+  const ragRoutes = createRagRoutes({ rag, requireAdmin });
   const modules = new Map(catalog.modules.map(m => [m.id, m]));
   const questions = new Map(catalog.modules.flatMap(m => m.questions.map(q => [q.id, { ...q, moduleId: m.id }])));
   const rate = new Map();
@@ -222,6 +248,7 @@ function createApp(options = {}) {
     let state = await store.state(user.id);
     const send = payload => json(res, 200, { ok: true, ...payload });
     const save = () => store.save(user.id, state);
+    if (route.startsWith('rag/')) return ragRoutes({ req, url, route, body, send, fail });
     if (req.method === 'GET') {
       if (route === 'status') {
         const config = await store.config();
@@ -300,7 +327,19 @@ function createApp(options = {}) {
         p.revision = revision; p.quiz = null; p.explanation = null;
         const planRevision = state.planRevision; await save();
         const local = core.screenExplanation(body.text, module);
-        const result = await reviewExplanation(body.text, module, local, await store.config(), options.fetchImpl);
+        // 先取课程证据，再让模型基于证据判定 —— 复评从「凭记忆判断」变成「对着课程原文判断」，
+        // 且模型必须回报引用了哪几条，引用号会在服务端复核。
+        let grounding = { available: false, reason: '未建立课程知识库。', evidence: [], queries: [] };
+        try {
+          grounding = await retrieveEvidence({ rag, kbId: courseKbId(), module, studentText: body.text });
+        } catch (error) {
+          grounding = { available: false, reason: '证据检索失败：' + error.message, evidence: [], queries: [] };
+        }
+        const result = await reviewExplanation(body.text, module, local, await store.config(), { fetchImpl: options.fetchImpl, evidence: grounding.evidence });
+        result.grounding = {
+          available: grounding.available, reason: grounding.reason || '', kbId: grounding.kbId || null,
+          version: grounding.version || null, evidenceCount: grounding.evidence.length, queries: grounding.queries || []
+        };
         state = await store.state(user.id);
         if (state.planRevision !== planRevision || state.progress[module.id]?.revision !== revision) fail(409, '已有更新的讲解或计划，请查看最新结果。');
         state.progress[module.id].explanation = { ...result, text: body.text, at: stamp(), revision };

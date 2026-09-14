@@ -104,23 +104,40 @@ function createKbStore(options = {}) {
     return kb;
   }
 
-  function addDocuments(id, documents) {
-    if (!Array.isArray(documents) || !documents.length) throw new Error('没有可入库的文档。');
-    const registry = readRegistry();
-    const kb = findKb(registry, id);
-    const existing = readJsonl(docFile(id));
-    const added = documents.map(document => ({
+  function normalizeDocument(document) {
+    return {
       id: randomUUID(),
       title: String(document.title || 'untitled').slice(0, 200),
       source: String(document.source || document.title || 'untitled').slice(0, 400),
       kind: String(document.kind || 'text'),
       addedAt: new Date().toISOString(),
       text: String(document.text || '')
-    }));
+    };
+  }
+
+  function addDocuments(id, documents) {
+    if (!Array.isArray(documents) || !documents.length) throw new Error('没有可入库的文档。');
+    const registry = readRegistry();
+    const kb = findKb(registry, id);
+    const existing = readJsonl(docFile(id));
+    const added = documents.map(normalizeDocument);
     writeJsonl(docFile(id), existing.concat(added));
     kb.updatedAt = new Date().toISOString();
     writeRegistry(registry);
     return { added: added.length, total: existing.length + added.length };
+  }
+
+  // 整体替换文档：用于「重新灌入课程库」这类幂等操作，避免同一份内容反复累积。
+  // 只替换真源；已建立的版本索引原样保留，重建仍会开新版本。
+  function replaceDocuments(id, documents) {
+    if (!Array.isArray(documents)) throw new Error('文档必须为数组。');
+    const registry = readRegistry();
+    const kb = findKb(registry, id);
+    const next = documents.map(normalizeDocument);
+    writeJsonl(docFile(id), next);
+    kb.updatedAt = new Date().toISOString();
+    writeRegistry(registry);
+    return { replaced: next.length };
   }
 
   // 重建索引 = 新开一个版本目录。旧版本原样保留，切换只在成功后发生。
@@ -253,7 +270,7 @@ function createKbStore(options = {}) {
     return { removed: kb.id };
   }
 
-  return { root, list, info, create, addDocuments, buildIndex, activate, search, remove, readManifest };
+  return { root, list, info, create, addDocuments, replaceDocuments, buildIndex, activate, search, remove, readManifest };
 }
 
 module.exports = { createKbStore, slugify, REGISTRY_FILE };
