@@ -38,12 +38,11 @@ const { createMemoryRoutes } = require('./memory-routes');
 const { createCapabilityRegistry } = require('./capabilities/registry');
 const { createSkillRegistry } = require('./skills/registry');
 const { createAgentRoutes, createSkillRoutes } = require('./agent-routes');
+const { createLearningDomain, reviewDelayDays } = require('./learning/domain');
 
 const ROOT = path.resolve(__dirname, '..');
 const DAY = 86400000;
 const QUIZ_PASS_SCORE = 75;
-const DAILY_QUIZ_LIMIT = 3;
-const MAX_ATTEMPTS = 2000;
 const BODY_LIMIT = 64000;
 const AI_REVIEW_IP_LIMIT = 20; // 同一客户端 IP 每分钟可发起的 AI 复评次数
 const AI_REVIEW_DAILY_BUDGET = 5000; // 全服务每日 AI 复评总预算，超出后按限流处理，防止公网被刷量
@@ -66,11 +65,6 @@ function isLoopbackPeer(req) {
   // 取不到 socket（例如 Netlify Functions 的 mock req）时不算本机，一律走 fail-closed。
   const address = String(req.socket?.remoteAddress || '');
   return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
-}
-function reviewDelayDays(correctStreak) {
-  const schedule = [1, 3, 7, 14, 30];
-  const index = Math.min(Math.max(Number(correctStreak || 1) - 1, 0), schedule.length - 1);
-  return schedule[index];
 }
 const shuffled = input => {
   const result = [...input];
@@ -183,77 +177,11 @@ function createApp(options = {}) {
     try { memoryFor(userId).record(surface, event); }
     catch (error) { if (options.onError) options.onError(error); }
   };
-  const modules = new Map(catalog.modules.map(m => [m.id, m]));
-  const questions = new Map(catalog.modules.flatMap(m => m.questions.map(q => [q.id, { ...q, moduleId: m.id }])));
-  const rate = new Map();
-  function limited(key, count, windowMs) {
-    const now = Date.now();
-    if (rate.size > 2000) for (const [k, v] of rate) if (v.until < now) rate.delete(k);
-    const item = rate.get(key);
-    if (!item || item.until < now) return rate.set(key, { count: 1, until: now + windowMs });
-    if (item.count >= count) fail(429, '操作过于频繁，请稍后再试。');
-    item.count++;
-  }
-  function moduleFor(state, id) {
-    const module = modules.get(id);
-    if (!module) fail(404, '未找到这个学习任务。');
-    if (state.progress[id]?.completedAt) return module;
-    if (!state.plan?.modules.includes(id)) fail(409, '请先生成包含这个任务的学习计划。');
-    const earlier = state.plan.modules.slice(0, state.plan.modules.indexOf(id));
-    if (earlier.some(key => !state.progress[key]?.completedAt)) fail(409, '请先完成路线中前面的任务。');
-    return module;
-  }
-  function progressFor(state, id) {
-    return state.progress[id] ||= { explanation: null, quiz: null, completedAt: null, dueAt: null, reviewCount: 0 };
-  }
-  function quizDay() {
-    return new Date().toISOString().slice(0, 10);
-  }
-  function reserveQuizAttempt(state, moduleId) {
-    const day = quizDay();
-    state.quizAttempts ||= {};
-    state.quizAttempts[day] ||= {};
-    const used = Number(state.quizAttempts[day][moduleId] || 0);
-    if (used >= DAILY_QUIZ_LIMIT) fail(429, '本模块今日正式测验最多 3 次，请明天再试。');
-    state.quizAttempts[day][moduleId] = used + 1;
-    for (const key of Object.keys(state.quizAttempts)) if (key !== day) delete state.quizAttempts[key];
-    return DAILY_QUIZ_LIMIT - used - 1;
-  }
-  function addAttempt(state, item) {
-    state.attempts.push({ id: randomUUID(), at: stamp(), ...item });
-    // Keep only the most recent interactions for each learner.
-    state.attempts = state.attempts.slice(-MAX_ATTEMPTS);
-  }
-  function checkAnswers(list, answers) {
-    if (!answers || typeof answers !== 'object' || Array.isArray(answers) || list.some(q => !Number.isInteger(answers[q.id]) || answers[q.id] < 0 || answers[q.id] >= q.options.length)) {
-      fail(400, '请完成所有题目后提交。');
-    }
-  }
-  function gradeWithContext(list, answers) {
-    const result = core.gradeQuiz(list, answers);
-    const presented = new Map(list.map(question => [question.id, question]));
-    return { ...result, items: result.items.map(item => {
-      const question = presented.get(item.id);
-      return { ...item, prompt: question.prompt, options: [...question.options],
-        selectedText: item.selected === null ? null : question.options[item.selected],
-        answerText: question.options[item.answer], source: question.source };
-    }) };
-  }
-  function recordWrongAnswers(state, result, at) {
-    for (const item of result.items) {
-      if (item.correct) continue;
-      const question = questions.get(item.id);
-      const previous = state.wrongAnswers.find(w => w.questionId === item.id);
-      if (previous) {
-        previous.mistakes++;
-        previous.correctStreak = 0;
-        previous.resolved = false;
-        previous.dueAt = at;
-      } else {
-        state.wrongAnswers.push({ questionId: item.id, moduleId: question.moduleId, mistakes: 1, reviewCount: 0, resolved: false, dueAt: at });
-      }
-    }
-  }
+  // 学习闭环的领域规则（路线校验、测验配额、判分、错题登记、限流）抽到
+  // server/learning/domain.js —— 它们与 HTTP 无关，抽出去之后可以脱离服务器直接测。
+  // 这些函数会就地修改 state，调用方随后 save() 落盘（既有语义，见该模块注释）。
+  const { modules, questions, limited, moduleFor, progressFor, quizDay, reserveQuizAttempt, addAttempt, checkAnswers, gradeWithContext, recordWrongAnswers } =
+    createLearningDomain({ core, catalog, fail, randomUUID, stamp });
   async function api(req, res, url) {
     const route = url.pathname.slice(5);
     if (!['GET', 'POST'].includes(req.method)) fail(405, '不支持此请求方式。');

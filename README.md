@@ -215,7 +215,7 @@ npm run verify
 
 | # | 实际执行 | 验什么 |
 | :- | :--- | :--- |
-| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 87 项） |
+| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 97 项） |
 | ② | `python scripts/verify_frontend_demo.py` | 静态前端完整性：页面、资源、内部链接、知识星海 |
 
 **最近一次实测**（干净 Git 克隆，非工作树、非 `git archive`）：
