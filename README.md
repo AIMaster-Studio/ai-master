@@ -215,7 +215,7 @@ npm run verify
 
 | # | 实际执行 | 验什么 |
 | :- | :--- | :--- |
-| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 104 项） |
+| ① | `node --test tests/*.test.js` | 后端与学习核心的单元/集成测试（当前 109 项） |
 | ② | `python scripts/verify_frontend_demo.py` | 静态前端完整性：页面、资源、内部链接、知识星海 |
 
 **最近一次实测**（干净 Git 克隆，非工作树、非 `git archive`）：
@@ -274,6 +274,7 @@ npm run verify          # 无需 npm install，无需 .env 或 .local/
 | [docs/ican/education-study-plan.md](docs/ican/education-study-plan.md) | 教育效果研究计划 |
 | [docs/ican/rag-memory-agent.md](docs/ican/rag-memory-agent.md) | RAG / 记忆 / 能力运行时的设计依据、刻意未照搬之处与逐条边界 |
 | [docs/ican/deeptutor-comparison.md](docs/ican/deeptutor-comparison.md) | 与 DeepTutor 的逐项能力对照：借了什么、没借什么、为什么 |
+| [docs/ican/content-audit-2026-09-15.md](docs/ican/content-audit-2026-09-15.md) | 课程事实审校报告：七项逐条结论、依据与核实日期、答案键风险面扫描 |
 
 ---
 

@@ -18,7 +18,7 @@
     "chapter": 1,
     "chapter_title": "大模型基础原理",
     "title": "Token 与 Tokenization 算法（BPE）",
-    "desc": "Token 的本质Token 是 LLM 处理文本的最小语义单位。模型不是按字符或单词处理文本，而是通过 Tokenizer（分词器）将文本映射为整数序列。为什么需要 Tokenization？神经网络无法直接处理文本，需要将文本转换为数字"
+    "desc": "Token 的本质Token 是 LLM 处理文本的基本单位，由 Tokenizer（分词器）把文本映射为整数序列得到。它<strong>不等于固定的语义单位</strong>：同一个词可能被切成多个 token，不同分词器对同一段文本的切法也不同。为什么需要 Tokenization？神经网络无法直接处理文本，需要将文本转换为数字"
   },
   {
     "id": "1_3",
