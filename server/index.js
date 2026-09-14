@@ -35,6 +35,9 @@ const { retrieveEvidence } = require('./grounding');
 const { COURSE_KB_NAME } = require('./rag/course-seed');
 const { createMemoryStore } = require('./memory/store');
 const { createMemoryRoutes } = require('./memory-routes');
+const { createCapabilityRegistry } = require('./capabilities/registry');
+const { createSkillRegistry } = require('./skills/registry');
+const { createAgentRoutes, createSkillRoutes } = require('./agent-routes');
 
 const ROOT = path.resolve(__dirname, '..');
 const DAY = 86400000;
@@ -166,6 +169,15 @@ function createApp(options = {}) {
     return memoryStores.get(userId);
   };
   const memoryRoutes = createMemoryRoutes({ memoryFor, requireAdmin });
+  // 能力运行时：工具在注册表里登记一次，多能力共享；会话落盘以支撑 ask_user 的暂停/续跑。
+  const skillRegistry = createSkillRegistry({ root: options.skillsRoot || path.join(ROOT, '.local/skills') });
+  const capabilities = createCapabilityRegistry({ rag, memoryFor, courseKbId, fetchImpl: options.fetchImpl });
+  const agentRoutes = createAgentRoutes({
+    capabilities, skillRegistry, requireAdmin,
+    sessionsRoot: options.agentSessionsRoot || path.join(ROOT, '.local/agent'),
+    getConfig: () => store.config()
+  });
+  const skillRoutes = createSkillRoutes({ skillRegistry, requireAdmin });
   // 记忆写入失败不得中断学习流程：轨迹是旁路记录，不是通关判定的必要条件。
   const recordMemory = (userId, surface, event) => {
     try { memoryFor(userId).record(surface, event); }
@@ -265,6 +277,8 @@ function createApp(options = {}) {
     const save = () => store.save(user.id, state);
     if (route.startsWith('rag/')) return ragRoutes({ req, url, route, body, send, fail });
     if (route.startsWith('memory/')) return memoryRoutes({ req, url, route, body, send, fail, user });
+    if (route.startsWith('agent/')) return agentRoutes({ req, url, route, body, send, fail, user });
+    if (route === 'skills' || route.startsWith('skills/')) return skillRoutes({ req, url, route, body, send, fail });
     if (req.method === 'GET') {
       if (route === 'status') {
         const config = await store.config();
