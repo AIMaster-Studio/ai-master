@@ -25,6 +25,7 @@
 
 const http = require('node:http');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { randomUUID, randomInt, timingSafeEqual } = require('node:crypto');
 const { openStore } = require('./store');
@@ -133,6 +134,22 @@ function createApp(options = {}) {
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
   const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
+  // 「本机持久化」与「临时实例」两种形态必须一起切换，不能只切数据库。
+  //
+  // 背景（2026-09-15 实测发现）：inMemory 原先只作用于 SQLite（:memory:），
+  // 而 RAG / 记忆 / 技能包 / agent 会话都是**文件存储**的，默认落在仓库根的 .local/ 下。
+  // Vercel 与 Netlify 的函数入口都传 inMemory:true，但这两个平台的文件系统除 /tmp 外只读，
+  // createApp 会在建目录那一步直接抛错 —— 结果是**所有 /api/* 返回 500**，而不只是新接口。
+  // 因此：只要数据库不是持久的（inMemory 或 dbPath=':memory:'），文件类存储一并指向可写的临时目录。
+  const persistentDb = !(options.inMemory || options.dbPath === ':memory:');
+  const dataRoot = options.dataRoot || (persistentDb ? path.join(ROOT, '.local') : path.join(os.tmpdir(), 'aimaster-ephemeral-' + process.pid));
+  const dataRoots = {
+    base: dataRoot,
+    rag: options.ragDataRoot || path.join(dataRoot, 'rag'),
+    memory: options.memoryDataRoot || path.join(dataRoot, 'memory'),
+    skills: options.skillsRoot || path.join(dataRoot, 'skills'),
+    agent: options.agentSessionsRoot || path.join(dataRoot, 'agent')
+  };
   // RAG 服务：数据落在 .local/rag（已 gitignore）。嵌入配置优先取显式注入，其次环境变量，
   // 都没有时用本机哈希嵌入 —— 学习流程不因缺配置而中断，但会用「非语义」的检索结果，并如实标注。
   const envEmbedding = {
@@ -144,7 +161,7 @@ function createApp(options = {}) {
     const injected = typeof options.ragConfig === 'function' ? options.ragConfig() : (options.ragConfig || {});
     return { ...injected, embedding: { ...envEmbedding, ...(injected.embedding || {}) }, fetchImpl: options.fetchImpl };
   };
-  const rag = options.rag || createRagService({ dataRoot: options.ragDataRoot || path.join(ROOT, '.local/rag'), root: ROOT, config: readRagConfig });
+  const rag = options.rag || createRagService({ dataRoot: dataRoots.rag, root: ROOT, config: readRagConfig });
   const courseKbId = () => {
     const kb = rag.store.list().find(item => item.name === COURSE_KB_NAME);
     return kb ? kb.id : null;
@@ -156,7 +173,7 @@ function createApp(options = {}) {
   };
   const ragRoutes = createRagRoutes({ rag, requireAdmin });
   // 记忆按用户隔离，各自一份文件；同进程内按 userId 缓存实例，避免重复建目录。
-  const memoryRoot = options.memoryDataRoot || path.join(ROOT, '.local/memory');
+  const memoryRoot = dataRoots.memory;
   const memoryStores = new Map();
   const memoryFor = userId => {
     if (!memoryStores.has(userId)) memoryStores.set(userId, createMemoryStore({ dataRoot: path.join(memoryRoot, userId) }));
@@ -164,11 +181,11 @@ function createApp(options = {}) {
   };
   const memoryRoutes = createMemoryRoutes({ memoryFor, requireAdmin });
   // 能力运行时：工具在注册表里登记一次，多能力共享；会话落盘以支撑 ask_user 的暂停/续跑。
-  const skillRegistry = createSkillRegistry({ root: options.skillsRoot || path.join(ROOT, '.local/skills') });
+  const skillRegistry = createSkillRegistry({ root: dataRoots.skills });
   const capabilities = createCapabilityRegistry({ rag, memoryFor, courseKbId, fetchImpl: options.fetchImpl });
   const agentRoutes = createAgentRoutes({
     capabilities, skillRegistry, requireAdmin,
-    sessionsRoot: options.agentSessionsRoot || path.join(ROOT, '.local/agent'),
+    sessionsRoot: dataRoots.agent,
     getConfig: () => store.config()
   });
   const skillRoutes = createSkillRoutes({ skillRegistry, requireAdmin });
@@ -436,7 +453,7 @@ function createApp(options = {}) {
   };
   const server = http.createServer(handleRequest);
   server.on('close', () => store.close());
-  return { server, store, handleRequest };
+  return { server, store, handleRequest, rag, dataRoots, persistentDb };
 }
 
 if (require.main === module) {
