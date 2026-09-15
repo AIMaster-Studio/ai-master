@@ -137,3 +137,71 @@ test('the cognitive map keeps flagging the claims that were not adopted', () => 
     assert.ok(map.includes(needle), '认知地图缺少 caveat：' + needle);
   }
 });
+
+// ---------------------------------------------------------------------------
+// 覆盖缺口复盘（2026-09-15 追加）
+//
+// 审校报告当时写了「正文与题库：未发现『直接 API 只能单轮』的绝对表述」。
+// 用户随后截图指出这句话就在课程页上 —— 核实后确认它存在于三处：
+//   frontend/chapter/4/index.html、frontend/data/chapter_04.json、
+//   frontend/data/knowledge-universe.json。
+// 而当时的扫描清单里**没有 frontend/chapter/**，也没有 knowledge-universe.json。
+//
+// 也就是说：报告写的是「未发现」，实际情况是「没扫到」。这两件事必须分开说。
+// 下面三条测试分别守住「这句话不得回来」「扫描范围不得再有盲区」「渲染页确实被读到」。
+// ---------------------------------------------------------------------------
+
+// 内容面清单：课程内容可能出现的每一个根目录都必须登记在这里。
+// 新增内容目录时这条测试会失败，强制把它纳入审校范围 —— 而不是等下一次漏掉。
+const CONTENT_ROOTS = [
+  'frontend/data',     // 章节源数据、知识图谱、题库
+  'frontend/static',   // 星海与知识图谱的渲染数据
+  'frontend/chapter'   // 课程页面（渲染给学习者的最终形态，此前被整个漏掉）
+];
+
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+
+function collectFiles(root, pattern) {
+  const found = [];
+  const walk = current => {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (pattern.test(entry.name)) found.push(full);
+    }
+  };
+  walk(path.join(PROJECT_ROOT, root));
+  return found;
+}
+
+test('every content root is registered and actually covered by the audit', () => {
+  for (const root of CONTENT_ROOTS) {
+    assert.ok(fs.existsSync(path.join(PROJECT_ROOT, root)), '内容根目录不存在（清单过期？）：' + root);
+    assert.ok(collectFiles(root, /\.(json|html)$/).length > 0, '内容根目录下没有可审校文件：' + root);
+  }
+  // 渲染页必须真的被读到 —— 上一次的缺口正是「只扫了数据、没扫渲染结果」。
+  const pages = collectFiles('frontend/chapter', /^index\.html$/);
+  assert.ok(pages.length >= 10, '课程渲染页数量异常：' + pages.length);
+});
+
+test('the audited single-turn claim stays corrected in data, universe and rendered page', () => {
+  const files = [
+    'frontend/data/chapter_04.json',
+    'frontend/data/knowledge-universe.json',
+    'frontend/chapter/4/index.html'
+  ];
+  for (const file of files) {
+    const text = fs.readFileSync(path.join(PROJECT_ROOT, file), 'utf8');
+    assert.equal(text.includes('只能做单轮问答'), false,
+      file + ' 仍在断言「直接调用 LLM API 只能做单轮问答」');
+    assert.ok(text.includes('无状态'), file + ' 应改为说明 API 是无状态的，多轮靠应用携带历史');
+  }
+});
+
+test('rendered chapter pages are readable and non-trivial', () => {
+  const pages = collectFiles('frontend/chapter', /^index\.html$/);
+  for (const page of pages) {
+    const text = fs.readFileSync(page, 'utf8');
+    assert.ok(text.length > 500, '课程页内容异常短：' + path.relative(PROJECT_ROOT, page));
+  }
+});

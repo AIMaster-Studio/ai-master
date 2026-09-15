@@ -311,7 +311,7 @@
           "chapter": 4,
           "index": 0,
           "title": "LangChain 核心：Chain 与 Prompt 模板",
-          "desc": "<h3>为什么需要框架？</h3><p>直接调用 LLM API 只能做单轮问答。一个完整的 AI 应用需要：<strong>提示词管理、多步推理、工具调用、记忆管理、流式输出</strong>。框架将这些能力封装为可组合的模块。</p><h3>LangChain 核心概念</h3><p>LangChain 是最流行的 LLM 应用框架，核心抽象是 <strong>Chain（链）</strong>——将多个组件串联为一条处理流水线。</p><pre><code>from langchain.prompts import ChatPromptTempla",
+          "desc": "<h3>为什么需要框架？</h3><p>LLM API 本身是<strong>无状态</strong>的——它不保存对话历史，每次请求都要把上下文重新带上。所以多轮问答不是「API 不支持」，而是<strong>需要应用自己维护历史并逐次携带</strong>。一个完整的 AI 应用还需要：<strong>提示词管理、多步推理、工具调用、记忆管理、流式输出</strong>。框架把这些能力封装为可组合的模块。</p><h3>LangChain 核心概念</h3><p>LangChain 是最流行的 LLM 应用框架，核心抽象是 <strong>Chain（链）</strong>——将多个组件串联为一条处理流水线。</p><pre><code>from langchain.prompts import ChatPromptTempla",
           "status": "available",
           "url": "../chapter/4/index.html#kp-1"
         },
