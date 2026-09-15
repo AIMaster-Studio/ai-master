@@ -19,6 +19,7 @@ const { randomUUID } = require('node:crypto');
 const { chunkText } = require('./chunker');
 const { openVectorStore } = require('./vector-store');
 const { resolveEngine } = require('./engines');
+const { badRequest, notFound, conflict } = require('../errors');
 
 const REGISTRY_FILE = 'kbs.json';
 const REGISTRY_VERSION = 1;
@@ -66,7 +67,7 @@ function createKbStore(options = {}) {
   }
   function findKb(registry, id) {
     const kb = registry.kbs.find(item => item.id === id);
-    if (!kb) throw Object.assign(new Error('未找到这个知识库。'), { status: 404 });
+    if (!kb) throw notFound('未找到这个知识库。');
     return kb;
   }
   function readManifest(id, version) {
@@ -92,7 +93,7 @@ function createKbStore(options = {}) {
 
   function create(input = {}) {
     const name = String(input.name || '').trim();
-    if (name.length < 1 || name.length > 60) throw new Error('知识库名称需为 1–60 个字符。');
+    if (name.length < 1 || name.length > 60) throw badRequest('知识库名称需为 1–60 个字符。');
     const engine = String(input.engine || 'local-index');
     resolveEngine(engine, readConfig()); // 引擎不存在或未实现时在这里就失败，不留半个知识库
     const registry = readRegistry();
@@ -116,7 +117,7 @@ function createKbStore(options = {}) {
   }
 
   function addDocuments(id, documents) {
-    if (!Array.isArray(documents) || !documents.length) throw new Error('没有可入库的文档。');
+    if (!Array.isArray(documents) || !documents.length) throw badRequest('没有可入库的文档。');
     const registry = readRegistry();
     const kb = findKb(registry, id);
     const existing = readJsonl(docFile(id));
@@ -130,7 +131,7 @@ function createKbStore(options = {}) {
   // 整体替换文档：用于「重新灌入课程库」这类幂等操作，避免同一份内容反复累积。
   // 只替换真源；已建立的版本索引原样保留，重建仍会开新版本。
   function replaceDocuments(id, documents) {
-    if (!Array.isArray(documents)) throw new Error('文档必须为数组。');
+    if (!Array.isArray(documents)) throw badRequest('文档必须为数组。');
     const registry = readRegistry();
     const kb = findKb(registry, id);
     const next = documents.map(normalizeDocument);
@@ -145,7 +146,8 @@ function createKbStore(options = {}) {
     const registry = readRegistry();
     const kb = findKb(registry, id);
     const documents = readJsonl(docFile(id));
-    if (!documents.length) throw new Error('知识库还没有文档，无法建立索引。');
+    // 409：请求本身没问题，只是缺一个前置步骤（先入库再建索引）。
+    if (!documents.length) throw conflict('知识库还没有文档，无法建立索引。');
     const { embedder, preferredBackend } = resolveEngine(kb.engine, readConfig());
 
     const chunks = [];
@@ -158,7 +160,7 @@ function createKbStore(options = {}) {
         });
       }
     }
-    if (!chunks.length) throw new Error('文档切分后没有可用内容。');
+    if (!chunks.length) throw badRequest('文档切分后没有可用内容。');
 
     const vectors = [];
     for (let i = 0; i < chunks.length; i += EMBED_BATCH) {
@@ -202,7 +204,7 @@ function createKbStore(options = {}) {
   function activate(id, version) {
     const registry = readRegistry();
     const kb = findKb(registry, id);
-    if (!(kb.versions || []).includes(version)) throw new Error('这个版本不存在。');
+    if (!(kb.versions || []).includes(version)) throw notFound('这个版本不存在。');
     kb.activeVersion = version;
     kb.updatedAt = new Date().toISOString();
     writeRegistry(registry);
@@ -211,15 +213,18 @@ function createKbStore(options = {}) {
 
   async function search(id, query, limit = DEFAULT_LIMIT) {
     const text = String(query || '').trim();
-    if (!text) throw new Error('检索问题不能为空。');
+    if (!text) throw badRequest('检索问题不能为空。');
     const kb = findKb(readRegistry(), id);
-    if (!kb.activeVersion) throw new Error('该知识库尚未建立索引，请先构建索引。');
+    if (!kb.activeVersion) throw conflict('该知识库尚未建立索引，请先构建索引。');
     const manifest = readManifest(id, kb.activeVersion);
+    // 故意保留 500：清单文件缺失说明服务端自己的数据坏了，调用方改请求也修不好，
+    // 这条应该出现在 onError 日志里，而不是被当成一次普通的参数错误。
     if (!manifest) throw new Error('索引清单缺失，请重建索引。');
 
     const { embedder, preferredBackend } = resolveEngine(manifest.engine, readConfig());
     if (embedder.id !== manifest.embedder.id) {
-      throw new Error('当前嵌入器（' + embedder.id + '）与建立索引时（' + manifest.embedder.id + '）不一致，向量空间不可混用，请重建索引。');
+      // 409：请求合法，但当前索引是用另一个嵌入器建的，向量空间不可混用 —— 需要先重建索引。
+      throw conflict('当前嵌入器（' + embedder.id + '）与建立索引时（' + manifest.embedder.id + '）不一致，向量空间不可混用，请重建索引。');
     }
 
     const dir = versionDir(id, kb.activeVersion);

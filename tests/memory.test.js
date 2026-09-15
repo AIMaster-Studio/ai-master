@@ -226,7 +226,11 @@ test('learning activity flows into memory without the learner asking, and memory
   assert.equal(l1.data.events[0].accepted, true);
 
   assert.equal((await request('/api/memory/l1')).status, 400, '缺少 surface 应报错');
-  assert.equal((await request('/api/memory/l2?surface=nope')).status, 500);
+  // 原先这里钉的是 500。那是错的：surface 名字写错是调用方的事，提示「服务暂时出错，请重试」
+  // 会让用户一直重试一个永远好不了的请求。现在返回 400 并列出可用的面。
+  const badSurface = await request('/api/memory/l2?surface=nope');
+  assert.equal(badSurface.status, 400, '未知的记忆面是调用方参数错误，不是服务端故障');
+  assert.match(badSurface.data.error, /未登记的记忆面/);
 
   const synthesized = await request('/api/memory/synthesize', {});
   assert.equal(synthesized.status, 200);

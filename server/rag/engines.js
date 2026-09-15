@@ -13,6 +13,7 @@
 
 const { createLocalEmbedder, createRemoteEmbedder } = require('./embedder');
 const { backendStatus } = require('./vector-store');
+const { badRequest, unavailable } = require('../errors');
 
 const STATUS = { READY: 'ready', NEEDS_CONFIG: 'needs-config', NOT_IMPLEMENTED: 'not-implemented' };
 
@@ -37,7 +38,8 @@ const ENGINES = [
     note: '需要配置嵌入服务地址与模型；换嵌入模型后必须重建索引，不同向量空间不可混用。',
     resolve(config) {
       const embedding = config && config.embedding;
-      if (!embedding || !embedding.baseUrl || !embedding.model) throw new Error('远程嵌入引擎需要配置 embedding.baseUrl 与 embedding.model。');
+      // 503：调用方改请求也修不好 —— 要修的是服务端的嵌入服务配置（运维动作）。
+      if (!embedding || !embedding.baseUrl || !embedding.model) throw unavailable('远程嵌入引擎需要配置 embedding.baseUrl 与 embedding.model。');
       return { embedder: createRemoteEmbedder(embedding, config.fetchImpl), preferredBackend: 'sqlite-vec' };
     }
   },
@@ -47,8 +49,8 @@ const ENGINES = [
     summary: '无向量的文档树遍历，按页给引用。',
     status: STATUS.NOT_IMPLEMENTED,
     requires: ['PageIndex 服务或本地运行时'],
-    note: '未实现：它需要的是一次「阅读循环」而不是向量索引，接入形态与现有 index 契约不同，需单独设计。',
-    resolve() { throw new Error('pageindex 引擎尚未实现。'); }
+    note: '它需要的是一次「阅读循环」而不是向量索引，接入形态与现有 index 契约不同，需单独设计。',
+    resolve() { throw badRequest('pageindex 引擎尚未实现。'); }
   },
   {
     id: 'graphrag',
@@ -56,8 +58,8 @@ const ENGINES = [
     summary: '跨文档关系与语料级问答。',
     status: STATUS.NOT_IMPLEMENTED,
     requires: ['Python 3.11–3.13 与 graphrag 依赖'],
-    note: '未实现：引入 Python 运行时会让「克隆即可 verify」的承诺失效，需要单独评估。',
-    resolve() { throw new Error('graphrag 引擎尚未实现。'); }
+    note: '引入 Python 运行时会让「克隆即可 verify」的承诺失效，需要单独评估。',
+    resolve() { throw badRequest('graphrag 引擎尚未实现。'); }
   }
 ];
 
@@ -84,13 +86,15 @@ function engineStatus(config) {
 
 function getEngine(id) {
   const engine = ENGINES.find(item => item.id === id);
-  if (!engine) throw new Error('未知的检索引擎：' + id);
+  if (!engine) throw badRequest('未知的检索引擎：' + id);
   return engine;
 }
 
 function resolveEngine(id, config) {
   const engine = getEngine(id);
-  if (engine.status === STATUS.NOT_IMPLEMENTED) throw new Error(engine.label + ' 尚未实现：' + engine.note);
+  // 400 而不是 501：从调用方视角看，这是「你选的 engine 值当前不可用」，消息里已给出原因，
+  // 且 /api/rag/status 会把每个引擎的 status 与 note 一并列出，调用方能自查。
+  if (engine.status === STATUS.NOT_IMPLEMENTED) throw badRequest(engine.label + ' 尚未实现：' + engine.note);
   return { engine, ...engine.resolve(config) };
 }
 

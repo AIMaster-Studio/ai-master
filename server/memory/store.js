@@ -17,6 +17,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { badRequest } = require('../errors');
 
 const L2_DIR = 'L2';
 const L3_DIR = 'L3';
@@ -63,14 +64,14 @@ function createMemoryStore(options = {}) {
   const l3File = slot => path.join(root, L3_DIR, slot + '.md');
 
   function requireSurface(surface) {
-    if (!SURFACES[surface]) throw new Error('未登记的记忆面：' + surface + '。可用的面：' + Object.keys(SURFACES).join('、'));
+    if (!SURFACES[surface]) throw badRequest('未登记的记忆面：' + surface + '。可用的面：' + Object.keys(SURFACES).join('、'));
     return surface;
   }
 
   // ---------------- L1：只追加 ----------------
   function record(surface, event, now = Date.now()) {
     requireSurface(surface);
-    if (!event || typeof event !== 'object') throw new Error('事件必须是对象。');
+    if (!event || typeof event !== 'object') throw badRequest('事件必须是对象。');
     const date = today(now);
     const file = traceFile(surface, date);
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -271,7 +272,7 @@ function createMemoryStore(options = {}) {
   }
 
   function readL3(slot) {
-    if (!L3_FILES.includes(slot)) throw new Error('未知的 L3 槽位：' + slot + '。可选：' + L3_FILES.join('、'));
+    if (!L3_FILES.includes(slot)) throw badRequest('未知的 L3 槽位：' + slot + '。可选：' + L3_FILES.join('、'));
     const file = l3File(slot);
     return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
   }
@@ -279,7 +280,7 @@ function createMemoryStore(options = {}) {
   // 偏好只能显式写入，不参与自动综合 —— 与 DeepTutor 的 preferences 只由 write_memory 写入同源。
   function writePreference(text) {
     const value = String(text || '').trim();
-    if (!value) throw new Error('偏好内容不能为空。');
+    if (!value) throw badRequest('偏好内容不能为空。');
     fs.mkdirSync(path.join(root, L3_DIR), { recursive: true });
     const file = l3File('preferences');
     const header = '# L3 · 显式偏好\n\n> 本文件只由显式写入产生，不参与自动综合，也不会被 synthesize 覆盖。\n\n';

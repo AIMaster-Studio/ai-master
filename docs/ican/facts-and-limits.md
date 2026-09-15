@@ -30,6 +30,7 @@
 | 管理接口 | 建/删知识库、入库、重建索引、清空记忆、装卸技能，与写模型配置同一道门：未暴露时要求回环对端，暴露后必须带 `AIMASTER_CONFIG_TOKEN`，未配置则不可写。门禁判定（`requireAdmin` / `isLoopbackPeer` / `configTokenValid`）在 `server/index.js`，各接口按模块分散在 `rag-routes.js`、`memory-routes.js`、`agent-routes.js` | `server/index.js`、`server/rag-routes.js`、`server/memory-routes.js`、`server/agent-routes.js` |
 | 临时实例 | 数据库非持久（`inMemory` 或 `dbPath=':memory:'`）时，**文件类存储一并转到系统临时目录**。Vercel / Netlify 的函数入口即此模式，其文件系统除 `/tmp` 外只读；若只切数据库，`createApp` 会在建目录时抛错并让**所有 `/api/*` 返回 500** | `server/index.js`、`api/[...slug].js`、`netlify/functions/api.js`、`tests/deploy-adapters.test.js` |
 | 临时实例的数据 | 冷启动即重置，**不是持久化部署**；演示可用，不能当生产环境 | `server/index.js` |
+| 错误分类 | 由调用方输入决定、重试无效的错误返回 **4xx** 并在消息里说清要改什么；只有服务端自身的数据损坏或编程错误才返回 **500「服务暂时出错，请重试」** 并进 `onError` 日志。判据集中在 `server/errors.js`，逐条钉在 `tests/error-classification.test.js`（含一条反向用例：索引清单缺失必须仍是 500） | `server/errors.js`、`tests/error-classification.test.js` |
 | 原前端 | 静态课程、Three.js 星海与 Electron 入口是已有基础 | 原仓库文件 |
 | 私有完整版 | 当前没有可查证的私有 Flask 完整版 | 未提供对应实现与验收证据 |
 | 视觉素材 | 保留第三方鲸鱼娘原形象与动作，不能声明团队原创 | `third_party/dsh-pet/` |
@@ -52,6 +53,7 @@
 | 本地保存，所以任何数据都不会出机 | 学习记录可存本机 SQLite 或远程 Turso；开启远程模型后相关输入会发往服务商 |
 | 已经支持语义检索 | 默认是本机哈希嵌入，只做词面重合；配了远程嵌入模型才是语义检索，且换模型必须重建索引 |
 | 检索接口接受 GET，说明检索能力升级了 | 只是让只读接口的方法自洽（原先只有它是「只读却必须 POST」）；嵌入方式、召回质量、命中排序一个字没改 |
+| 接口报错都能自助排查 | 只有 4xx 会在消息里告诉你要改什么；500 是「我们这边坏了」，改请求没用，也不要据此重试。空 surface、未知 kbId、不支持的格式这些都属于前者 |
 | 讲解复评能判断学生是否真正理解 | 复评基于课程证据并要求模型回报引用号，引用号会被复核；但复核只能确认引用真实存在，不能确认结论被证据支持，也仍不能杜绝背题与代答 |
 | 记忆会归纳你的学习风格 | L2/L3 是计数与比例的确定性聚合，不做语义归纳，不会产生「你偏好类比式讲解」这类推断 |
 | 记忆能跨设备同步 | 记忆是本机文件，按用户隔离，不存在云端副本 |

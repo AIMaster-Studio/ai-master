@@ -13,6 +13,7 @@
 // 与其做一个「看起来能跑代码其实没有隔离」的工具，不如不提供 —— 见 tools 列表里没有 exec。
 
 const { createToolRegistry, GROUPS } = require('../agent/tools');
+const { badRequest } = require('../errors');
 const { runAgentLoop, resumeMessages, ASK_USER_TOOL } = require('../agent/loop');
 
 const MAX_SEARCH_HITS = 8;
@@ -153,7 +154,8 @@ function createCapabilityRegistry(deps) {
 
   function get(id) {
     const capability = CAPABILITIES.find(item => item.id === id);
-    if (!capability) throw new Error('未知的能力：' + id + '。可用：' + CAPABILITIES.map(c => c.id).join('、'));
+    // 400：capability 取值写错，/api/agent/capabilities 会列出全部可用 id，调用方自查即可。
+    if (!capability) throw badRequest('未知的能力：' + id + '。可用：' + CAPABILITIES.map(c => c.id).join('、'));
     return capability;
   }
 
@@ -162,7 +164,7 @@ function createCapabilityRegistry(deps) {
    */
   async function runAgent(id, options = {}) {
     const capability = get(id);
-    if (capability.kind !== 'agent-loop') throw new Error(capability.label + ' 不是 agent 循环能力。');
+    if (capability.kind !== 'agent-loop') throw badRequest(capability.label + ' 不是 agent 循环能力。');
     const config = options.config;
     if (!config || !config.apiKey || !config.model || !config.baseUrl) {
       return { status: 'failed', errorCode: 'not-configured', error: '模型未配置，无法运行 ' + capability.label + '。', messages: options.messages || [], toolTrace: options.toolTrace || [] };

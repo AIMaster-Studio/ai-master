@@ -11,6 +11,7 @@
 // 代价与是否需要下载本地模型，未安装的显示 Not installed。这里沿用同一原则：状态可见。
 
 const path = require('node:path');
+const { badRequest, unsupported } = require('../errors');
 
 const TEXT_FORMATS = {
   '.txt': 'text',
@@ -44,11 +45,12 @@ function flattenJson(value, prefix = '') {
 function parseDocument(filename, buffer) {
   const name = String(filename || 'untitled');
   const extension = path.extname(name).toLowerCase();
+  // 415：格式本仓库不支持，换个文件就能解决 —— 不是服务端故障。
   if (UNSUPPORTED_FORMATS[extension]) {
-    throw new Error('暂不支持 ' + extension + ' 格式：需要 ' + UNSUPPORTED_FORMATS[extension] + '，本仓库未安装。请先转换为纯文本或 Markdown 再入库。');
+    throw unsupported('暂不支持 ' + extension + ' 格式：需要 ' + UNSUPPORTED_FORMATS[extension] + '，本仓库未安装。请先转换为纯文本或 Markdown 再入库。');
   }
   if (!TEXT_FORMATS[extension]) {
-    throw new Error('未知的文件格式：' + (extension || '(无后缀)') + '。当前只支持 ' + Object.keys(TEXT_FORMATS).join('、') + '。');
+    throw unsupported('未知的文件格式：' + (extension || '(无后缀)') + '。当前只支持 ' + Object.keys(TEXT_FORMATS).join('、') + '。');
   }
   const raw = Buffer.isBuffer(buffer) ? buffer.toString('utf8') : String(buffer == null ? '' : buffer);
   const kind = TEXT_FORMATS[extension];
@@ -56,7 +58,7 @@ function parseDocument(filename, buffer) {
 
   if (kind === 'json') {
     let parsed;
-    try { parsed = JSON.parse(raw); } catch (error) { throw new Error('JSON 解析失败：' + error.message); }
+    try { parsed = JSON.parse(raw); } catch (error) { throw badRequest('JSON 解析失败：' + error.message); }
     text = flattenJson(parsed).join('\n');
   } else if (kind === 'jsonl') {
     text = raw.split(/\r?\n/).filter(Boolean).map(line => {
@@ -69,7 +71,7 @@ function parseDocument(filename, buffer) {
       .join('\n');
   }
 
-  if (!text.trim()) throw new Error('文档解析后为空，未入库。');
+  if (!text.trim()) throw badRequest('文档解析后为空，未入库。');
   return { title: name, text, kind };
 }
 

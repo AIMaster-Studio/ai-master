@@ -16,6 +16,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { badRequest, notFound } = require('../errors');
 
 const MAX_ENTRIES = 200;
 const MAX_TOTAL_BYTES = 2 * 1024 * 1024;
@@ -199,9 +200,9 @@ function createSkillRegistry(options = {}) {
   }
 
   function remove(name) {
-    if (!NAME_PATTERN.test(String(name || ''))) throw new Error('技能名不合法。');
+    if (!NAME_PATTERN.test(String(name || ''))) throw badRequest('技能名不合法。');
     const dir = skillDir(name);
-    if (!fs.existsSync(dir)) throw new Error('未安装该技能：' + name);
+    if (!fs.existsSync(dir)) throw notFound('未安装该技能：' + name);
     fs.rmSync(dir, { recursive: true, force: true });
     return { removed: name };
   }
