@@ -28,6 +28,8 @@ PAGES = [
     "/canvas/",
     "/playground/",
     "/learning-center/",
+    "/beginner/",
+    "/hands-on/",
     *[f"/chapter/{chapter_id}/" for chapter_id in range(1, 11)],
     "/static/llm_intro.html",
     "/static/transformer_cg.html",

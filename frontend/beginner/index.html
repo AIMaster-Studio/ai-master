@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030611">
+<title>新手入门 · 该用哪个 AI 工具 · AI Master</title>
+<meta name="description" content="零基础 AI 工具入门：按用途选工具，每张卡给出适用场景、核心功能、上手要点与门槛，并标明内容核实状态。">
+<link rel="icon" href="../static/favicon.svg">
+<style>
+:root{
+--bg:#030611;--panel:rgba(255,255,255,.045);--panel-2:rgba(255,255,255,.07);
+--line:rgba(255,255,255,.12);--line-2:rgba(255,255,255,.22);
+--text:#edf5ff;--muted:#b2c0d9;--dim:#8d9cbd;
+--accent:#72f6e4;--purple:#aaa0ff;--warn:#ffc962;--danger:#ff8fa3;
+--sans:system-ui,-apple-system,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--r:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(900px 520px at 12% -6%,rgba(114,246,228,.11),transparent 62%),radial-gradient(760px 440px at 88% 4%,rgba(170,160,255,.11),transparent 62%)}
+a{color:var(--accent)}
+.skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:#030611;padding:10px 16px;border-radius:0 0 8px 0;font-weight:600;z-index:99}
+.skip:focus{left:0}
+
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px 28px;background:rgba(3,6,17,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.06em;text-decoration:none;font-size:14px}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--accent);display:block;box-shadow:0 0 12px var(--accent)}
+.brand em{font-style:normal;color:var(--dim);font-weight:400;font-size:11px;letter-spacing:.14em}
+.nav-links{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:13px;padding:4px 0;border-bottom:1px solid transparent}
+.nav-links a:hover,.nav-links a:focus-visible{color:var(--accent);border-bottom-color:var(--accent)}
+
+main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:56px 28px 80px}
+.kicker{margin:0 0 14px;font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+h1{margin:0 0 18px;font-size:clamp(28px,4.4vw,46px);line-height:1.22;font-weight:600}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{margin:0;max-width:62ch;color:var(--muted);font-size:16px}
+
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:36px 0 0;padding:0;list-style:none}
+.path{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.path h3{margin:0 0 4px;font-size:16px;font-weight:600}
+.path .for{margin:0 0 12px;font-size:12px;color:var(--accent);letter-spacing:.06em}
+.path ol{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
+.path li{margin:0 0 6px}
+.path li:last-child{margin-bottom:0}
+
+h2{margin:56px 0 8px;font-size:22px;font-weight:600}
+h2 .num{color:var(--dim);font-family:var(--mono);font-size:14px;margin-right:10px}
+.sub{margin:0 0 22px;color:var(--dim);font-size:13px;max-width:70ch}
+
+.cards{display:grid;gap:18px;margin:0;padding:0;list-style:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px 24px}
+.card-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.card-head h3{margin:0;font-size:19px;font-weight:600}
+.card-head .cat{font-size:11px;letter-spacing:.14em;color:var(--purple);text-transform:uppercase}
+.card-head .badge{margin-left:auto}
+.badge{padding:3px 10px;border-radius:999px;font-size:11px;border:1px solid;white-space:nowrap}
+.badge--ok{color:var(--accent);border-color:rgba(114,246,228,.4);background:rgba(114,246,228,.08)}
+.badge--todo{color:var(--warn);border-color:rgba(255,201,98,.4);background:rgba(255,201,98,.08)}
+.home{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;margin:2px 0 14px;word-break:break-all}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:0}
+.grid .field{margin:0}
+.field dt{font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:4px}
+.field dd{margin:0;font-size:14px;color:var(--muted)}
+.field dd ul{margin:0;padding-left:18px}
+.field dd li{margin-bottom:4px}
+.field dd strong{color:var(--text)}
+.field--gate dt{color:var(--purple)}
+
+.figbox{margin:16px 0 0;border:1px dashed var(--line-2);border-radius:12px;padding:16px 18px;background:rgba(255,255,255,.02)}
+.figbox .tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;margin-bottom:8px}
+.figbox p{margin:0 0 6px;font-size:13px;color:var(--muted)}
+.figbox p:last-child{margin-bottom:0}
+.figbox strong{color:var(--text)}
+.figslot{margin:12px 0 0;height:88px;border-radius:10px;border:1px solid var(--line);background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 10px,transparent 10px 20px);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px;text-align:center;padding:0 14px}
+
+.faq{margin:0;padding:0;list-style:none}
+.faq li{border-bottom:1px solid var(--line);padding:14px 0}
+.faq li:last-child{border-bottom:0}
+.faq b{display:block;color:var(--text);font-weight:600;margin-bottom:4px}
+.faq p{margin:0;color:var(--muted);font-size:14px}
+
+.verify-list{margin:0;padding:0;list-style:none}
+.verify-list li{padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);margin-bottom:10px}
+.verify-list b{color:var(--text)}
+.verify-list p{margin:6px 0 0;font-size:13px;color:var(--muted)}
+.verify-list .how{color:var(--warn);font-size:12px}
+
+.notice{margin:26px 0 0;padding:14px 18px;border-radius:var(--r);border:1px solid rgba(255,201,98,.3);background:rgba(255,201,98,.07);color:var(--muted);font-size:13px}
+.notice strong{color:var(--warn)}
+
+.footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:12px;color:var(--dim)}
+.footer i{flex:1;min-width:20px;height:1px;background:var(--line)}
+@media (max-width:640px){
+main{padding:34px 18px 60px}
+.nav{padding:12px 18px}
+.card{padding:18px 16px}
+}
+@media print{
+body{background:#fff;color:#111}
+body::before,.nav,.skip{display:none}
+.card,.path,.verify-list li,.figbox{border-color:#ccc;background:#fff}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<nav class="nav" aria-label="站点导航">
+  <a class="brand" href="../dashboard/"><i aria-hidden="true"></i>AI MASTER <em>/ START HERE</em></a>
+  <div class="nav-links">
+    <a href="../dashboard/">课程总览</a>
+    <a href="../hands-on/">动手实践</a>
+    <a href="../learning-center/">讲解通关</a>
+    <a href="../knowledge-stars/">知识星海</a>
+  </div>
+</nav>
+
+<main id="main">
+  <p class="kicker">START HERE / 零基础入口</p>
+  <h1>第一次用 AI，<em>先选对工具</em>，<br>再点对按钮。</h1>
+  <p class="lead">
+    这一页解决一个问题：<strong>我该用哪个，从哪点进去</strong>。
+    学习中心里的其他页面都假设你已经会用 AI 了 —— 这一页是给完全没用过的人准备的。
+    每个工具按「适用场景 / 核心功能 / 上手要点 / 门槛」写清，并标明内容核实状态。
+  </p>
+
+  <h2 id="paths"><span class="num">01</span>三条最短路径</h2>
+  <p class="sub">按目的选，不要按厂商选。三条路都能在 5 分钟内出结果。</p>
+  <ul class="paths">
+    <li class="path">
+      <h3>我想问问题</h3>
+      <p class="for">查概念 · 解释名词 · 让 AI 陪我捋思路</p>
+      <ol>
+        <li>打开豆包网页版，用手机号或邮箱登录。</li>
+        <li>在输入框里直接写你的问题，用完整的句子，别只丢一个词。</li>
+        <li>如果回答太笼统，追问一句「给我一个具体例子」。</li>
+      </ol>
+    </li>
+    <li class="path">
+      <h3>我想写东西</h3>
+      <p class="for">写作业框架 · 改邮件 · 把长文缩成要点</p>
+      <ol>
+        <li>同一条对话里，先说要写什么、给谁看、多长。</li>
+        <li>拿到初稿后，逐段说「这段再短一点」，而不是整篇重来。</li>
+        <li>最后自己通读一遍 —— 事实对不对，只有你能核。</li>
+      </ol>
+    </li>
+    <li class="path">
+      <h3>我想让它记住我的资料</h3>
+      <p class="for">基于自己的笔记/文档问答</p>
+      <ol>
+        <li>回到本项目的学习中心，切到「知识库」视图，先体验一次带出处的回答。</li>
+        <li>想用自己的材料，再去扣子新建一个知识库上传文件。</li>
+        <li>一定要问一个材料里没有的问题，看它会不会承认「不知道」。</li>
+      </ol>
+    </li>
+  </ul>
+
+  <h2 id="tools"><span class="num">02</span>工具卡</h2>
+  <p class="sub">按用途分类。每张卡末行是<strong>核实状态</strong> —— 标「待核实」的，用之前请自己去官网确认。</p>
+  <ul class="cards">
+
+    <li class="card">
+      <div class="card-head">
+        <h3>豆包</h3><span class="cat">对话 · 写作</span>
+        <span class="badge badge--ok">已核实</span>
+      </div>
+      <p class="home">官网 <a href="https://www.doubao.com/" rel="noopener noreferrer" target="_blank">https://www.doubao.com/</a>　对话入口 https://www.doubao.com/chat/</p>
+      <div class="grid">
+        <div class="field"><dt>适用场景</dt><dd>当你想让 AI 用中文解释一个概念、或帮你起草一段文字的时候。</dd></div>
+        <div class="field"><dt>核心功能</dt><dd><ul>
+          <li>对话问答：用完整句子提问，可追问</li>
+          <li>文档处理：上传后做总结、提取要点</li>
+          <li>内容生成：写作、图像生成、语音对话</li>
+        </ul></dd></div>
+        <div class="field field--gate"><dt>上手要点</dt><dd><ul>
+          <li>从哪进：打开官网，登录后直接在输入框开聊</li>
+          <li>第一句话说什么：<strong>「用三句话解释 X，并给我一个日常例子」</strong></li>
+          <li>常见坑：只丢一个词当问题，得到的回答会很空；把它的回答当成事实而不核对</li>
+        </ul></dd></div>
+        <div class="field"><dt>门槛</dt><dd>免费；需注册登录；中文支持好。</dd></div>
+      </div>
+      <div class="figbox">
+        <span class="tag">图文位 FIG-01</span>
+        <p><strong>拍什么：</strong>豆包网页版登录后的主对话界面。</p>
+        <p><strong>框住什么：</strong>用红框圈出底部的输入框，箭头指向发送按钮。</p>
+        <p><strong>图注写什么：</strong>「登录后直接在这里输入完整句子 ⇒」</p>
+        <div class="figslot">配图占位 · 豆包对话界面（输入框）</div>
+      </div>
+    </li>
+
+    <li class="card">
+      <div class="card-head">
+        <h3>扣子（Coze）</h3><span class="cat">搭智能体 · 知识库</span>
+        <span class="badge badge--ok">已核实</span>
+      </div>
+      <p class="home">官网 <a href="https://www.coze.cn/" rel="noopener noreferrer" target="_blank">https://www.coze.cn/</a>　文档 https://www.coze.cn/open/docs/</p>
+      <div class="grid">
+        <div class="field"><dt>适用场景</dt><dd>当你不想只聊天，而想搭一个「有自己的资料、守自己的规则」的助手的时候。</dd></div>
+        <div class="field"><dt>核心功能</dt><dd><ul>
+          <li>低代码智能体：用自然语言描述就能创建</li>
+          <li>知识库：上传自己的材料后基于它回答</li>
+          <li>插件与工作流：让它能查外部信息</li>
+        </ul></dd></div>
+        <div class="field field--gate"><dt>上手要点</dt><dd><ul>
+          <li>从哪进：登录后进入「项目开发」，选低代码模式</li>
+          <li>第一句话说什么：直接描述你要它做什么，再补一条禁止项（例如「范围外的问题要说不知道」）</li>
+          <li>常见坑：把人设写得很长却不写「不许做什么」；没测试过范围外的问题就以为它守规则</li>
+        </ul></dd></div>
+        <div class="field"><dt>门槛</dt><dd>免费版可用；<strong>每日请求次数有限</strong>，具体额度以官方文档为准；需注册。</dd></div>
+      </div>
+      <div class="figbox">
+        <span class="tag">图文位 FIG-02</span>
+        <p><strong>拍什么：</strong>智能体的「人设与回复逻辑」编辑页，以及右侧预览调试区。</p>
+        <p><strong>框住什么：</strong>分别框出左侧人设输入框、右侧发消息的调试框。</p>
+        <p><strong>图注写什么：</strong>「左边写规则，右边立刻试；范围外的问题必须在这里试一次」</p>
+        <div class="figslot">配图占位 · 扣子智能体编排页（人设 + 调试区）</div>
+      </div>
+    </li>
+
+    <li class="card">
+      <div class="card-head">
+        <h3>阿里云百炼</h3><span class="cat">模型 API · 开发者</span>
+        <span class="badge badge--ok">已核实</span>
+      </div>
+      <p class="home">产品页 <a href="https://www.aliyun.com/product/bailian" rel="noopener noreferrer" target="_blank">https://www.aliyun.com/product/bailian</a>　控制台 https://bailian.console.aliyun.com/</p>
+      <div class="grid">
+        <div class="field"><dt>适用场景</dt><dd>当你要在自己的代码里调用模型、或需要看到 token 用量与费用的时候。</dd></div>
+        <div class="field"><dt>核心功能</dt><dd><ul>
+          <li>模型体验：不用写代码先试各种模型</li>
+          <li>API Key 管理：拿到 Key 在自己的程序里调用</li>
+          <li>用量统计与免费额度：看清花了多少、还剩多少</li>
+        </ul></dd></div>
+        <div class="field field--gate"><dt>上手要点</dt><dd><ul>
+          <li>从哪进：登录阿里云，进入百炼控制台，先看「免费额度」页</li>
+          <li>第一句话说什么：先不写代码，在「模型体验」里直接对话一次</li>
+          <li>常见坑：<strong>把 API Key 写进代码文件并提交到仓库</strong>；不看额度就批量调用</li>
+        </ul></dd></div>
+        <div class="field"><dt>门槛</dt><dd>开通免费，<strong>调用按量计费</strong>；新用户有免费额度，具体数额以控制台「免费额度」页显示为准。需阿里云账号。</dd></div>
+      </div>
+      <div class="figbox">
+        <span class="tag">图文位 FIG-03</span>
+        <p><strong>拍什么：</strong>百炼控制台首页，并排展示「免费额度」与「API Key」两个入口。</p>
+        <p><strong>框住什么：</strong>分别框出这两个入口；<strong>不要拍到任何 Key 的字符</strong>。</p>
+        <p><strong>图注写什么：</strong>「先看左边还剩多少额度，再决定要不要取 Key」</p>
+        <div class="figslot">配图占位 · 百炼控制台（免费额度 + API Key 入口）</div>
+      </div>
+    </li>
+
+    <li class="card">
+      <div class="card-head">
+        <h3>本项目学习中心</h3><span class="cat">讲解通关 · 推荐第一步</span>
+        <span class="badge badge--ok">已核实</span>
+      </div>
+      <p class="home">本地运行后访问 http://127.0.0.1:8787/ 　或线上 https://ai-master-aw5.pages.dev/learning-center/</p>
+      <div class="grid">
+        <div class="field"><dt>适用场景</dt><dd>当你想验证自己「是不是真的懂了」，而不是「是不是读过了」的时候。</dd></div>
+        <div class="field"><dt>核心功能</dt><dd><ul>
+          <li>讲解通关：自己讲一遍，系统给带来源的反馈</li>
+          <li>客观测验：由预设标答判分，不由模型决定</li>
+          <li>错题与复习：留下记录，按时回看</li>
+        </ul></dd></div>
+        <div class="field field--gate"><dt>上手要点</dt><dd><ul>
+          <li>从哪进：运行 <strong>npm run dev</strong>（需 Node.js ≥ 24），浏览器打开 127.0.0.1:8787</li>
+          <li>第一句话说什么：先用「今日学习」建立学习计划，再进入讲解</li>
+          <li>常见坑：用 <code>file://</code> 直接打开页面（依赖 JSON 请求，会失败）</li>
+        </ul></dd></div>
+        <div class="field"><dt>门槛</dt><dd>免费；无需注册即可用访客模式；需要本机装 Node.js。</dd></div>
+      </div>
+      <div class="figbox">
+        <span class="tag">图文位 FIG-04</span>
+        <p><strong>拍什么：</strong>学习中心「今日学习」视图，显示学习计划与讲解输入框。</p>
+        <p><strong>框住什么：</strong>框出讲解文本框与提交按钮。</p>
+        <p><strong>图注写什么：</strong>「用自己的话讲一遍，才进入测验」</p>
+        <div class="figslot">配图占位 · 学习中心「今日学习」（讲解输入框）</div>
+      </div>
+    </li>
+
+  </ul>
+
+  <h2 id="pending"><span class="num">03</span>待核实候选</h2>
+  <p class="sub">下面这些工具常被提到，但本项目<strong>没有逐一核实过它们当前的功能与免费政策</strong>，因此不写具体细节，只列名字和核实方法。</p>
+  <ul class="verify-list">
+    <li>
+      <b>DeepSeek 开放平台</b>
+      <p>本项目的服务端确实在调用 <code>api.deepseek.com</code>（见 <code>server/ai-review.js</code>），这一条已核实。但其<strong>网页对话入口与免费政策</strong>未核实。</p>
+      <p class="how">核实方法：访问其开放平台官网，确认当前可用的模型与计费页。</p>
+    </li>
+    <li>
+      <b>Kimi</b>
+      <p>网络资料提到其长文本能力与免费额度，但本项目未独立核实具体数字，因此不写「支持多少万字」这类说法。</p>
+      <p class="how">核实方法：访问其官网，查看当前版本说明与额度政策。</p>
+    </li>
+    <li>
+      <b>通义千问 / 文心一言 等对话产品</b>
+      <p>均为真实存在的产品，但本页面未核对其当前入口、免费范围与中文能力细节。</p>
+      <p class="how">核实方法：由官方渠道进入，不通过搜索结果里的第三方跳转链接。</p>
+    </li>
+    <li>
+      <b>各类本地部署工具</b>
+      <p>涉及本机算力要求，与「零基础第一步」的定位不符，本页不展开。</p>
+      <p class="how">核实方法：先确认自己机器的显卡与内存是否满足，再考虑。</p>
+    </li>
+  </ul>
+
+  <h2 id="faq"><span class="num">04</span>新手常见疑问</h2>
+  <ul class="faq">
+    <li>
+      <b>用 AI 会不会被人发现，算不算抄？</b>
+      <p>取决于你的场景规则，不取决于工具。可靠的做法是<strong>把 AI 的辅助如实说出来</strong>，并且能讲清你自己做了哪些判断 —— 这也正是本项目「讲解通关」要练的能力。</p>
+    </li>
+    <li>
+      <b>它说得头头是道，能直接信吗？</b>
+      <p>不能。模型是在预测「语言上合理的下一句」，不是在查数据库。凡是数字、人名、法规条文、引用文献，都要自己去核一遍。本项目的做法是：客观题由预设标答判分，不交给模型决定。</p>
+    </li>
+    <li>
+      <b>免费版够用吗？</b>
+      <p>先把免费版用满再说。什么时候会不够：当你要大量批处理、或要用更大的模型时。那时候再去看计费页，并且<strong>先看额度再动手</strong>。</p>
+    </li>
+    <li>
+      <b>为什么这页有的工具只是列了个名字？</b>
+      <p>因为那些工具我们<strong>没有核实过</strong>。写一个看起来合理的功能描述很容易，但那对你是误导。标注「待核实」比编一个漂亮的介绍更负责。</p>
+    </li>
+    <li>
+      <b>我应该按什么顺序学？</b>
+      <p>先用豆包把「会提问」练出来（第 3 章），再去<a href="../hands-on/">动手实践</a>里做对应的题；想搭东西的时候再上扣子（第 4 章）；要写代码调模型的时候才需要百炼（第 7 章）。</p>
+    </li>
+  </ul>
+
+  <p class="notice">
+    <strong>核实说明：</strong>
+    本页标注「已核实」的四张卡，其官网地址、入口与免费/计费口径经核实于 <strong>2026-09-15</strong>。
+    外部工具的界面、功能与价格会随时变化，<strong>使用前请以该工具当前官方说明为准</strong>。
+    本页内容属于项目自测整理，不构成任何第三方背书。
+  </p>
+
+  <footer class="footer">
+    <span>AI MASTER / START HERE</span><i></i>
+    <span>内容核实日期 2026-09-15</span>
+  </footer>
+</main>
+</body>
+</html>
