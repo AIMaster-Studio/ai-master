@@ -17,6 +17,7 @@ const readJson = file => JSON.parse(read(file));
 const HANDS_ON_PREFIX = /(?:^|\.{0,2}\/|\.\.\/\.\.\/)hands-on\/#(ch\d+-t\d+)/g;
 const REQUIRED_TOOLS = ['豆包', 'ChatGPT', '文心千帆', '扣子', '阿里云百炼', 'AI Master'];
 const TOOL_CARD_FIELDS = ['适用场景', '核心功能', '三步上手', '门槛', '入口状态', '不适用情况'];
+const CHAPTER_EXTENSION_IDS = ['ch10-t1', 'ch10-t2'];
 
 function sources() {
   const universe = readJson('frontend/data/knowledge-universe.json');
@@ -79,6 +80,7 @@ test('hands-on chapters are the ten unique authority chapters and task ids are g
 
 test('every hands-on task supplies the learner-facing completion contract', () => {
   const { handsOn } = sources();
+  const chapterExtensions = [];
   for (const chapter of handsOn.chapters) {
     for (const task of chapter.tasks) {
       const label = `${task.id}（第 ${chapter.chapterId} 章）`;
@@ -89,9 +91,18 @@ test('every hands-on task supplies the learner-facing completion contract', () =
       assert.ok(Array.isArray(task.steps) && task.steps.length >= 3 && task.steps.every(step => typeof step === 'string' && step.trim().length > 0), `${label} 至少需要 3 个非空文本步骤`);
       assert.ok(Array.isArray(task.tools) && task.tools.length > 0 && task.tools.every(tool => typeof tool === 'string' && tool.trim().length > 0), `${label} 需要非空文本 tools`);
       assert.ok(Number.isInteger(task.minutes) && task.minutes > 0, `${label} 的 minutes 必须为正整数`);
-      assert.ok(Array.isArray(task.knowledgePoints) && task.knowledgePoints.length > 0 && task.knowledgePoints.every(point => typeof point === 'string' && point.trim().length > 0), `${label} 需要非空文本 knowledgePoints`);
+      const kind = task.kind || 'knowledge-node';
+      assert.ok(['knowledge-node', 'chapter-extension'].includes(kind), `${label} 的 kind 不受支持：${task.kind}`);
+      assert.ok(Array.isArray(task.knowledgePoints), `${label} 的 knowledgePoints 必须是数组`);
+      if (kind === 'chapter-extension') {
+        chapterExtensions.push(task.id);
+        assert.deepEqual(task.knowledgePoints, [], `${label} 章节拓展题不得映射权威知识点`);
+      } else {
+        assert.ok(task.knowledgePoints.length > 0 && task.knowledgePoints.every(point => typeof point === 'string' && point.trim().length > 0), `${label} 需要非空文本 knowledgePoints`);
+      }
     }
   }
+  assert.deepEqual(chapterExtensions, CHAPTER_EXTENSION_IDS, '仅 ch10-t1 与 ch10-t2 可作为章节拓展题');
 });
 
 test('hands-on labels use same-chapter authority nodes and cover all 57 nodes', () => {
@@ -101,6 +112,10 @@ test('hands-on labels use same-chapter authority nodes and cover all 57 nodes', 
 
   for (const chapter of handsOn.chapters) {
     for (const task of chapter.tasks) {
+      if (task.kind === 'chapter-extension') {
+        assert.deepEqual(task.knowledgePoints, [], `${task.id} 章节拓展题不参与节点覆盖`);
+        continue;
+      }
       for (const title of task.knowledgePoints) {
         const key = `${chapter.chapterId}::${title}`;
         if (authority.has(key)) covered.add(key);
