@@ -115,15 +115,61 @@ def build_dashboard(courses):
 </body></html>'''
 
 
-def chapter_page(chapter):
+def build_hands_on_mapping(chapters, hands_on):
+    """Map every authority node to the first same-chapter practice task.
+
+    The practice JSON is ordered editorial data, so ``setdefault`` deliberately
+    preserves its first matching task when more than one task covers a node.
+    """
+    authority = {}
+    all_nodes = {}
+    for chapter_id, chapter in chapters.items():
+        chapter_nodes = authority.setdefault(chapter_id, set())
+        for point in chapter.get("knowledge_points", []):
+            title = str(point.get("title", "")).strip()
+            if title in chapter_nodes:
+                raise ValueError(f"第 {chapter_id} 章知识点「{title}」重复冲突")
+            chapter_nodes.add(title)
+            all_nodes.setdefault(title, []).append(chapter_id)
+
+    mapping = {chapter_id: {} for chapter_id in chapters}
+    seen_task_ids = set()
+    for practice_chapter in hands_on.get("chapters", []):
+        chapter_id = practice_chapter.get("chapterId")
+        if chapter_id not in authority:
+            raise ValueError(f"第 {chapter_id} 章没有对应的权威知识节点")
+        for task in practice_chapter.get("tasks", []):
+            task_id = str(task.get("id", "")).strip()
+            if task_id in seen_task_ids:
+                raise ValueError(f"第 {chapter_id} 章任务「{task_id}」重复冲突")
+            seen_task_ids.add(task_id)
+            for title in task.get("knowledgePoints", []):
+                title = str(title).strip()
+                if title in authority[chapter_id]:
+                    mapping[chapter_id].setdefault(title, task_id)
+                elif title in all_nodes:
+                    owner = all_nodes[title][0]
+                    raise ValueError(f"第 {chapter_id} 章知识点「{title}」跨章标签（属于第 {owner} 章）")
+                else:
+                    raise ValueError(f"第 {chapter_id} 章知识点「{title}」是幽灵标签")
+
+    for chapter_id, nodes in authority.items():
+        for title in nodes:
+            if title not in mapping[chapter_id]:
+                raise ValueError(f"第 {chapter_id} 章知识点「{title}」缺少实践任务映射")
+    return mapping
+
+
+def chapter_page(chapter, hands_on_mapping):
     cid = int(chapter["id"])
     source = f"chapter/{cid}/index.html"
     cards = []
     for index, point in enumerate(chapter.get("knowledge_points", []), 1):
         title = html.escape(str(point.get("title", f"知识点 {index}")))
         content = str(point.get("content", "")).replace("\n", "<br>")
-        extra = ""
-        if cid == 1 and index == 3: extra = f'<a href="{page_url("/static/bpe_game.html", source)}">BPE 分词游戏 ↗</a>'
+        task_id = hands_on_mapping[cid][str(point.get("title", "")).strip()]
+        extra = f'<a href="{page_url(f"/hands-on/#{task_id}", source)}">去做实践 ↗</a>'
+        if cid == 1 and index == 3: extra += f'<a href="{page_url("/static/bpe_game.html", source)}">BPE 分词游戏 ↗</a>'
         if cid == 1 and index == 6: extra += f'<a href="{page_url("/static/llm_training_game.html", source)}">LLM 训练流程模拟 ↗</a>'
         if cid == 2 and index == 1: extra += f'<a href="{page_url("/static/transformer_lab.html", source)}">Transformer 实验室 ↗</a>'
         if cid == 3 and index == 1: extra += f'<a href="{page_url("/static/prompt_cg_starlab/index.html", source)}">提示词工程引导 CG ↗</a>'
@@ -144,7 +190,7 @@ def build_universe(courses, chapters):
         connections=[]
         for idx in range(max(0,len(stars)-1)): connections.append([idx,idx+1,"sequence"])
         if len(stars)>3: connections.extend([[0,2,"concept"],[1,3,"concept"]])
-        galaxies.append({"id":f"chapter-{cid}","chapter":cid,"name":course["title"],"name_en":f"SECTOR {cid:02d}","progress":0,"stars":stars,"connections":connections,"palette":palettes[cid-1]})
+        galaxies.append({"id":f"chapter-{cid}","chapter":cid,"name":chapter["title"],"name_en":f"SECTOR {cid:02d}","progress":0,"stars":stars,"connections":connections,"palette":palettes[cid-1]})
     return {"success":True,"summary":{"galaxies":len(galaxies),"stars":sum(len(g["stars"]) for g in galaxies),"completed":0},"galaxies":galaxies}
 
 
@@ -162,7 +208,7 @@ def patch_static_assets():
 
 def rewrite_project_urls():
     """Make legacy static pages work from both local root and GitHub project path."""
-    route_re = re.compile(r'(["\'`])/(assets|data|static|dashboard|knowledge-stars|chapter|canvas|playground|transition)([^"\'` ]*)')
+    route_re = re.compile(r'(["\'`])/(assets|data|static|dashboard|knowledge-stars|chapter|canvas|playground|transition|hands-on|beginner)([^"\'` ]*)')
     for path in FRONTEND.rglob("*"):
         if not path.is_file() or path.suffix.lower() not in {".html", ".js", ".css"}:
             continue
@@ -182,13 +228,14 @@ def rewrite_project_urls():
 def main():
     courses = load("courses_index.json")
     chapters = {i: load(f"chapter_{i:02d}.json") for i in range(1, 11)}
+    hands_on_mapping = build_hands_on_mapping(chapters, load("hands-on-tasks.json"))
     write("assets/frontend.css", shell_css())
     write("assets/dashboard-demo.css", dashboard_css())
     write("assets/chapter-demo.css", chapter_css())
     write("assets/frontend.js", runtime_js())
     write("index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=learning-center/"><title>AI Master 讲解通关</title></head><body><p>正在进入 <a href="learning-center/">AI Master 讲解通关</a>...</p></body></html>''')
     write("dashboard/index.html", build_dashboard(courses))
-    for cid, chapter in chapters.items(): write(f"chapter/{cid}/index.html", chapter_page(chapter))
+    for cid, chapter in chapters.items(): write(f"chapter/{cid}/index.html", chapter_page(chapter, hands_on_mapping))
     write("data/knowledge-universe.json", json.dumps(build_universe(courses, chapters), ensure_ascii=False, indent=2))
     atlas = (FRONTEND / "static" / "knowledge_stars.html").read_text(encoding="utf-8")
     atlas = atlas.replace('href="css/knowledge_stars.css"', 'href="../static/css/knowledge_stars.css"')
