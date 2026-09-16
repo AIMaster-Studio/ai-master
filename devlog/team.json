@@ -31,7 +31,7 @@
   ],
   "note": "gitHandles 把 git 作者名映射到真实成员，供开发日志 PDF 的「团队分工」章使用。未列出的作者（如 AIMaster DevLog Bot）为自动化账号，不属于团队成员。",
   "reminder": {
-    "enabled": true,
+    "enabled": false,
     "region": "CN",
     "template": "请补充本次改进的详细开发日志，并附上截图、实验数据等佐证材料。"
   }
