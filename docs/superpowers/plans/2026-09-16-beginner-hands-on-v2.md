@@ -4,7 +4,7 @@
 
 **目标：** 让 10 章 57 个权威知识节点全部拥有可执行、可验收、可深链的实践任务，并补齐六类 AI 工具的新手图解入口。
 
-**架构：** `frontend/data/knowledge-universe.json` 是课程节点权威源，`frontend/data/hands-on-tasks.json` 是实践权威源。构建脚本在生成章节页时建立“章节 + 节点标题 → 任务 ID”映射，缺失或幽灵映射立即失败；静态页面只负责呈现数据与稳定深链接。内容测试负责结构和覆盖，Python 验证器负责整站产物与链接回归。
+**架构：** `frontend/data/chapter_01.json` 至 `chapter_10.json` 是课程节点权威源，`frontend/data/knowledge-universe.json` 是由源码重建并受一致性测试约束的生成物，`frontend/data/hands-on-tasks.json` 是实践权威源。构建脚本在生成章节页时建立“章节 + 节点标题 → 任务 ID”映射，缺失或幽灵映射立即失败；静态页面只负责呈现数据与稳定深链接。内容测试负责结构、源码覆盖与生成物一致性，Python 验证器负责整站产物与链接回归。
 
 **技术栈：** Node.js 内置测试、Python 3 标准库、原生 HTML/CSS/JavaScript、内联 SVG、Git。
 
@@ -19,17 +19,17 @@
 **文件：**
 
 - 新建：`tests/hands-on-content.test.js`
-- 读取：`frontend/data/knowledge-universe.json`
+- 读取：`frontend/data/chapter_01.json` 至 `chapter_10.json`，并校验生成物 `frontend/data/knowledge-universe.json`
 - 读取：`frontend/data/hands-on-tasks.json`
 - 读取：`frontend/beginner/index.html`
 - 读取：`frontend/chapter/{1..10}/index.html`
 
 **步骤：**
 
-1. 写测试辅助函数，读取两份 JSON，并把 57 个权威节点标准化为 `chapterId::title`。
+1. 写测试辅助函数，读取十份章节源码与实践 JSON，并把 57 个权威节点标准化为 `chapterId::title`；读取 `knowledge-universe.json` 作为需验证生成物。
 2. 写失败测试，要求 10 章编号唯一、标题与权威源一致，任务 ID 符合 `chN-tN` 且全局唯一。
-3. 写失败测试，要求每道任务包含 `goal`、`whereToStart`、不少于 3 步的 `steps`、`expected`、`antiCheat`、非空 `tools`、正整数 `minutes`、`knowledgePoints`、`verifyState`；仅 `ch10-t1`、`ch10-t2` 可为 `kind: "chapter-extension"` 且映射为空，其余题必须非空。
-4. 写失败测试，要求普通实践标签均为同章权威节点，章节拓展题不参与覆盖，且权威节点覆盖率严格为 57/57；未知 `kind` 必须失败。
+3. 写失败测试，要求每道任务包含 `goal`、`whereToStart`、不少于 3 步的 `steps`、`expected`、`antiCheat`、非空 `tools`、正整数 `minutes`、非空 `knowledgePoints`、`verifyState`。
+4. 写失败测试，从十份章节源码构造权威节点，要求所有实践标签均为同章权威节点、覆盖率严格为 57/57，并要求 `knowledge-universe.json` 与源码完全一致。
 5. 写失败测试，要求新手页出现豆包、ChatGPT、文心千帆、扣子、阿里云百炼、AI Master；每类工具卡带适用场景、核心功能、三步上手、门槛、入口状态、不适用情况以及原创内联 SVG。
 6. 写失败测试，要求生成后的每个知识卡包含一个 `/hands-on/#任务ID` 链接，并验证目标任务真实存在。
 7. 运行 `node --test tests/hands-on-content.test.js`，确认失败原因分别落在 38/57 覆盖、新手工具缺失或章节实践链接缺失，而不是测试语法错误。
@@ -44,8 +44,8 @@
 
 **步骤：**
 
-1. 将第一版 4 个非权威标签替换为 `knowledge-universe.json` 中同章的精确标题。
-2. 为剩余 19 个未覆盖节点逐项增加轻量任务；每题仍填写完整字段、至少 3 步、正整数用时和明确验收信号。保留原 20 题，其中仅 `ch10-t1`、`ch10-t2` 作为无节点映射的 `chapter-extension` 保留。
+1. 将第一版非权威标签替换为同章 `chapter_XX.json` 中的精确标题。
+2. 为未覆盖源码节点逐项增加轻量任务；每题仍填写完整字段、至少 3 步、正整数用时、明确验收信号和非空同章节点映射，并保留原 20 题。
 3. 任务 ID 延续各章编号并保持稳定；标题使用可观察动作，不用“了解”“熟悉”。
 4. 对需要外部平台的任务明确登录、费用、网络、密钥风险和核实日期；无法本地验证的事实标记为待核实。
 5. 运行 `node --test tests/hands-on-content.test.js`，确认数据结构与 57/57 覆盖测试通过；页面类测试仍应失败。
@@ -70,7 +70,7 @@
 
 **步骤：**
 
-1. 在构建入口读取 `hands-on-tasks.json`，建立 `{chapterId: {knowledgePoint: taskId}}` 映射。
+1. 在构建入口读取章节源码与 `hands-on-tasks.json`，建立 `{chapterId: {knowledgePoint: taskId}}` 映射，并据章节源码重建 `knowledge-universe.json`。
 2. 对幽灵标签、跨章标签、重复冲突和缺失节点抛出包含章节与节点名的明确错误。
 3. 扩展 `chapter_page()` 参数，为每张知识卡渲染 `去做实践` 链接，目标为 `/hands-on/#task-id`；保留已有实验链接。
 4. 将 `hands-on`、`beginner` 加入项目 URL 改写规则，确保 file/http 两种入口都能工作。
@@ -106,7 +106,7 @@
 **步骤：**
 
 1. 实践页顶部从章节统计升级为实时显示“57/57 节点、任务总数、10 章”。
-2. 为章节和任务渲染稳定锚点 `#chN`、`#task-id`，并完整展示入口、步骤、产物、用时、验收、反作弊和核实状态；`chapter-extension` 明确呈现为“章节拓展”，不显示伪造知识点标签。
+2. 为章节和任务渲染稳定锚点 `#chN`、`#task-id`，并完整展示入口、步骤、产物、用时、验收、反作弊和核实状态，以及同章源码知识点标签。
 3. 外部入口增加离站提示与安全属性；JSON 加载失败时显示文件路径、启动本地服务器命令和重试建议。
 4. Python 验证器加入两页与 JSON 静态资产检查，复用权威节点集合验证 57/57，并输出实践任务总数。
 5. 运行 `python scripts/verify_frontend_demo.py`，确认输出包含 10 章、57 节点、实践任务总数且无错误。

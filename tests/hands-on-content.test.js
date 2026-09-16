@@ -17,18 +17,18 @@ const readJson = file => JSON.parse(read(file));
 const HANDS_ON_PREFIX = /(?:^|\.{0,2}\/|\.\.\/\.\.\/)hands-on\/#(ch\d+-t\d+)/g;
 const REQUIRED_TOOLS = ['豆包', 'ChatGPT', '文心千帆', '扣子', '阿里云百炼', 'AI Master'];
 const TOOL_CARD_FIELDS = ['适用场景', '核心功能', '三步上手', '门槛', '入口状态', '不适用情况'];
-const CHAPTER_EXTENSION_IDS = ['ch10-t1', 'ch10-t2'];
 
 function sources() {
   const universe = readJson('frontend/data/knowledge-universe.json');
   const handsOn = readJson('frontend/data/hands-on-tasks.json');
+  const sourceChapters = Array.from({ length: 10 }, (_, index) => readJson(`frontend/data/chapter_${String(index + 1).padStart(2, '0')}.json`));
   const authority = new Map();
 
-  for (const galaxy of universe.galaxies) {
-    for (const star of galaxy.stars) authority.set(`${star.chapter}::${star.title}`, star);
+  for (const chapter of sourceChapters) {
+    for (const point of chapter.knowledge_points) authority.set(`${chapter.id}::${point.title}`, point);
   }
 
-  return { universe, handsOn, authority };
+  return { universe, handsOn, sourceChapters, authority };
 }
 
 function chapterPages() {
@@ -57,15 +57,15 @@ function toolSection(html, name) {
   return html.slice(match.index, boundary ? boundary.index : html.length);
 }
 
-test('hands-on chapters are the ten unique authority chapters and task ids are globally unique', () => {
-  const { universe, handsOn } = sources();
-  const authorityChapters = universe.galaxies.map(galaxy => ({ chapterId: galaxy.chapter, title: galaxy.name }));
+test('hands-on chapters are the ten unique source chapters and task ids are globally unique', () => {
+  const { sourceChapters, handsOn } = sources();
+  const authorityChapters = sourceChapters.map(chapter => ({ chapterId: chapter.id, title: chapter.title }));
 
   assert.equal(handsOn.chapters.length, 10, '实践任务必须覆盖 10 章');
   assert.deepEqual(
     handsOn.chapters.map(({ chapterId, title }) => ({ chapterId, title })),
     authorityChapters,
-    '实践章节编号或标题必须与知识星海权威章节一致'
+    '实践章节编号或标题必须与章节源码权威名称一致'
   );
   assert.equal(new Set(handsOn.chapters.map(chapter => chapter.chapterId)).size, 10, '章节编号必须唯一');
 
@@ -80,7 +80,6 @@ test('hands-on chapters are the ten unique authority chapters and task ids are g
 
 test('every hands-on task supplies the learner-facing completion contract', () => {
   const { handsOn } = sources();
-  const chapterExtensions = [];
   for (const chapter of handsOn.chapters) {
     for (const task of chapter.tasks) {
       const label = `${task.id}（第 ${chapter.chapterId} 章）`;
@@ -91,31 +90,35 @@ test('every hands-on task supplies the learner-facing completion contract', () =
       assert.ok(Array.isArray(task.steps) && task.steps.length >= 3 && task.steps.every(step => typeof step === 'string' && step.trim().length > 0), `${label} 至少需要 3 个非空文本步骤`);
       assert.ok(Array.isArray(task.tools) && task.tools.length > 0 && task.tools.every(tool => typeof tool === 'string' && tool.trim().length > 0), `${label} 需要非空文本 tools`);
       assert.ok(Number.isInteger(task.minutes) && task.minutes > 0, `${label} 的 minutes 必须为正整数`);
-      const kind = task.kind || 'knowledge-node';
-      assert.ok(['knowledge-node', 'chapter-extension'].includes(kind), `${label} 的 kind 不受支持：${task.kind}`);
-      assert.ok(Array.isArray(task.knowledgePoints), `${label} 的 knowledgePoints 必须是数组`);
-      if (kind === 'chapter-extension') {
-        chapterExtensions.push(task.id);
-        assert.deepEqual(task.knowledgePoints, [], `${label} 章节拓展题不得映射权威知识点`);
-      } else {
-        assert.ok(task.knowledgePoints.length > 0 && task.knowledgePoints.every(point => typeof point === 'string' && point.trim().length > 0), `${label} 需要非空文本 knowledgePoints`);
-      }
+      assert.equal(task.kind, undefined, `${label} 不允许使用未定义的任务类型例外`);
+      assert.ok(Array.isArray(task.knowledgePoints) && task.knowledgePoints.length > 0 && task.knowledgePoints.every(point => typeof point === 'string' && point.trim().length > 0), `${label} 需要非空文本 knowledgePoints`);
     }
   }
-  assert.deepEqual(chapterExtensions, CHAPTER_EXTENSION_IDS, '仅 ch10-t1 与 ch10-t2 可作为章节拓展题');
 });
 
-test('hands-on labels use same-chapter authority nodes and cover all 57 nodes', () => {
+test('generated knowledge universe exactly mirrors the chapter JSON sources', () => {
+  const { universe, sourceChapters } = sources();
+  const sourceShape = sourceChapters.map(chapter => ({
+    chapterId: chapter.id,
+    title: chapter.title,
+    points: chapter.knowledge_points.map(point => point.title)
+  }));
+  const universeShape = universe.galaxies.map(galaxy => ({
+    chapterId: galaxy.chapter,
+    title: galaxy.name,
+    points: galaxy.stars.map(star => star.title)
+  }));
+
+  assert.deepEqual(universeShape, sourceShape, 'knowledge-universe.json 必须由十份 chapter_XX.json 源码重建且与其完全一致');
+});
+
+test('hands-on labels use same-chapter source nodes and cover all 57 nodes', () => {
   const { handsOn, authority } = sources();
   const covered = new Set();
   const invalidLabels = [];
 
   for (const chapter of handsOn.chapters) {
     for (const task of chapter.tasks) {
-      if (task.kind === 'chapter-extension') {
-        assert.deepEqual(task.knowledgePoints, [], `${task.id} 章节拓展题不参与节点覆盖`);
-        continue;
-      }
       for (const title of task.knowledgePoints) {
         const key = `${chapter.chapterId}::${title}`;
         if (authority.has(key)) covered.add(key);
