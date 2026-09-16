@@ -86,10 +86,10 @@ test('every hands-on task supplies the learner-facing completion contract', () =
         assert.equal(typeof task[field], 'string', `${label} 缺少 ${field}`);
         assert.ok(task[field].trim(), `${label} 的 ${field} 不能为空`);
       }
-      assert.ok(Array.isArray(task.steps) && task.steps.length >= 3, `${label} 至少需要 3 个步骤`);
-      assert.ok(Array.isArray(task.tools) && task.tools.length > 0 && task.tools.every(tool => String(tool).trim()), `${label} 需要非空 tools`);
+      assert.ok(Array.isArray(task.steps) && task.steps.length >= 3 && task.steps.every(step => typeof step === 'string' && step.trim().length > 0), `${label} 至少需要 3 个非空文本步骤`);
+      assert.ok(Array.isArray(task.tools) && task.tools.length > 0 && task.tools.every(tool => typeof tool === 'string' && tool.trim().length > 0), `${label} 需要非空文本 tools`);
       assert.ok(Number.isInteger(task.minutes) && task.minutes > 0, `${label} 的 minutes 必须为正整数`);
-      assert.ok(Array.isArray(task.knowledgePoints) && task.knowledgePoints.length > 0 && task.knowledgePoints.every(point => String(point).trim()), `${label} 需要非空 knowledgePoints`);
+      assert.ok(Array.isArray(task.knowledgePoints) && task.knowledgePoints.length > 0 && task.knowledgePoints.every(point => typeof point === 'string' && point.trim().length > 0), `${label} 需要非空文本 knowledgePoints`);
     }
   }
 });
