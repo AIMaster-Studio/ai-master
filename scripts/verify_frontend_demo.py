@@ -49,6 +49,7 @@ ASSETS = [
     "/assets/frontend.css",
     "/assets/frontend.js",
     "/data/knowledge-universe.json",
+    "/data/hands-on-tasks.json",
     "/static/vendor/three.r128.min.js",
     "/static/js/knowledge_stars.js",
     "/static/css/knowledge_stars.css",
@@ -122,11 +123,18 @@ def main() -> None:
         summary = universe.get("summary", {})
         if summary.get("galaxies") != 10 or summary.get("stars") != 57:
             raise RuntimeError(f"unexpected knowledge universe summary: {summary}")
+        chapters = [json.loads((FRONTEND / "data" / f"chapter_{i:02}.json").read_text(encoding="utf-8")) for i in range(1, 11)]
+        authority = {(c["id"], p["title"]) for c in chapters for p in c["knowledge_points"]}
+        practice = json.loads((FRONTEND / "data" / "hands-on-tasks.json").read_text(encoding="utf-8"))
+        mapped = {(c["chapterId"], p) for c in practice["chapters"] for t in c["tasks"] for p in t["knowledgePoints"]}
+        if mapped != authority:
+            raise RuntimeError(f"practice mapping mismatch: missing={authority - mapped}; unknown={mapped - authority}")
+        task_count = sum(len(c["tasks"]) for c in practice["chapters"])
     finally:
         server.shutdown()
         server.server_close()
 
-    print(f"Frontend verification passed: {len(PAGES)} pages, {len(ASSETS)} assets, {link_count} internal links, 10 galaxies, 57 knowledge nodes.")
+    print(f"Frontend verification passed: {len(PAGES)} pages, {len(ASSETS)} assets, {link_count} internal links, 10 galaxies, 57 knowledge nodes, {task_count} practice tasks, 57/57 coverage.")
 
 
 if __name__ == "__main__":

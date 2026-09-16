@@ -18,7 +18,8 @@
 --r:14px;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-top:130px}
+.task,.chapter{scroll-margin-top:130px;overflow-wrap:anywhere}.task:target{border-color:#72f6e4}a:focus-visible{outline:2px solid #72f6e4;outline-offset:4px}
 body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(900px 500px at 15% -5%,rgba(114,246,228,.10),transparent 60%),radial-gradient(700px 420px at 85% 5%,rgba(170,160,255,.10),transparent 60%)}
 a{color:inherit}
@@ -136,7 +137,7 @@ body::before,.nav,.chapter-nav,.skip{display:none}
 
 <main id="main">
   <p class="kicker">HANDS-ON PRACTICE / 动手做一遍</p>
-  <h1>每章一道<em>动手题</em>，<br>合上屏幕之后该干什么。</h1>
+  <h1>每个知识点都有<em>动手题</em>，<br>把理解变成自己的成果。</h1>
   <p class="lead">
     课程讲了「如何学、如何讲」，这一页补的是「<strong>怎么做、从哪做</strong>」。
     每道题都给出任务目标、入口位置、编号步骤和可观察的预期成果 —— 做完要留下一个能给别人看的东西，
@@ -144,10 +145,7 @@ body::before,.nav,.chapter-nav,.skip{display:none}
   </p>
 
   <ul class="stats" id="stats" aria-label="题目规模">
-    <li><b>10</b><span>章 · 每章都有</span></li>
-    <li><b>20</b><span>道动手题</span></li>
-    <li><b>10</b><span>级能力阶梯</span></li>
-    <li><b>7</b><span>项不硬凑的未覆盖项</span></li>
+    <li><b>…</b><span>正在读取实践覆盖数据</span></li>
   </ul>
 
   <p class="notice">
@@ -165,12 +163,12 @@ body::before,.nav,.chapter-nav,.skip{display:none}
     <p class="loading" id="loading">正在读取题目数据…</p>
   </div>
 
-  <h2 id="ladder"><span class="num">02</span>跨章能力阶梯</h2>
+  <h2 id="ladder-heading"><span class="num">02</span>跨章能力阶梯</h2>
   <p class="sub">把 10 章的动手题串成一条能力递增线，标出每章新增的能力。</p>
   <div class="table-wrap" id="ladder"></div>
 
-  <h2 id="gaps"><span class="num">03</span>未覆盖项</h2>
-  <p class="sub">以下知识点<strong>不适合</strong>做成零基础动手题。硬凑一个做不了的任务，比诚实地列出来更糟。</p>
+  <h2 id="gaps-heading"><span class="num">03</span>实践深度与资源限制</h2>
+  <p class="sub">所有课程节点均有入门实践；部分采用纸笔模拟或方案设计，尚不等同于完整工程训练、真实部署或教育效果验证。</p>
   <ul class="gap-list" id="gaps"></ul>
 
   <footer class="footer">
@@ -212,11 +210,11 @@ body::before,.nav,.chapter-nav,.skip{display:none}
         }).join('') + '</div>'
       : '';
 
-    return '<article class="task">' +
+    return '<article class="task" id="' + esc(t.id) + '">' +
       '<h4><span class="tid">' + esc(t.id) + '</span>' + esc(t.title) + '</h4>' +
       '<dl>' +
         field('任务目标', esc(t.goal)) +
-        field('从哪做', esc(t.whereToStart), 'soft') +
+        field('从哪做', linkify(t.whereToStart), 'soft') +
       '</dl>' +
       '<details class="steps"><summary>操作步骤（' + (t.steps || []).length + ' 步）</summary><ol>' + steps + '</ol></details>' +
       '<dl>' +
@@ -271,19 +269,54 @@ body::before,.nav,.chapter-nav,.skip{display:none}
     renderGaps(data);
     document.getElementById('generatedAt').textContent =
       '数据生成于 ' + data.generatedAt + ' · ' + data.notice;
+    var tasks = data.chapters.flatMap(function(c) { return c.tasks; });
+    var covered = new Set(data.chapters.flatMap(function(c) { return c.tasks.flatMap(function(t) { return t.knowledgePoints.map(function(k) { return c.chapterId + '::' + k; }); }); }));
+    var authority = new Set(data.universe.galaxies.flatMap(function(g) { return g.stars.map(function(s) { return g.chapter + '::' + s.title; }); }));
+    var count = Array.from(covered).filter(function(k) { return authority.has(k); }).length;
+    document.getElementById('stats').innerHTML = '<li><b>' + count + '/' + authority.size + '</b><span>知识节点有对应实践</span></li><li><b>' + tasks.length + '</b><span>道动手题</span></li><li><b>' + data.chapters.length + '</b><span>个章节</span></li>';
+    revealTarget();
   }
+
+  function linkify(value) {
+    var pattern = /https?:\/\/[^\s（）。，；、]+|frontend\/[A-Za-z0-9_./-]+/g;
+    var result = '', start = 0;
+    String(value).replace(pattern, function(raw, offset) {
+      result += esc(value.slice(start, offset));
+      var external = /^https?:/.test(raw);
+      var href = external ? raw : '../' + raw.slice('frontend/'.length);
+      result += '<a href="' + esc(href) + '"' + (external ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + esc(raw) + (external ? '（离开本站）' : '') + '</a>';
+      start = offset + raw.length;
+      return raw;
+    });
+    return result + esc(String(value).slice(start));
+  }
+
+  function revealTarget() {
+    var target = document.getElementById(location.hash.slice(1));
+    if (!target) return;
+    var steps = target.querySelector('details.steps');
+    if (steps) steps.open = true;
+    target.scrollIntoView();
+  }
+  window.addEventListener('hashchange', revealTarget);
 
   fetch('../data/hands-on-tasks.json', { cache: 'no-cache' })
     .then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     })
-    .then(renderAll)
+    .then(function(data) {
+      return fetch('../data/knowledge-universe.json').then(function(r) {
+        if (!r.ok) throw new Error('知识目录 HTTP ' + r.status);
+        return r.json();
+      }).then(function(universe) { data.universe = universe; renderAll(data); });
+    })
     .catch(function (err) {
+      document.getElementById('stats').textContent = '数据未加载，暂无法统计覆盖情况';
       document.getElementById('chapters').innerHTML =
         '<p class="loading error">题目数据没能加载：<code>' + esc(err.message) + '</code><br>' +
         '这一页需要经由本地服务打开（依赖 JSON 请求）。在仓库根目录运行 <code>python -m http.server 8080</code>，' +
-        '再访问 <code>/frontend/hands-on/</code>。不要用 <code>file://</code> 直接打开。</p>';
+        '再访问 <code>http://127.0.0.1:8080/frontend/hands-on/</code>。检查 <code>frontend/data/hands-on-tasks.json</code> 与 <code>knowledge-universe.json</code> 是否存在，然后刷新重试。</p>';
     });
 })();
 </script>
