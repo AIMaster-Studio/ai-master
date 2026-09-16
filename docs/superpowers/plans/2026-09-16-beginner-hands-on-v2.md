@@ -14,7 +14,7 @@
 
 ---
 
-## 任务 1：建立实践内容合同测试
+## Task 1：建立实践内容合同测试
 
 **文件：**
 
@@ -35,7 +35,7 @@
 7. 运行 `node --test tests/hands-on-content.test.js`，确认失败原因分别落在 38/57 覆盖、新手工具缺失或章节实践链接缺失，而不是测试语法错误。
 8. 提交：`test: define hands-on learning content contract`。
 
-## 任务 2：补齐 57 个节点的实践数据
+## Task 2：补齐 57 个节点的实践数据
 
 **文件：**
 
@@ -51,7 +51,7 @@
 5. 运行 `node --test tests/hands-on-content.test.js`，确认数据结构与 57/57 覆盖测试通过；页面类测试仍应失败。
 6. 提交：`feat: cover all 57 knowledge nodes with practice tasks`。
 
-## 任务 3：把实践映射接入章节生成器
+## Task 3：把实践映射接入章节生成器
 
 **文件：**
 
@@ -78,7 +78,7 @@
 6. 运行 `node --test tests/hands-on-content.test.js`，确认章节链接测试通过；新手页测试仍应失败。
 7. 提交：`feat: link every chapter node to hands-on practice`。
 
-## 任务 4：重做六类工具新手图解页
+## Task 4：重做六类工具新手图解页
 
 **文件：**
 
@@ -95,7 +95,7 @@
 6. 运行 `node --test tests/hands-on-content.test.js`，确认全部内容合同测试通过。
 7. 提交：`feat: add illustrated beginner guide for six AI tools`。
 
-## 任务 5：升级实践页与整站验证器
+## Task 5：升级实践页与整站验证器
 
 **文件：**
 
@@ -112,7 +112,7 @@
 5. 运行 `python scripts/verify_frontend_demo.py`，确认输出包含 10 章、57 节点、实践任务总数且无错误。
 6. 提交：`feat: strengthen hands-on page and frontend verification`。
 
-## 任务 6：本地全量验收与远端交付
+## Task 6：本地全量验收与远端交付
 
 **文件：**
 
