@@ -22,7 +22,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.14'
-      - run: npm ci --omit=dev
+      - name: Install locked runtime dependencies
+        shell: bash
+        run: |
+          set -o pipefail
+          npm ci --omit=dev 2>&1 | tee install.log
       - name: Tests and frontend integrity
         shell: bash
         run: |
@@ -33,6 +37,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: verify-${{ github.sha }}
-          path: verify.log
+          path: |
+            verify.log
+            install.log
           if-no-files-found: warn
           retention-days: 14

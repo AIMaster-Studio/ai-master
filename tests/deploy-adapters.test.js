@@ -78,11 +78,16 @@ test('an explicit dataRoot overrides the default in both modes', () => {
 test('the serverless adapters declare ephemeral mode, so the guard above stays relevant', () => {
   // 这条不是形式检查：如果哪天有人把 inMemory 从适配器里去掉，
   // 上面几条用例仍然会通过，而线上会重新开始往只读目录写。这里把两件事连起来。
-  for (const file of ['api/[...slug].js', 'netlify/functions/api.js']) {
+  for (const file of ['netlify/functions/api.js']) {
     const source = fs.readFileSync(path.resolve(PROJECT_ROOT, file), 'utf8');
     assert.match(source, /inMemory:\s*true/, file + ' 应声明 inMemory:true');
     assert.match(source, /skipHostCheck:\s*true/, file + ' 应声明 skipHostCheck:true');
   }
+  const vercel = fs.readFileSync(path.resolve(PROJECT_ROOT, 'api/[...slug].js'), 'utf8');
+  assert.match(vercel, /vercelOptions\(\)/);
+  const options = require('../server/vercel-runtime').vercelOptions({});
+  assert.equal(options.inMemory, true);
+  assert.equal(insideProject(options.dataRoot), false);
 });
 
 test('the ephemeral app actually serves API routes without touching the project directory', async () => {

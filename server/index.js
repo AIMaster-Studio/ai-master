@@ -193,11 +193,12 @@ function createApp(options = {}) {
         if (!allowedOrigins.includes(req.headers.origin)) fail(403, '请求来源不匹配。');
       }
     }
+    if (store.ready) await store.ready;
     let token = String(req.headers.cookie || '').match(/(?:^|;\s*)aimaster_session=([a-f0-9]{64})(?:;|$)/)?.[1];
     let user = await store.session(token);
     function setSession(next) {
       user = next.user; token = next.token;
-      res.setHeader('Set-Cookie', `aimaster_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000`);
+      res.setHeader('Set-Cookie', `aimaster_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000${options.secureCookies || req.socket.encrypted ? '; Secure' : ''}`);
     }
     if (!user) setSession(await store.guest());
     const body = req.method === 'POST' ? await readBody(req) : null;
@@ -213,7 +214,10 @@ function createApp(options = {}) {
     if (req.method === 'GET') {
       if (route === 'status') {
         const config = await store.config();
-        const payload = { mode: 'server', ai: publicConfig(config), version: 'ican-1.0' };
+        const payload = { mode: 'server', ai: publicConfig(config), version: 'ican-1.0',
+          build: { sha: /^[a-f0-9]{7,40}$/i.test(process.env.VERCEL_GIT_COMMIT_SHA || '') ? process.env.VERCEL_GIT_COMMIT_SHA : null },
+          storage: options.storageStatus || { learning: persistentDb ? 'persistent-configured' : 'ephemeral-memory', learningPersistent: persistentDb, files: persistentDb ? 'local-files' : 'ephemeral-tmp', filesPersistent: persistentDb }
+        };
         // 默认不探活（保持 status 快速、零上游费用）。?probe=1 时实测上游连通性并缓存 1 分钟。
         // 注意：即便 aiReachable=true，验收仍以 POST /api/explanation 返回 mode:"ai" 为准（ACCEPTANCE.md §1.1）。
         if (url.searchParams.get('probe') === '1') payload.aiReachable = await probeReachable(config, options.fetchImpl);

@@ -134,14 +134,12 @@ function createTursoStore() {
   }
 
   // 初始化表结构（executeMultiple 在部分网络环境下 fetch failed，逐条执行更稳妥）
-  (async () => {
-    try {
-      const stmts = SCHEMA_SQL.split(';').map(s => s.trim()).filter(Boolean);
-      for (const sql of stmts) await db.execute(sql);
-    } catch (e) {
-      console.error('[turso] schema init failed:', e.message);
-    }
+  const ready = (async () => {
+    const stmts = SCHEMA_SQL.split(';').map(s => s.trim()).filter(Boolean);
+    for (const sql of stmts) await db.execute(sql);
   })();
+  // Requests await ready; attach a handler immediately to avoid an unhandled rejection on a cold start.
+  ready.catch(() => {});
 
   async function createSession(id) {
     const token = randomBytes(32).toString('hex');
@@ -152,6 +150,7 @@ function createTursoStore() {
 
   return {
     db,
+    ready,
     async state(id) { return JSON.parse((await get('SELECT state FROM users WHERE id=?', [id])).state); },
     async save(id, value) { await exec('UPDATE users SET state=? WHERE id=?', [JSON.stringify(value), id]); },
     async user(id) { return publicUser(await get('SELECT id, name, login FROM users WHERE id=?', [id])); },
