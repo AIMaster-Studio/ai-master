@@ -232,7 +232,7 @@ def main():
     write("assets/frontend.css", '@import url("./ui-refinement.css");\n' + shell_css())
     write("assets/dashboard-demo.css", dashboard_css())
     write("assets/chapter-demo.css", chapter_css())
-    write("assets/frontend.js", runtime_js())
+    write("assets/frontend.js", runtime_js() + "\n" + (FRONTEND / "assets/course-navigation.js").read_text(encoding="utf-8"))
     write("index.html", '''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=learning-center/"><title>AI Master 讲解通关</title></head><body><p>正在进入 <a href="learning-center/">AI Master 讲解通关</a>...</p></body></html>''')
     write("dashboard/index.html", build_dashboard(courses))
     for cid, chapter in chapters.items(): write(f"chapter/{cid}/index.html", chapter_page(chapter, hands_on_mapping))
