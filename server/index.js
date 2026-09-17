@@ -108,7 +108,8 @@ function createApp(options = {}) {
   }
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
-  const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
+  const storage = require('./storage-paths').storagePaths(options, process.env, ROOT);
+  const store = openStore(storage.dbPath, options.forceSqlite);
   // 「本机持久化」与「临时实例」两种形态必须一起切换，不能只切数据库。
   //
   // 背景（2026-09-15 实测发现）：inMemory 原先只作用于 SQLite（:memory:），
@@ -117,7 +118,7 @@ function createApp(options = {}) {
   // createApp 会在建目录那一步直接抛错 —— 结果是**所有 /api/* 返回 500**，而不只是新接口。
   // 因此：只要数据库不是持久的（inMemory 或 dbPath=':memory:'），文件类存储一并指向可写的临时目录。
   const persistentDb = !(options.inMemory || options.dbPath === ':memory:');
-  const dataRoot = options.dataRoot || (persistentDb ? path.join(ROOT, '.local') : path.join(os.tmpdir(), 'aimaster-ephemeral-' + process.pid));
+  const dataRoot = storage.dataRoot;
   const dataRoots = {
     base: dataRoot,
     rag: options.ragDataRoot || path.join(dataRoot, 'rag'),
