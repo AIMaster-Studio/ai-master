@@ -35,16 +35,21 @@ export default {
       return env.ASSETS.fetch(request);
     }
 
-    const origin = String(env.TUNNEL_ORIGIN || '').trim();
+    const origin = String(env.BACKEND_ORIGIN || env.TUNNEL_ORIGIN || '').trim();
     if (!origin) {
-      return json(500, '服务端未配置上游地址（缺少环境变量 TUNNEL_ORIGIN）。这是部署配置问题，不是临时故障。');
+      return json(500, '服务端未配置上游地址（设置 BACKEND_ORIGIN，或兼容变量 TUNNEL_ORIGIN）。这是部署配置问题。');
     }
 
     let base;
     try {
       base = new URL(origin);
     } catch {
-      return json(500, '环境变量 TUNNEL_ORIGIN 不是合法 URL。');
+      return json(500, '上游地址不是合法 URL，请检查 BACKEND_ORIGIN / TUNNEL_ORIGIN。');
+    }
+
+    if (!['https:', 'http:'].includes(base.protocol) || base.username || base.password ||
+        base.pathname !== '/' || base.search || base.hash || base.origin === incoming.origin) {
+      return json(500, '上游必须为独立的 HTTP(S) origin，不得含凭据、路径、查询串或指向本站。', 'INVALID_BACKEND_ORIGIN');
     }
 
     // 保留 /api/ 之后的完整路径与查询串
@@ -63,7 +68,7 @@ export default {
       if (v !== null) headers.set(name, v);
     }
 
-    const init = { method: request.method, headers, redirect: 'manual' };
+    const init = { method: request.method, headers, redirect: 'manual', signal: AbortSignal.timeout(35000) };
     if (!['GET', 'HEAD'].includes(request.method)) {
       init.body = await request.arrayBuffer();
     }
@@ -73,8 +78,13 @@ export default {
       upstream = await fetch(target.toString(), init);
     } catch (error) {
       // 上游不可达：返回可读的 502 + 中文说明，而不是空洞的 500
-      const detail = error && error.message ? String(error.message).slice(0, 200) : '未知错误';
-      return json(502, '上游学习服务当前不可达（隧道可能已断开或重启导致地址变化）。这不代表备选端可用；请改用本机或当前有效的隧道地址。技术细节：' + detail);
+      const timedOut = error && ['TimeoutError', 'AbortError'].includes(error.name);
+      return json(timedOut ? 504 : 502, '上游学习服务暂不可用；AI 操作未完成，请稍后重试或联系维护者。', timedOut ? 'UPSTREAM_TIMEOUT' : 'UPSTREAM_UNREACHABLE');
+    }
+
+    if (upstream.status >= 500) {
+      if (upstream.body) await upstream.body.cancel().catch(() => {});
+      return json(502, '上游学习服务返回故障，AI 操作未完成；请维护者检查固定后端、DNS 和服务日志。', 'UPSTREAM_HTTP_ERROR', upstream.status);
     }
 
     // 字节级透传响应体；保留 Set-Cookie（可能有多个）与内容类型
@@ -90,14 +100,15 @@ export default {
     }
     respHeaders.set('x-aimaster-proxied-by', PROXIED_BY);
 
-    const body = await upstream.arrayBuffer();
+    respHeaders.set('cache-control', 'no-store');
+    const body = request.method === 'HEAD' || [204, 205, 304].includes(upstream.status) ? null : upstream.body;
     return new Response(body, { status: upstream.status, headers: respHeaders });
   },
 };
 
-function json(status, message) {
-  return new Response(JSON.stringify({ ok: false, error: message }), {
+function json(status, message, code = 'BACKEND_CONFIGURATION_ERROR', upstreamStatus) {
+  return new Response(JSON.stringify({ ok: false, error: message, code, ...(upstreamStatus ? { upstreamStatus } : {}) }), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'x-aimaster-proxied-by': PROXIED_BY },
   });
 }
