@@ -229,7 +229,7 @@ def main():
     courses = load("courses_index.json")
     chapters = {i: load(f"chapter_{i:02d}.json") for i in range(1, 11)}
     hands_on_mapping = build_hands_on_mapping(chapters, load("hands-on-tasks.json"))
-    write("assets/frontend.css", shell_css())
+    write("assets/frontend.css", '@import url("./ui-refinement.css");\n' + shell_css())
     write("assets/dashboard-demo.css", dashboard_css())
     write("assets/chapter-demo.css", chapter_css())
     write("assets/frontend.js", runtime_js())
