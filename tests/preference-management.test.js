@@ -1,0 +1,27 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');const os=require('node:os');const path=require('node:path');
+const {once}=require('node:events');const {createApp}=require('../server');
+test('preferences replace and clear only the authenticated learner preference',async t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'aimaster-preference-test-'));
+ const app=createApp({inMemory:true,dataRoot:root,allowRemote:false,configToken:''});
+ app.server.listen(0,'127.0.0.1');await once(app.server,'listening');
+ t.after(async()=>{await new Promise(r=>app.server.close(r));fs.rmSync(root,{recursive:true,force:true});});
+ const base='http://127.0.0.1:'+app.server.address().port;
+ const client=()=>{let cookie='';return async(route,body)=>{
+  const r=await fetch(base+'/api/'+route,{method:body===undefined?'GET':'POST',headers:{...(cookie?{Cookie:cookie}:{}),'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
+  if(r.headers.get('set-cookie'))cookie=r.headers.get('set-cookie').split(';')[0];
+  return {status:r.status,data:await r.json()};
+ };};
+ const a=client(),b=client();
+ assert.equal((await a('memory/preference',{text:'先给类比',operation:'replace'})).status,200);
+ assert.equal((await b('memory/preference',{text:'先给公式',operation:'replace'})).status,200);
+ assert.equal((await a('memory/preference',{text:'再给例子',operation:'replace'})).status,200);
+ const updated=await a('memory/inspect');
+ assert.match(updated.data.memory.preferences,/再给例子/);assert.ok(!updated.data.memory.preferences.includes('先给类比'));
+ assert.equal((await a('memory/preference',{text:'x'.repeat(2001)})).status,400);
+ assert.equal((await a('memory/preference',{text:{a:1}})).status,400);
+ assert.equal((await a('memory/preference',{operation:'clear'})).status,200);
+ assert.ok(!(await a('memory/inspect')).data.memory.preferences);
+ assert.match((await b('memory/inspect')).data.memory.preferences,/先给公式/);
+});

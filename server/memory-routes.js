@@ -48,7 +48,8 @@ function createMemoryRoutes(options) {
       return send({ generatedAt: result.generatedAt, l3: result.l3 });
     }
     if (action === 'preference') {
-      return send({ preferences: memory.writePreference(body.text) });
+      if (body.operation !== 'clear' && typeof body.text !== 'string') fail(400, '偏好必须是文字。');
+      return send({ preferences: memory.writePreference(body.text, { operation: body.operation }) });
     }
     if (action === 'clear') {
       // 清空记忆会丢掉全部学习轨迹，属管理操作：与配置写入同一道门。

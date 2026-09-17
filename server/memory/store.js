@@ -278,15 +278,23 @@ function createMemoryStore(options = {}) {
   }
 
   // 偏好只能显式写入，不参与自动综合 —— 与 DeepTutor 的 preferences 只由 write_memory 写入同源。
-  function writePreference(text) {
+  function writePreference(text, options = {}) {
+    const operation = options.operation || 'append';
+    if (!['append', 'replace', 'clear'].includes(operation)) throw badRequest('不支持的偏好操作。');
+    if (operation === 'clear') {
+      fs.rmSync(l3File('preferences'), { force: true });
+      return '';
+    }
     const value = String(text || '').trim();
     if (!value) throw badRequest('偏好内容不能为空。');
+    if (value.length > 2000) throw badRequest('偏好最多 2000 字符。');
     fs.mkdirSync(path.join(root, L3_DIR), { recursive: true });
     const file = l3File('preferences');
     const header = '# L3 · 显式偏好\n\n> 本文件只由显式写入产生，不参与自动综合，也不会被 synthesize 覆盖。\n\n';
     const existing = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : header;
-    const body = existing.startsWith(header) ? existing.slice(header.length) : existing;
+    const body = operation === 'replace' ? '' : (existing.startsWith(header) ? existing.slice(header.length) : existing);
     const next = header + body + '- ' + new Date().toISOString() + '　' + value + '\n';
+    if (next.length > 20000) throw badRequest('偏好记录已达上限，请替换或清除后再写入。');
     fs.writeFileSync(file, next);
     return next;
   }
