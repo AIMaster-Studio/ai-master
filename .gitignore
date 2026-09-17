@@ -1,0 +1,74 @@
+# Local environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+node_modules/
+dist/
+build/
+
+# Logs and local previews
+*.log
+preview-server.*
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+auth.json
+credentials.json
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# AI Master local runtime data - never publish user records or local secrets
+frontend/.local/
+.local/
+frontend/data/users.json
+frontend/data/licenses.db
+frontend/data/.session_secret
+frontend/data/.auth_server_url
+frontend/data/*token*
+frontend/data/*secret*
+frontend/data/*.log
+
+# Electron 打包产物（不推送到 GitHub）
+release/
+
+# 部署平台本地配置
+.netlify/
+.vercel/
+
+# Cloudflare Pages 本地部署产物与备份
+frontend-deploy.zip
+bgm_original.mp3
+*.pages.dev/
+
+# 含密钥的配置文件：仓库只保留「无密钥占位版」，真实密钥只写在本地、不提交。
+# 两个占位文件（ai-config.js / firebase-config.js）均随仓库入库，apiKey 为空/占位，
+# 未配置时自动降级（AI 复评走本地规则、数据走 localStorage）。
+# 模板见同目录 *.example.js。（原先把 ai-config.js 排除、却入库 firebase-config.js，
+# 导致干净克隆跑 scripts/verify_frontend_demo.py 必然失败，见 REVIEW.md R-001。）
+
+# DevLog local state
+devlog/.last_commit
+devlog/.cache_pdf/
+
+# 双 Agent 协作文件（本机工作流，不随仓库公开）
+COLLAB.md
+REVIEW.md
+ACCEPTANCE.md
+
+# 本机智能体工作目录（记忆与自动化状态，属本机工作流，与 COLLAB.md 同类）。
+# 不忽略的话，一次 `git add -A` 就会把它提交进仓库。
+.workbuddy-ai/
+
+# Cloudflare Pages 本地开发变量（含真实隧道入口，绝不进仓库；与 .env 名字相近但不受 .env.* 覆盖）
+.dev.vars
+.wrangler/

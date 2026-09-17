@@ -1,0 +1,745 @@
+/* ============================================================
+   AI Master 虚拟形象助手 - 样式
+   交互设计参考: MeteorNOX/DeepSeek-Balance-Whale-Widget (MIT)
+   ============================================================ */
+#aimaster-avatar-root {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 2147483000;
+  font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+#aimaster-avatar-root * { box-sizing: border-box; }
+#aimaster-avatar-root.aw-docked {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#aimaster-avatar-root.aw-docked .aw-stage {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: 180px;
+  flex: 1 1 auto;
+  min-height: 120px;
+  cursor: pointer;
+  touch-action: auto;
+}
+#aimaster-avatar-root.aw-docked .aw-action-select {
+  width: 100%;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 3px 8px;
+  border: 1px solid #d6dfdb;
+  border-radius: 4px;
+  background: #fff;
+  color: #33463f;
+  font: 12px "Microsoft YaHei", sans-serif;
+  pointer-events: auto;
+}
+#aimaster-avatar-root.aw-docked .aw-bubble,
+#aimaster-avatar-root.aw-docked .aw-gear { display: none; }
+#aimaster-avatar-root.aw-docked .aw-menu,
+#aimaster-avatar-root.aw-docked .aw-stage.aw-menu-open .aw-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  background: #fff;
+  backdrop-filter: none;
+  border: 1px solid #ccd8d1;
+  border-radius: 8px;
+  color: #243e32;
+  box-shadow: 0 12px 36px rgba(18, 42, 31, 0.18);
+  z-index: 100;
+}
+#aimaster-avatar-root.aw-docked .aw-dock-heading { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e2e9e5; font-size: 16px; }
+#aimaster-avatar-root.aw-docked .aw-dock-controls { display: grid; gap: 12px; padding: 16px; }
+#aimaster-avatar-root.aw-docked .aw-dock-controls select { width: 100%; min-width: 0; height: 36px; border: 1px solid #ccd8d1; border-radius: 4px; background: #fff; color: #243e32; font: inherit; padding: 4px 8px; }
+#aimaster-avatar-root.aw-docked .aw-dock-transport { display: flex; gap: 8px; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; padding: 8px; background: #f4f7f5; border: 1px solid #d5dfd9; color: #245a42; border-radius: 4px; cursor: pointer; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon:hover { background: #e5f1e9; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon:disabled { opacity: .4; cursor: default; }
+#aimaster-avatar-root.aw-docked .aw-dock-icon svg { width: 18px; height: 18px; }
+#aimaster-avatar-root.aw-docked .aw-dock-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#aimaster-avatar-root.aw-docked .aw-dock-volume { display: flex; align-items: center; gap: 12px; }
+#aimaster-avatar-root.aw-docked .aw-dock-volume input { flex: 1; min-width: 0; width: 100%; accent-color: #28674a; }
+#aimaster-avatar-root.aw-docked .aw-dock-controls input[type="checkbox"] { accent-color: #28674a; }
+#aimaster-avatar-root.aw-docked .aw-menu :focus-visible { outline: 2px solid #28674a; outline-offset: 2px; }
+@media (max-width: 700px) {
+  #aimaster-avatar-root.aw-docked { min-height: 150px; }
+  #aimaster-avatar-root.aw-docked .aw-stage { height: 120px; }
+}
+#aimaster-avatar-root .aw-stage {
+  position: absolute;
+  width: calc(150px * var(--aw-scale, 1));
+  height: calc(150px * var(--aw-scale, 1));
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+}
+#aimaster-avatar-root .aw-stage.aw-pressed { cursor: grabbing; }
+#aimaster-avatar-root .aw-whale {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+}
+#aimaster-avatar-root .aw-whale-video {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  display: none;
+  transform-origin: 50% 100%;
+  z-index: 2;
+}
+#aimaster-avatar-root .aw-stage.aw-pressed .aw-whale {
+  animation: aw-squish 0.18s ease;
+}
+@keyframes aw-squish {
+  0%   { transform: scale(1, 1); }
+  40%  { transform: scale(1.08, 0.88); }
+  100% { transform: scale(1, 1); }
+}
+/* 左吸附时整体水平镜像翻转（含文字） */
+#aimaster-avatar-root .aw-stage.aw-flipped { transform: scaleX(-1); }
+
+/* ---------- 气泡 ---------- */
+#aimaster-avatar-root .aw-bubble {
+  position: absolute;
+  right: -8px;
+  bottom: calc(100% + 10px);
+  min-width: calc(120px * var(--aw-scale, 1));
+  max-width: 260px;
+  padding: calc(8px * var(--aw-scale, 1)) calc(10px * var(--aw-scale, 1));
+  background-color: rgba(20, 26, 34, var(--aw-bg-opacity, 0.55));
+  background-image: var(--aw-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  backdrop-filter: blur(calc(var(--aw-bg-blur, 18) * 1px)) saturate(160%);
+  -webkit-backdrop-filter: blur(calc(var(--aw-bg-blur, 18) * 1px)) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e8f0ff;
+  font-size: calc(12px * var(--aw-scale, 1));
+  line-height: 1.5;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  transform: translateY(6px) scale(0.9);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: auto;
+  cursor: pointer;
+  white-space: normal;
+}
+#aimaster-avatar-root .aw-bubble.aw-show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+#aimaster-avatar-root .aw-bubble::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  bottom: -8px;
+  border: 8px solid transparent;
+  border-top-color: rgba(20, 26, 34, 0.94);
+  border-bottom: 0;
+}
+#aimaster-avatar-root .aw-bubble img.aw-gif {
+  display: block;
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+#aimaster-avatar-root .aw-bubble .aw-bb-row { display: flex; gap: 6px; align-items: center; }
+#aimaster-avatar-root .aw-bubble .aw-bb-tag {
+  background: #4f8cff;
+  color: #fff;
+  font-size: calc(10px * var(--aw-scale, 1));
+  border-radius: 6px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+#aimaster-avatar-root .aw-bubble .aw-bb-num {
+  color: #ffd75e;
+  font-weight: 700;
+}
+
+/* ---------- 菜单按钮（悬停出现） ---------- */
+#aimaster-avatar-root .aw-gear {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: calc(26px * var(--aw-scale, 1));
+  height: calc(26px * var(--aw-scale, 1));
+  border-radius: 50%;
+  background: rgba(30, 40, 55, 0.85);
+  color: #fff;
+  font-size: calc(14px * var(--aw-scale, 1));
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: auto;
+}
+#aimaster-avatar-root .aw-stage:hover .aw-gear,
+#aimaster-avatar-root .aw-stage.aw-menu-open .aw-gear {
+  opacity: 1;
+}
+#aimaster-avatar-root .aw-gear:hover { transform: rotate(60deg); }
+
+/* ---------- 菜单面板 ---------- */
+#aimaster-avatar-root .aw-menu {
+  position: absolute;
+  right: -4px;
+  bottom: calc(100% + 12px);
+  width: 300px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background-color: rgba(18, 24, 32, var(--aw-bg-opacity, 0.65));
+  background-image: var(--aw-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  backdrop-filter: blur(calc(var(--aw-bg-blur, 18) * 1px)) saturate(160%);
+  -webkit-backdrop-filter: blur(calc(var(--aw-bg-blur, 18) * 1px)) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  color: #dfe9f5;
+  font-size: 13px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transform-origin: bottom right;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: auto;
+  display: none;
+}
+#aimaster-avatar-root .aw-stage.aw-menu-open .aw-menu {
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+#aimaster-avatar-root .aw-menu h4 {
+  margin: 0;
+  padding: 12px 14px 8px;
+  font-size: 13px;
+  color: #9fb6d4;
+  letter-spacing: 1px;
+}
+#aimaster-avatar-root .aw-menu .aw-sec { border-top: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; }
+#aimaster-avatar-root .aw-menu .aw-sec:first-of-type { border-top: none; }
+#aimaster-avatar-root .aw-menu label.aw-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+#aimaster-avatar-root .aw-menu input[type="range"] {
+  width: 130px;
+  accent-color: #4f8cff;
+}
+#aimaster-avatar-root .aw-menu input[type="checkbox"] { accent-color: #4f8cff; width: 16px; height: 16px; }
+#aimaster-avatar-root .aw-menu .aw-val { color: #ffd75e; font-variant-numeric: tabular-nums; }
+#aimaster-avatar-root .aw-avatars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+#aimaster-avatar-root .aw-avatars .aw-av {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+#aimaster-avatar-root .aw-avatars .aw-av:hover { background: rgba(255, 255, 255, 0.1); }
+#aimaster-avatar-root .aw-avatars .aw-av.aw-on { border-color: #4f8cff; background: rgba(79, 140, 255, 0.12); }
+#aimaster-avatar-root .aw-avatars .aw-av img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.25);
+  display: block;
+  margin: 0 auto 4px;
+}
+#aimaster-avatar-root .aw-avatars .aw-av span {
+  display: block;
+  font-size: 11px;
+  color: #b9c7da;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#aimaster-avatar-root .aw-upload-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border: 1px dashed rgba(79, 140, 255, 0.5);
+  border-radius: 8px;
+  background: rgba(79, 140, 255, 0.08);
+  color: #8fb4ff;
+  cursor: pointer;
+  text-align: center;
+  font-size: 12px;
+}
+#aimaster-avatar-root .aw-upload-btn:hover { background: rgba(79, 140, 255, 0.16); }
+#aimaster-avatar-root .aw-menu button.aw-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #dfe9f5;
+  cursor: pointer;
+  font-size: 12px;
+}
+#aimaster-avatar-root .aw-menu button.aw-btn:hover { background: rgba(255, 255, 255, 0.14); }
+#aimaster-avatar-root .aw-menu .aw-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+#aimaster-avatar-root .aw-menu .aw-stat {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+}
+#aimaster-avatar-root .aw-menu .aw-stat b {
+  display: block;
+  font-size: 18px;
+  color: #ffd75e;
+}
+#aimaster-avatar-root .aw-menu .aw-stat span { font-size: 11px; color: #9fb6d4; }
+#aimaster-avatar-root .aw-menu::-webkit-scrollbar { width: 6px; }
+#aimaster-avatar-root .aw-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+/* ---------- DIY 形象生成 ---------- */
+#aimaster-avatar-root .aw-diy-preview {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  padding: 8px;
+}
+#aimaster-avatar-root .aw-diy-preview img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+#aimaster-avatar-root .aw-diy-control select {
+  width: 150px;
+  padding: 4px 6px;
+  background: #111a28;
+  color: #dfe9f5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-size: 12px;
+}
+#aimaster-avatar-root .aw-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  max-width: 150px;
+}
+#aimaster-avatar-root .aw-color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+#aimaster-avatar-root .aw-color-swatch:hover { transform: scale(1.15); }
+#aimaster-avatar-root .aw-color-swatch.aw-on {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px #4f8cff;
+}
+#aimaster-avatar-root .aw-diy-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* ---------- 成就 ---------- */
+#aimaster-avatar-root .aw-achievements {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+#aimaster-avatar-root .aw-ach {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 6px;
+  cursor: default;
+}
+#aimaster-avatar-root .aw-ach.aw-unlocked {
+  border-color: rgba(255, 215, 94, 0.35);
+  background: rgba(255, 215, 94, 0.08);
+}
+#aimaster-avatar-root .aw-ach-icon { font-size: 16px; flex-shrink: 0; }
+#aimaster-avatar-root .aw-ach-name {
+  font-size: 11px;
+  color: #b9c7da;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#aimaster-avatar-root .aw-ach.aw-unlocked .aw-ach-name { color: #ffd75e; }
+#aimaster-avatar-root .aw-ach-desc {
+  display: none;
+}
+
+/* ---------- 今日目标进度 ---------- */
+#aimaster-avatar-root .aw-goal {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #9fb6d4;
+}
+#aimaster-avatar-root .aw-goal-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+#aimaster-avatar-root .aw-goal-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #72f6e4, #4f8cff);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* ---------- 删除自定义/DIY 形象 ---------- */
+#aimaster-avatar-root .aw-avatars .aw-av { position: relative; }
+#aimaster-avatar-root .aw-del {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(220, 60, 80, 0.95);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  opacity: 0.85;
+  transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
+  z-index: 2;
+}
+#aimaster-avatar-root .aw-del:hover {
+  transform: scale(1.15);
+  opacity: 1;
+  background: #e0364f;
+}
+
+/* ---------- 动态桌宠：待机/随机动作 ---------- */
+#aimaster-avatar-root .aw-whale {
+  animation: aw-idle-float 3.4s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes aw-idle-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-2deg); }
+}
+#aimaster-avatar-root .aw-stage.aw-action-jump .aw-whale {
+  animation: aw-jump 0.7s ease;
+}
+@keyframes aw-jump {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-28px) scale(1.08, 0.90); }
+  60% { transform: translateY(0) scale(0.94, 1.08); }
+}
+#aimaster-avatar-root .aw-stage.aw-action-wave .aw-whale {
+  animation: aw-wave 0.9s ease;
+}
+@keyframes aw-wave {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+#aimaster-avatar-root .aw-stage.aw-action-spin .aw-whale {
+  animation: aw-spin 0.8s ease;
+}
+@keyframes aw-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+#aimaster-avatar-root .aw-stage.aw-action-bounce .aw-whale {
+  animation: aw-bounce 0.6s ease;
+}
+@keyframes aw-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-14px) scale(1.04, 0.94); }
+  70% { transform: translateY(0) scale(0.96, 1.05); }
+}
+
+/* 隐藏齿轮按钮，改用鼠标右键打开菜单 */
+#aimaster-avatar-root .aw-gear {
+  display: none !important;
+}
+
+/* ---------- 快速提问白色气泡（仿 dsh-pet） ---------- */
+#aimaster-avatar-root .aw-bubble.aw-quiz-panel {
+  background: rgba(255, 255, 255, 0.97);
+  color: #1f1f1f;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+#aimaster-avatar-root .aw-bubble.aw-quiz-panel::after {
+  border-top-color: rgba(255, 255, 255, 0.97);
+}
+#aimaster-avatar-root .aw-bubble.aw-quiz-panel input {
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #1f1f1f;
+}
+#aimaster-avatar-root .aw-bubble.aw-quiz-panel button.ask-btn {
+  background: #4f8cff;
+  color: #fff;
+  border: none;
+}
+#aimaster-avatar-root .aw-bubble.aw-quiz-panel .answer {
+  background: #f5f7fa;
+  color: #1f1f1f;
+  border: 1px solid #e5e8ef;
+}
+
+/* ---------- 动画剧场 ---------- */
+#aimaster-avatar-root .aw-anim-search {
+  width: 100%;
+  padding: 6px 10px;
+  background: #0b1322;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #dfe9f5;
+  font-size: 12px;
+  outline: none;
+  margin-bottom: 6px;
+}
+#aimaster-avatar-root .aw-anim-search:focus { border-color: rgba(114, 246, 228, 0.5); }
+#aimaster-avatar-root .aw-anim-current {
+  font-size: 11px;
+  color: #72f6e4;
+  margin-bottom: 6px;
+  min-height: 14px;
+  word-break: break-all;
+}
+#aimaster-avatar-root .aw-anim-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+  margin-bottom: 6px;
+}
+#aimaster-avatar-root .aw-anim-list::-webkit-scrollbar { width: 5px; }
+#aimaster-avatar-root .aw-anim-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+#aimaster-avatar-root .aw-anim-chip {
+  padding: 3px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  color: #cfddf0;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+#aimaster-avatar-root .aw-anim-chip:hover {
+  background: rgba(114, 246, 228, 0.15);
+  border-color: rgba(114, 246, 228, 0.35);
+}
+#aimaster-avatar-root .aw-anim-chip.aw-on {
+  border-color: #72f6e4;
+  background: rgba(114, 246, 228, 0.18);
+  color: #72f6e4;
+}
+
+/* ---------- 智能睡眠 ---------- */
+#aimaster-avatar-root .aw-stage.aw-sleeping { filter: saturate(0.85) brightness(0.96); }
+#aimaster-avatar-root .aw-stage.aw-sleeping::after {
+  content: "💤";
+  position: absolute;
+  right: 4px;
+  top: 0;
+  font-size: calc(18px * var(--aw-scale, 1));
+  z-index: 3;
+  animation: aw-zzz 2.4s ease-in-out infinite;
+}
+@keyframes aw-zzz {
+  0%, 100% { transform: translateY(0) scale(0.9); opacity: 0.7; }
+  50% { transform: translateY(-9px) scale(1.15); opacity: 1; }
+}
+
+/* ---------- 番茄钟专注模式 ---------- */
+#aimaster-avatar-root .aw-focus-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: rgba(255, 79, 109, 0.85);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  z-index: 5;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+#aimaster-avatar-root .aw-focus-badge b { font-variant-numeric: tabular-nums; }
+#aimaster-avatar-root .aw-focus-badge button {
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+#aimaster-avatar-root .aw-focus-badge button:hover { background: rgba(255, 255, 255, 0.4); }
+#aimaster-avatar-root .aw-stage.aw-focus {
+  filter: drop-shadow(0 0 8px rgba(114, 246, 228, 0.45));
+}
+#aimaster-avatar-root .aw-focus-ctl {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  align-items: center;
+}
+#aimaster-avatar-root .aw-focus-ctl input {
+  width: 58px;
+  padding: 5px 6px;
+  background: #0b1322;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #dfe9f5;
+  font-size: 12px;
+}
+#aimaster-avatar-root .aw-focus-ctl .aw-btn { flex: 1; margin-top: 0; }
+
+/* ---------- 左吸附（镜像）时气泡/徽章反向还原，避免文字镜像 ---------- */
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble,
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble.aw-show {
+  transform: scaleX(-1);
+}
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble:not(.aw-show) {
+  transform: translateY(6px) scale(0.9) scaleX(-1);
+}
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-bubble::after {
+  right: auto;
+  left: 22px;
+}
+#aimaster-avatar-root .aw-stage.aw-flipped .aw-focus-badge {
+  transform: scaleX(-1);
+}
+
+/* ---------- 学习报表：柱状图 ---------- */
+#aimaster-avatar-root .aw-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 70px;
+  padding: 4px 2px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+#aimaster-avatar-root .aw-chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+#aimaster-avatar-root .aw-chart-bar {
+  width: 70%;
+  min-height: 2px;
+  background: rgba(114, 246, 228, 0.4);
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+}
+#aimaster-avatar-root .aw-chart-label {
+  font-size: 9px;
+  color: #8d9cbd;
+}
+
+/* ---------- 学习报表：30 天打卡热力图 ---------- */
+#aimaster-avatar-root .aw-calendar {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 3px;
+}
+#aimaster-avatar-root .aw-cal-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+#aimaster-avatar-root .aw-cal-cell.aw-cal-1 { background: rgba(114, 246, 228, 0.25); }
+#aimaster-avatar-root .aw-cal-cell.aw-cal-2 { background: rgba(114, 246, 228, 0.45); }
+#aimaster-avatar-root .aw-cal-cell.aw-cal-3 { background: rgba(114, 246, 228, 0.7); }
+#aimaster-avatar-root .aw-cal-cell.aw-cal-4 { background: linear-gradient(135deg, #72f6e4, #4f8cff); }
+
+/* ---------- 桌面模式状态指示 ---------- */
+#aimaster-avatar-root .aw-row .aw-val {
+  font-size: 11px;
+  color: #8d9cbd;
+  margin-left: 6px;
+  white-space: nowrap;
+}

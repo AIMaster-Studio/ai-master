@@ -1,0 +1,125 @@
+{
+  "generatedAt": "2026-09-09T10:20:14.505Z",
+  "summary": {
+    "engine": "frontend/static/js/learning-core.js screenExplanation(7 checks)",
+    "variantsPerModule": 20,
+    "naiveBot": {
+      "passCount": 0,
+      "total": 140,
+      "passRate": 0
+    },
+    "grammarBot": {
+      "passCount": 140,
+      "total": 140,
+      "passRate": 1
+    },
+    "takeaway": "naiveBot 全部被拦截（无机制/例子/边界），说明关卡不是空壳；grammarBot 用范畴模板显式命中 7 项检查后是否放行，衡量的是\"文法层面背穿\"的现实程度。规则判定器定位是\"完整性筛查\"而非\"语义理解\"，语义闸门依赖服务端 AI 复评；此数据用于对抗性审计，不作为通关方法传播。"
+  },
+  "rows": [
+    {
+      "moduleId": "llm-basics",
+      "title": "大模型如何生成回答",
+      "concepts": 3,
+      "naiveBot": {
+        "passCount": 0,
+        "total": 20,
+        "passRate": 0
+      },
+      "grammarBot": {
+        "passCount": 20,
+        "total": 20,
+        "passRate": 1
+      }
+    },
+    {
+      "moduleId": "prompt-design",
+      "title": "把任务写成可验收的提示",
+      "concepts": 3,
+      "naiveBot": {
+        "passCount": 0,
+        "total": 20,
+        "passRate": 0
+      },
+      "grammarBot": {
+        "passCount": 20,
+        "total": 20,
+        "passRate": 1
+      }
+    },
+    {
+      "moduleId": "transformer",
+      "title": "理解注意力与位置信息",
+      "concepts": 3,
+      "naiveBot": {
+        "passCount": 0,
+        "total": 20,
+        "passRate": 0
+      },
+      "grammarBot": {
+        "passCount": 20,
+        "total": 20,
+        "passRate": 1
+      }
+    },
+    {
+      "moduleId": "rag-retrieval",
+      "title": "搭起检索增强生成流程",
+      "concepts": 3,
+      "naiveBot": {
+        "passCount": 0,
+        "total": 20,
+        "passRate": 0
+      },
+      "grammarBot": {
+        "passCount": 20,
+        "total": 20,
+        "passRate": 1
+      }
+    },
+    {
+      "moduleId": "rag-evaluation",
+      "title": "用证据定位 RAG 错误",
+      "concepts": 3,
+      "naiveBot": {
+        "passCount": 0,
+        "total": 20,
+        "passRate": 0
+      },
+      "grammarBot": {
+        "passCount": 20,
+        "total": 20,
+        "passRate": 1
+      }
+    },
+    {
+      "moduleId": "agent-tools",
+      "title": "让 Agent 正确调用工具",
+      "concepts": 3,
+      "naiveBot": {
+        "passCount": 0,
+        "total": 20,
+        "passRate": 0
+      },
+      "grammarBot": {
+        "passCount": 20,
+        "total": 20,
+        "passRate": 1
+      }
+    },
+    {
+      "moduleId": "agent-safety",
+      "title": "为 Agent 设置权限边界",
+      "concepts": 3,
+      "naiveBot": {
+        "passCount": 0,
+        "total": 20,
+        "passRate": 0
+      },
+      "grammarBot": {
+        "passCount": 20,
+        "total": 20,
+        "passRate": 1
+      }
+    }
+  ]
+}

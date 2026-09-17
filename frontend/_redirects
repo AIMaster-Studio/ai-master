@@ -1,0 +1,6 @@
+# Cloudflare Pages 重定向规则
+# 单页应用路由：所有未匹配的路径回退到 index.html
+# /*    /index.html   200
+
+# 根路径重定向到学习中心
+/    /learning-center/   302

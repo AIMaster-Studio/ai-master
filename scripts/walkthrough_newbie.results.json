@@ -1,0 +1,232 @@
+{
+  "ranAt": "2026-09-14T17:05:06.396Z",
+  "base": "http://127.0.0.1:8788",
+  "rounds": [
+    {
+      "id": 1,
+      "persona": "直接打开首页，随便点点",
+      "steps": [
+        "state",
+        "status",
+        "catalog"
+      ],
+      "observations": [
+        {
+          "step": "state",
+          "status": 200,
+          "note": "plan=false attempts=0 用户=本机访客"
+        },
+        {
+          "step": "status",
+          "status": 200,
+          "note": "AI 已配置=false"
+        },
+        {
+          "step": "catalog",
+          "status": 200,
+          "note": "模块数=7"
+        }
+      ],
+      "cookie": "aimaster_session=c5058e0fa93994bf8acf457cd4613cadd6b79177de5be78c55d42020def452c6"
+    },
+    {
+      "id": 2,
+      "persona": "先想知道要学什么，去看课程列表",
+      "steps": [
+        "catalog",
+        "status"
+      ],
+      "observations": [
+        {
+          "step": "catalog",
+          "status": 200,
+          "note": "模块数=7"
+        },
+        {
+          "step": "status",
+          "status": 200,
+          "note": "AI 已配置=false"
+        }
+      ],
+      "cookie": "aimaster_session=860c00aa36b82d32ff88a7b4e813b3af44db2981e6947b92c2c53dd72a694957"
+    },
+    {
+      "id": 3,
+      "persona": "不想听讲，直接想做题",
+      "steps": [
+        "quiz?module=llm-basics"
+      ],
+      "observations": [
+        {
+          "step": "quiz?module=llm-basics",
+          "status": 409,
+          "note": "请先生成包含这个任务的学习计划。"
+        }
+      ],
+      "cookie": "aimaster_session=ecdb2f5e791d8b2d376433424bfcf87b4af5da217c4fab95832f60e123477393"
+    },
+    {
+      "id": 4,
+      "persona": "想跳到看起来最有趣的一章（最后一章）",
+      "steps": [
+        "quiz?module=agent-safety"
+      ],
+      "observations": [
+        {
+          "step": "quiz?module=agent-safety",
+          "status": 409,
+          "note": "请先生成包含这个任务的学习计划。"
+        }
+      ],
+      "cookie": "aimaster_session=d13286d4d3cf4ea82b37fd8b2696365ac09b087387391a32663318671a130114"
+    },
+    {
+      "id": 5,
+      "persona": "看到侧栏「学习记忆」，点进去看",
+      "steps": [
+        "memory/inspect",
+        "memory/l3?slot=profile"
+      ],
+      "observations": [
+        {
+          "step": "memory/inspect",
+          "status": 200,
+          "note": "L1 事件=0 记忆面=5"
+        },
+        {
+          "step": "memory/l3?slot=profile",
+          "status": 200,
+          "note": "profile 内容=（未生成）"
+        }
+      ],
+      "cookie": "aimaster_session=04f6ef191a085d2f64666c2a87ad310cfbc77d7c2783c38fd1e9201240a80a95"
+    },
+    {
+      "id": 6,
+      "persona": "看到侧栏「知识库」，点进去看",
+      "steps": [
+        "rag/status",
+        "rag/kbs",
+        "rag/search"
+      ],
+      "observations": [
+        {
+          "step": "rag/status",
+          "status": 200,
+          "note": "引擎=local-index:ready remote-embedding:needs-config pageindex:not-implemented graphrag:not-implemented | 课程库=有"
+        },
+        {
+          "step": "rag/kbs",
+          "status": 200,
+          "note": "知识库数=1"
+        },
+        {
+          "step": "rag/search",
+          "status": 405,
+          "note": "该接口需要 POST。"
+        }
+      ],
+      "cookie": "aimaster_session=c73b03cff540a6792fe1da932ee3c6e719113a57131f48a8b4657f5ece6fee56"
+    },
+    {
+      "id": 7,
+      "persona": "看到侧栏「深度研究」，点进去试一下",
+      "steps": [
+        "agent/capabilities",
+        "agent/tools"
+      ],
+      "observations": [
+        {
+          "step": "agent/capabilities",
+          "status": 200,
+          "note": "模型就绪=false 能力=explain:ready quiz:ready research:needs-config"
+        },
+        {
+          "step": "agent/tools",
+          "status": 200,
+          "note": "工具=rag_search, kb_list, ask_user, read_memory, write_preference"
+        }
+      ],
+      "cookie": "aimaster_session=9e5ccf989e1d6f23d6776c90161bb588bf7d05acea713b99ec0048929ff68aab"
+    },
+    {
+      "id": 8,
+      "persona": "先建计划，再写一段很短的讲解试试",
+      "steps": [
+        "plan",
+        "explanation-short"
+      ],
+      "observations": [
+        {
+          "step": "建学习计划",
+          "status": 200,
+          "note": "已生成航线 4 个模块"
+        },
+        {
+          "step": "提交很短的讲解",
+          "status": 200,
+          "note": "mode=local accepted=false 反馈=请用自己的话展开到至少 100 个有效字符，覆盖机制、例子与限制。\n已提及：token 与文本编码；待补充：基于上下文预测；待补充：幻觉与事实核验\n补充它如何工作，以及前后步骤为什"
+        }
+      ],
+      "cookie": "aimaster_session=e05cf132a407ef523a9d703638b5638215ac0dbaa68408432390385a9b0605ef"
+    },
+    {
+      "id": 9,
+      "persona": "写一段跟课程完全无关的讲解",
+      "steps": [
+        "plan",
+        "explanation-offtopic"
+      ],
+      "observations": [
+        {
+          "step": "建学习计划",
+          "status": 200,
+          "note": "已生成航线 4 个模块"
+        },
+        {
+          "step": "提交跑题讲解",
+          "status": 200,
+          "note": "mode=local accepted=false 反馈=这段讲解没有覆盖本节要求的任何关键概念，看起来写的是别的内容。请先确认你讲解的是「大模型如何生成回答」，再围绕它重写。\n待补充：token 与文本编码；待补充：基于上下文预测；待补"
+        }
+      ],
+      "cookie": "aimaster_session=cfddf69d42852dbffe992616a94a5457bd3ed1157395265bcd85d9616ca4eb5d"
+    },
+    {
+      "id": 10,
+      "persona": "建了计划、做完一节，然后关掉浏览器明天再来",
+      "steps": [
+        "plan",
+        "explanation-ok",
+        "quiz",
+        "quiz-submit"
+      ],
+      "observations": [
+        {
+          "step": "建学习计划",
+          "status": 200,
+          "note": "已生成航线 4 个模块"
+        },
+        {
+          "step": "提交完整讲解",
+          "status": 200,
+          "note": "mode=local accepted=true 证据=5 条"
+        },
+        {
+          "step": "开始测验",
+          "status": 200,
+          "note": "拿到 4 题，剩余次数=2"
+        },
+        {
+          "step": "提交测验（全选 A）",
+          "status": 200,
+          "note": "得分=0 passed=false"
+        }
+      ],
+      "cookie": "aimaster_session=0349dda06b88138be1b6ee29522d411718c0d07121573cf3168ff927eec58f5c"
+    }
+  ],
+  "memoryRestored": {
+    "plan": true,
+    "attempts": 3
+  }
+}

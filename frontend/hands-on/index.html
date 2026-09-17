@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030611">
+<title>动手实践操作题 · AI Master</title>
+<meta name="description" content="AI Master 十章的动手实践操作题：每道题含任务目标、从哪做、操作步骤与预期成果。">
+<link rel="icon" href="../static/favicon.svg">
+<style>
+:root{
+--bg:#030611;--panel:rgba(255,255,255,.045);--panel-2:rgba(255,255,255,.07);
+--line:rgba(255,255,255,.12);--line-2:rgba(255,255,255,.2);
+--text:#edf5ff;--muted:#b2c0d9;--dim:#8d9cbd;
+--accent:#72f6e4;--purple:#aaa0ff;--warn:#ffc962;--danger:#ff8fa3;
+--sans:system-ui,-apple-system,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--r:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:130px}
+.task,.chapter{scroll-margin-top:130px;overflow-wrap:anywhere}.task:target{border-color:#72f6e4}a:focus-visible{outline:2px solid #72f6e4;outline-offset:4px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(900px 500px at 15% -5%,rgba(114,246,228,.10),transparent 60%),radial-gradient(700px 420px at 85% 5%,rgba(170,160,255,.10),transparent 60%)}
+a{color:inherit}
+.skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:#030611;padding:10px 16px;border-radius:0 0 8px 0;font-weight:600;z-index:99}
+.skip:focus{left:0}
+
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px 28px;background:rgba(3,6,17,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.06em;text-decoration:none;font-size:14px}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--accent);display:block;box-shadow:0 0 12px var(--accent)}
+.brand em{font-style:normal;color:var(--dim);font-weight:400;font-size:11px;letter-spacing:.14em}
+.nav-links{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:13px;padding:4px 0;border-bottom:1px solid transparent}
+.nav-links a:hover,.nav-links a:focus-visible{color:var(--accent);border-bottom-color:var(--accent)}
+
+main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:56px 28px 80px}
+.kicker{margin:0 0 14px;font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+h1{margin:0 0 18px;font-size:clamp(28px,4.4vw,46px);line-height:1.22;font-weight:600}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{margin:0;max-width:64ch;color:var(--muted);font-size:15px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:34px 0 0;padding:0;list-style:none}
+.stats li{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.stats b{display:block;font-size:26px;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.2}
+.stats span{font-size:12px;color:var(--dim)}
+
+.notice{margin:26px 0 0;padding:14px 18px;border-radius:var(--r);border:1px solid rgba(255,201,98,.3);background:rgba(255,201,98,.07);color:var(--muted);font-size:13px}
+.notice strong{color:var(--warn)}
+
+h2{margin:56px 0 8px;font-size:22px;font-weight:600}
+h2 .num{color:var(--dim);font-family:var(--mono);font-size:14px;margin-right:10px}
+.sub{margin:0 0 22px;color:var(--dim);font-size:13px}
+
+.chapter-nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px;padding:0;list-style:none}
+.chapter-nav a{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;text-decoration:none;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chapter-nav a:hover,.chapter-nav a:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+.chapter{margin:0 0 40px;padding-top:22px;border-top:1px solid var(--line)}
+.chapter-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.chapter-head h3{margin:0;font-size:19px;font-weight:600}
+.chapter-head .id{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.1em}
+.chapter-head .count{margin-left:auto;font-size:12px;color:var(--dim)}
+
+.task{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin:0 0 16px}
+.task h4{margin:0 0 14px;font-size:16px;font-weight:600;line-height:1.5}
+.task h4 .tid{display:inline-block;margin-right:10px;padding:2px 8px;border-radius:6px;background:rgba(114,246,228,.14);color:var(--accent);font-family:var(--mono);font-size:11px;vertical-align:2px}
+.field{margin:0 0 12px}
+.field:last-child{margin-bottom:0}
+.field dt{font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:3px}
+.field dd{margin:0;font-size:14px;color:var(--text)}
+.field dd.soft{color:var(--muted)}
+.field--warn dt{color:var(--warn)}
+.field--warn dd{color:var(--muted)}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;padding-top:14px;border-top:1px dashed var(--line)}
+.tag{padding:3px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);font-size:11px;color:var(--dim)}
+.tag--ok{color:var(--accent);border-color:rgba(114,246,228,.35)}
+.tag--todo{color:var(--warn);border-color:rgba(255,201,98,.35)}
+
+details.steps{margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02)}
+details.steps>summary{cursor:pointer;padding:10px 14px;font-size:12px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;list-style:none}
+details.steps>summary::-webkit-details-marker{display:none}
+details.steps>summary::before{content:"▸ ";color:var(--dim)}
+details.steps[open]>summary::before{content:"▾ "}
+details.steps>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details.steps ol{margin:0;padding:0 18px 16px 36px}
+details.steps li{margin:0 0 8px;font-size:14px;color:var(--muted)}
+details.steps li:last-child{margin-bottom:0}
+details.steps li strong{color:var(--text);font-weight:600}
+
+table{width:100%;border-collapse:collapse;margin:0 0 6px;font-size:13px}
+caption{text-align:left;color:var(--dim);font-size:12px;padding-bottom:8px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--accent);font-weight:600;font-size:12px;letter-spacing:.06em;white-space:nowrap}
+td{color:var(--muted)}
+td strong{color:var(--text)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;background:var(--panel)}
+
+.gap-list{margin:0;padding:0;list-style:none}
+.gap-list li{padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);margin-bottom:10px}
+.gap-list b{display:block;color:var(--text);font-weight:600;margin-bottom:4px}
+.gap-list .why{color:var(--dim);font-size:12px}
+.gap-list p{margin:6px 0 0;font-size:13px;color:var(--muted)}
+
+.loading{padding:26px;text-align:center;color:var(--dim);font-size:14px;border:1px dashed var(--line);border-radius:var(--r)}
+.error{border-color:rgba(255,143,163,.4);background:rgba(255,143,163,.08);color:var(--danger);text-align:left}
+.error code{font-family:var(--mono);font-size:12px;color:var(--text)}
+
+.footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:12px;color:var(--dim)}
+.footer i{flex:1;min-width:20px;height:1px;background:var(--line)}
+@media (max-width:640px){
+main{padding:34px 18px 60px}
+.nav{padding:12px 18px}
+.chapter-head .count{margin-left:0;width:100%}
+.task{padding:16px 16px}
+}
+@media print{
+body{background:#fff;color:#111}
+body::before,.nav,.chapter-nav,.skip{display:none}
+.task,.table-wrap,.gap-list li{border-color:#ccc;background:#fff}
+.field dt{color:#555}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<nav class="nav" aria-label="站点导航">
+  <a class="brand" href="../dashboard/"><i aria-hidden="true"></i>AI MASTER <em>/ HANDS-ON</em></a>
+  <div class="nav-links">
+    <a href="../dashboard/">课程总览</a>
+    <a href="../learning-center/">讲解通关</a>
+    <a href="../beginner/">新手入门</a>
+    <a href="../knowledge-stars/">知识星海</a>
+  </div>
+</nav>
+
+<main id="main">
+  <p class="kicker">HANDS-ON PRACTICE / 动手做一遍</p>
+  <h1>每个知识点都有<em>动手题</em>，<br>把理解变成自己的成果。</h1>
+  <p class="lead">
+    课程讲了「如何学、如何讲」，这一页补的是「<strong>怎么做、从哪做</strong>」。
+    每道题都给出任务目标、入口位置、编号步骤和可观察的预期成果 —— 做完要留下一个能给别人看的东西，
+    而不是只留下「读过了」的错觉。
+  </p>
+
+  <ul class="stats" id="stats" aria-label="题目规模">
+    <li><b>…</b><span>正在读取实践覆盖数据</span></li>
+  </ul>
+
+  <p class="notice">
+    <strong>使用前请读：</strong>
+    这些题目属于本项目的<strong>自测设计</strong>，不构成教育效果证据。
+    涉及外部工具的题目，其入口、免费额度与是否收费会随时间变化 ——
+    文中标注「待核实」的条目，请在使用前以该工具当前官方说明为准。
+    涉及密钥的操作，Key 只放本机环境变量，<strong>不要写进任何会被提交的文件</strong>。
+  </p>
+
+  <h2 id="tasks"><span class="num">01</span>逐章动手题</h2>
+  <p class="sub">共 10 章。点击「操作步骤」展开分步说明。</p>
+  <ul class="chapter-nav" id="chapterNav" aria-label="章节快捷跳转"></ul>
+  <div id="chapters" aria-live="polite">
+    <p class="loading" id="loading">正在读取题目数据…</p>
+  </div>
+
+  <h2 id="ladder-heading"><span class="num">02</span>跨章能力阶梯</h2>
+  <p class="sub">把 10 章的动手题串成一条能力递增线，标出每章新增的能力。</p>
+  <div class="table-wrap" id="ladder"></div>
+
+  <h2 id="gaps-heading"><span class="num">03</span>实践深度与资源限制</h2>
+  <p class="sub">所有课程节点均有入门实践；部分采用纸笔模拟或方案设计，尚不等同于完整工程训练、真实部署或教育效果验证。</p>
+  <ul class="gap-list" id="gaps"></ul>
+
+  <footer class="footer">
+    <span>AI MASTER / HANDS-ON PRACTICE</span><i></i>
+    <span id="generatedAt"></span>
+  </footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  function field(label, value, cls) {
+    if (!value) return '';
+    return '<div class="field ' + (cls || '') + '"><dt>' + esc(label) + '</dt><dd>' + value + '</dd></div>';
+  }
+
+  function renderTask(t) {
+    var steps = (t.steps || []).map(function (s) {
+      // 最后一条常是「卡住了怎么办」分支，加粗提示词更醒目
+      var isFallback = /卡住了怎么办/.test(s);
+      return '<li>' + (isFallback ? '<strong>' + esc(s) + '</strong>' : esc(s)) + '</li>';
+    }).join('');
+
+    var tags = [
+      t.minutes ? '<span class="tag">约 ' + esc(t.minutes) + ' 分钟</span>' : '',
+      (t.tools || []).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join(''),
+      t.verifyState ? '<span class="tag ' + (/待核实/.test(t.verifyState) ? 'tag--todo' : 'tag--ok') + '">' + esc(t.verifyState) + '</span>' : ''
+    ].join('');
+
+    var kp = (t.knowledgePoints || []).length
+      ? '<div class="meta-row">' + (t.knowledgePoints || []).map(function (k) {
+          return '<span class="tag">知识点：' + esc(k) + '</span>';
+        }).join('') + '</div>'
+      : '';
+
+    return '<article class="task" id="' + esc(t.id) + '">' +
+      '<h4><span class="tid">' + esc(t.id) + '</span>' + esc(t.title) + '</h4>' +
+      '<dl>' +
+        field('任务目标', esc(t.goal)) +
+        field('从哪做', linkify(t.whereToStart), 'soft') +
+      '</dl>' +
+      '<details class="steps"><summary>操作步骤（' + (t.steps || []).length + ' 步）</summary><ol>' + steps + '</ol></details>' +
+      '<dl>' +
+        field('预期成果', esc(t.expected)) +
+        field('反作弊检查', esc(t.antiCheat), 'field--warn') +
+      '</dl>' +
+      '<div class="meta-row">' + tags + '</div>' +
+      kp +
+    '</article>';
+  }
+
+  function renderChapters(data) {
+    var host = document.getElementById('chapters');
+    var nav = document.getElementById('chapterNav');
+    host.innerHTML = data.chapters.map(function (c) {
+      var tasks = c.tasks.map(renderTask).join('');
+      return '<section class="chapter" id="ch' + c.chapterId + '">' +
+        '<div class="chapter-head">' +
+          '<span class="id">CH ' + String(c.chapterId).padStart(2, '0') + '</span>' +
+          '<h3>' + esc(c.title) + '</h3>' +
+          '<span class="count">' + c.tasks.length + ' 道动手题</span>' +
+        '</div>' + tasks + '</section>';
+    }).join('');
+
+    nav.innerHTML = data.chapters.map(function (c) {
+      return '<li><a href="#ch' + c.chapterId + '">第 ' + c.chapterId + ' 章</a></li>';
+    }).join('');
+  }
+
+  function renderLadder(data) {
+    var rows = data.ladder.map(function (r) {
+      return '<tr><td>' + r.step + '</td><td><strong>' + esc(r.ability) + '</strong></td>' +
+        '<td>第 ' + r.chapter + ' 章</td><td>' + esc(r.signal) + '</td></tr>';
+    }).join('');
+    document.getElementById('ladder').innerHTML =
+      '<table><caption>能力递增线：从「会看」到「会守边界」</caption>' +
+      '<thead><tr><th>级</th><th>能力</th><th>对应章</th><th>达成的判定信号</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>';
+  }
+
+  function renderGaps(data) {
+    document.getElementById('gaps').innerHTML = data.gaps.map(function (g) {
+      return '<li><b>' + esc(g.item) + '</b>' +
+        '<span class="why">原因：' + esc(g.reason) + '</span>' +
+        '<p>' + esc(g.detail) + '</p></li>';
+    }).join('');
+  }
+
+  function renderAll(data) {
+    renderChapters(data);
+    renderLadder(data);
+    renderGaps(data);
+    document.getElementById('generatedAt').textContent =
+      '数据生成于 ' + data.generatedAt + ' · ' + data.notice;
+    var tasks = data.chapters.flatMap(function(c) { return c.tasks; });
+    var covered = new Set(data.chapters.flatMap(function(c) { return c.tasks.flatMap(function(t) { return t.knowledgePoints.map(function(k) { return c.chapterId + '::' + k; }); }); }));
+    var authority = new Set(data.universe.galaxies.flatMap(function(g) { return g.stars.map(function(s) { return g.chapter + '::' + s.title; }); }));
+    var count = Array.from(covered).filter(function(k) { return authority.has(k); }).length;
+    document.getElementById('stats').innerHTML = '<li><b>' + count + '/' + authority.size + '</b><span>知识节点有对应实践</span></li><li><b>' + tasks.length + '</b><span>道动手题</span></li><li><b>' + data.chapters.length + '</b><span>个章节</span></li>';
+    revealTarget();
+  }
+
+  function linkify(value) {
+    var pattern = /https?:\/\/[^\s（）。，；、]+|frontend\/[A-Za-z0-9_./-]+/g;
+    var result = '', start = 0;
+    String(value).replace(pattern, function(raw, offset) {
+      result += esc(value.slice(start, offset));
+      var external = /^https?:/.test(raw);
+      var href = external ? raw : '../' + raw.slice('frontend/'.length);
+      result += '<a href="' + esc(href) + '"' + (external ? ' target="_blank" rel="noopener noreferrer"' : '') + '>' + esc(raw) + (external ? '（离开本站）' : '') + '</a>';
+      start = offset + raw.length;
+      return raw;
+    });
+    return result + esc(String(value).slice(start));
+  }
+
+  function revealTarget() {
+    var target = document.getElementById(location.hash.slice(1));
+    if (!target) return;
+    var steps = target.querySelector('details.steps');
+    if (steps) steps.open = true;
+    target.scrollIntoView();
+  }
+  window.addEventListener('hashchange', revealTarget);
+
+  fetch('../data/hands-on-tasks.json', { cache: 'no-cache' })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      return fetch('../data/knowledge-universe.json').then(function(r) {
+        if (!r.ok) throw new Error('知识目录 HTTP ' + r.status);
+        return r.json();
+      }).then(function(universe) { data.universe = universe; renderAll(data); });
+    })
+    .catch(function (err) {
+      document.getElementById('stats').textContent = '数据未加载，暂无法统计覆盖情况';
+      document.getElementById('chapters').innerHTML =
+        '<p class="loading error">题目数据没能加载：<code>' + esc(err.message) + '</code><br>' +
+        '这一页需要经由本地服务打开（依赖 JSON 请求）。在仓库根目录运行 <code>python -m http.server 8080</code>，' +
+        '再访问 <code>http://127.0.0.1:8080/frontend/hands-on/</code>。检查 <code>frontend/data/hands-on-tasks.json</code> 与 <code>knowledge-universe.json</code> 是否存在，然后刷新重试。</p>';
+    });
+})();
+</script>
+</body>
+</html>
