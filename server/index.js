@@ -149,10 +149,24 @@ function createApp(options = {}) {
     const kb = (await rag.store.list()).find(item => item.name === COURSE_KB_NAME);
     return kb ? kb.id : null;
   };
-  // 管理操作统一门禁，与 /api/ai/config 同一条规则：未暴露时要求回环对端；暴露后必须再带
-  // AIMASTER_CONFIG_TOKEN。不这样做就会出现「配置写不了、但知识库能被任意访客重建」的缺口。
+  // 内容管理门禁（知识库、记忆维护等，不含模型密钥配置）。
+  // 默认与原先完全一致：未暴露要求回环对端，暴露后还需 AIMASTER_CONFIG_TOKEN。
+  // 附加通道：无服务器部署里对端永远不是回环，若不给一条显式出口，云端知识库将无法维护。
+  // 因此仅当运维显式配置了独立的 AIMASTER_REMOTE_ADMIN_TOKEN 时，才接受带该令牌的远程调用；
+  // 未配置则恒为 false（fail-closed），且此令牌不能用于写模型密钥（/api/ai/config 仍走原规则）。
+  const remoteAdminTokenValid = request => {
+    const expected = options.remoteAdminToken !== undefined
+      ? String(options.remoteAdminToken)
+      : String(process.env.AIMASTER_REMOTE_ADMIN_TOKEN || '');
+    if (!expected) return false;
+    const supplied = Buffer.from(String(request.headers['x-aimaster-admin-token'] || ''), 'utf8');
+    const wanted = Buffer.from(expected, 'utf8');
+    return supplied.length === wanted.length && timingSafeEqual(supplied, wanted);
+  };
+  const adminAllowed = request =>
+    (isLoopbackPeer(request) && (!exposed || configTokenValid(request))) || remoteAdminTokenValid(request);
   const requireAdmin = request => {
-    if (!isLoopbackPeer(request) || (exposed && !configTokenValid(request))) fail(403, '此操作仅限在本机执行。');
+    if (!adminAllowed(request)) fail(403, '此操作仅限在本机执行，或需提供有效的远程管理令牌。');
   };
   const ragRoutes = createRagRoutes({ rag, requireAdmin });
   // 记忆按用户隔离，各自一份文件；同进程内按 userId 缓存实例，避免重复建目录。
@@ -317,7 +331,7 @@ function createApp(options = {}) {
   };
   const server = http.createServer(handleRequest);
   server.on('close', () => store.close());
-  return { server, store, handleRequest, rag, dataRoots, persistentDb };
+  return { server, store, handleRequest, rag, dataRoots, persistentDb, adminGate: adminAllowed };
 }
 
 if (require.main === module) {
