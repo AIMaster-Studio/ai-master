@@ -110,6 +110,13 @@ function createApp(options = {}) {
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
   const storage = require('./storage-paths').storagePaths(options, process.env, ROOT);
   const store = openStore(storage.dbPath, options.forceSqlite);
+  if (options.durableSnapshots && typeof store.db.execute !== 'function') {
+    store.close();
+    throw new Error('DURABLE_SNAPSHOTS_REQUIRE_REMOTE_DB');
+  }
+  const snapshotRepository = options.durableSnapshots
+    ? require('./durable-files').createSnapshotRepository(store.db, store.ready) : null;
+  const memoryRepository = options.memoryRepository || snapshotRepository;
   // 「本机持久化」与「临时实例」两种形态必须一起切换，不能只切数据库。
   //
   // 背景（2026-09-15 实测发现）：inMemory 原先只作用于 SQLite（:memory:），
@@ -137,7 +144,7 @@ function createApp(options = {}) {
     const injected = typeof options.ragConfig === 'function' ? options.ragConfig() : (options.ragConfig || {});
     return { ...injected, embedding: { ...envEmbedding, ...(injected.embedding || {}) }, fetchImpl: options.fetchImpl };
   };
-  const rag = options.rag || createRagService({ dataRoot: dataRoots.rag, root: ROOT, config: readRagConfig, repository: options.ragRepository });
+  const rag = options.rag || createRagService({ dataRoot: dataRoots.rag, root: ROOT, config: readRagConfig, repository: options.ragRepository || snapshotRepository });
   const courseKbId = async () => {
     const kb = (await rag.store.list()).find(item => item.name === COURSE_KB_NAME);
     return kb ? kb.id : null;
@@ -152,8 +159,8 @@ function createApp(options = {}) {
   const memoryRoot = dataRoots.memory;
   const memoryStores = new Map();
   const memoryFor = userId => {
-    if (!memoryStores.has(userId)) memoryStores.set(userId, options.memoryRepository
-      ? require('./durable-adapters').durableMemory(options.memoryRepository, userId)
+    if (!memoryStores.has(userId)) memoryStores.set(userId, memoryRepository
+      ? require('./durable-adapters').durableMemory(memoryRepository, userId)
       : createMemoryStore({ dataRoot: path.join(memoryRoot, userId) }));
     return memoryStores.get(userId);
   };
