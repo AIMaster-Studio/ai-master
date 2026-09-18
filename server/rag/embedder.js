@@ -110,13 +110,22 @@ function createRemoteEmbedder(config, fetchImpl = fetch) {
       const data = await response.json();
       const rows = Array.isArray(data && data.data) ? data.data : [];
       if (rows.length !== texts.length) throw new Error('embedding-count-mismatch');
-      const vectors = rows.map(row => {
+      let ordered = rows;
+      if (rows.some(row => row && row.index !== undefined)) {
+        const indices = rows.map(row => row && row.index);
+        if (!indices.every(i => Number.isInteger(i) && i >= 0 && i < texts.length) || new Set(indices).size !== texts.length) throw new Error('embedding-invalid-indices');
+        ordered = [...rows].sort((a, b) => a.index - b.index);
+      }
+      const vectors = ordered.map(row => {
         const raw = row && row.embedding;
-        if (!Array.isArray(raw) || !raw.length) throw new Error('embedding-invalid-vector');
-        return l2Normalize(Float32Array.from(raw));
+        if (!Array.isArray(raw) || !raw.length || raw.length > 65536 || !raw.every(v => typeof v === 'number' && Number.isFinite(v))) throw new Error('embedding-invalid-vector');
+        const vector = Float32Array.from(raw);
+        if (![...vector].every(Number.isFinite) || !vector.some(v => v !== 0)) throw new Error('embedding-invalid-vector');
+        return l2Normalize(vector);
       });
-      if (!dimensions) dimensions = vectors[0].length;
-      else if (vectors.some(v => v.length !== dimensions)) throw new Error('embedding-dimension-drift');
+      const expectedDimensions = dimensions || vectors[0].length;
+      if (vectors.some(v => v.length !== expectedDimensions)) throw new Error('embedding-dimension-drift');
+      dimensions = expectedDimensions;
       return vectors;
     }
   };

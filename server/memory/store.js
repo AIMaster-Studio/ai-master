@@ -64,7 +64,7 @@ function createMemoryStore(options = {}) {
   const l3File = slot => path.join(root, L3_DIR, slot + '.md');
 
   function requireSurface(surface) {
-    if (!SURFACES[surface]) throw badRequest('未登记的记忆面：' + surface + '。可用的面：' + Object.keys(SURFACES).join('、'));
+    if (typeof surface !== 'string' || !Object.hasOwn(SURFACES, surface)) throw badRequest('未登记的记忆面：' + surface + '。可用的面：' + Object.keys(SURFACES).join('、'));
     return surface;
   }
 
@@ -82,6 +82,7 @@ function createMemoryStore(options = {}) {
   }
 
   function l1Dates(surface) {
+    requireSurface(surface);
     const dir = path.join(root, TRACE_DIR, surface);
     if (!fs.existsSync(dir)) return [];
     return fs.readdirSync(dir).filter(name => name.endsWith('.jsonl')).map(name => name.slice(0, -6)).sort();
@@ -89,6 +90,12 @@ function createMemoryStore(options = {}) {
 
   function l1(surface, options2 = {}) {
     requireSurface(surface);
+    if (options2.date !== undefined) {
+      const date = options2.date;
+      if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw badRequest('日期必须为 YYYY-MM-DD。');
+      const parsed = new Date(date + 'T00:00:00.000Z');
+      if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) throw badRequest('日期无效。');
+    }
     const dates = options2.date ? [options2.date] : l1Dates(surface);
     const selected = options2.limit ? dates.slice(-Math.ceil(options2.limit / 200)) : dates;
     const events = [];
@@ -278,15 +285,23 @@ function createMemoryStore(options = {}) {
   }
 
   // 偏好只能显式写入，不参与自动综合 —— 与 DeepTutor 的 preferences 只由 write_memory 写入同源。
-  function writePreference(text) {
+  function writePreference(text, options = {}) {
+    const operation = options.operation || 'append';
+    if (!['append', 'replace', 'clear'].includes(operation)) throw badRequest('不支持的偏好操作。');
+    if (operation === 'clear') {
+      fs.rmSync(l3File('preferences'), { force: true });
+      return '';
+    }
     const value = String(text || '').trim();
     if (!value) throw badRequest('偏好内容不能为空。');
+    if (value.length > 2000) throw badRequest('偏好最多 2000 字符。');
     fs.mkdirSync(path.join(root, L3_DIR), { recursive: true });
     const file = l3File('preferences');
     const header = '# L3 · 显式偏好\n\n> 本文件只由显式写入产生，不参与自动综合，也不会被 synthesize 覆盖。\n\n';
     const existing = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : header;
-    const body = existing.startsWith(header) ? existing.slice(header.length) : existing;
+    const body = operation === 'replace' ? '' : (existing.startsWith(header) ? existing.slice(header.length) : existing);
     const next = header + body + '- ' + new Date().toISOString() + '　' + value + '\n';
+    if (next.length > 20000) throw badRequest('偏好记录已达上限，请替换或清除后再写入。');
     fs.writeFileSync(file, next);
     return next;
   }

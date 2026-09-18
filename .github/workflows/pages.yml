@@ -1,0 +1,40 @@
+# GitHub Pages 部署：将 frontend/ 静态站点发布到 GitHub Pages
+# 触发条件：push 到 master。产物 = frontend 目录（不含任何服务端源码/密钥）。
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # R-006：在产物里盖 build 标记（commit short SHA + 构建时间），并注入到各页面。
+      # 主端每次 push 标记都会变化；冻结的 Cloudflare 副本会停在旧值，一眼可辨分叉。
+      - name: Stamp build marker
+        run: python3 scripts/stamp_frontend_build.py "${GITHUB_SHA}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

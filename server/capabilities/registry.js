@@ -37,7 +37,7 @@ function registerBuiltinTools(registry, deps) {
       required: ['query']
     },
     async run(args) {
-      const kbId = args.kbId || courseKbId();
+      const kbId = args.kbId || await courseKbId();
       if (!kbId) throw new Error('没有可检索的知识库：课程库尚未建立，也没有指定 kbId。');
       const limit = Math.max(1, Math.min(Number(args.limit) || 4, MAX_SEARCH_HITS));
       const result = await rag.store.search(kbId, args.query, limit);
@@ -54,7 +54,7 @@ function registerBuiltinTools(registry, deps) {
     description: '列出本机所有知识库及其当前索引版本。',
     parameters: { type: 'object', properties: {} },
     async run() {
-      return rag.store.list().map(kb => ({
+      return (await rag.store.list()).map(kb => ({
         id: kb.id, name: kb.name, engine: kb.engine, activeVersion: kb.activeVersion,
         documents: kb.documentCount, chunks: kb.activeManifest ? kb.activeManifest.chunkCount : 0,
         embedder: kb.activeManifest ? kb.activeManifest.embedder.id : null
@@ -127,8 +127,8 @@ function createCapabilityRegistry(deps) {
     async run(args, context) {
       const memory = memoryFor(context.userId);
       const slot = String(args.slot || '');
-      if (['profile', 'recent', 'scope', 'preferences'].includes(slot)) return { slot, markdown: memory.readL3(slot) };
-      const markdown = memory.readL2(slot);
+      if (['profile', 'recent', 'scope', 'preferences'].includes(slot)) return { slot, markdown: await memory.readL3(slot) };
+      const markdown = await memory.readL2(slot);
       if (markdown === null) throw new Error('该面还没有 L2 事实（可能尚无对应活动）：' + slot);
       return { slot, markdown };
     }
@@ -138,7 +138,7 @@ function createCapabilityRegistry(deps) {
     description: '把一条学习偏好显式写入 L3。仅在用户明确要求时使用。',
     parameters: { type: 'object', properties: { text: { type: 'string', description: '偏好内容' } }, required: ['text'] },
     async run(args, context) {
-      return { written: true, preferences: memoryFor(context.userId).writePreference(args.text) };
+      return { written: true, preferences: await memoryFor(context.userId).writePreference(args.text) };
     }
   });
 

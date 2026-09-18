@@ -18,15 +18,16 @@ function createRagRoutes(options) {
   const requireAdmin = options.requireAdmin || (() => {});
   const courseSeedOptions = { dataDir: options.dataDir, curriculum: options.curriculum };
 
-  const findCourseKb = () => rag.store.list().find(kb => kb.name === COURSE_KB_NAME) || null;
+  const findCourseKb = async () => (await rag.store.list()).find(kb => kb.name === COURSE_KB_NAME) || null;
 
   // 幂等：课程库不存在就建，存在就整体替换文档并重建索引（新开版本，旧版本保留）。
   async function seedCourse() {
     const documents = buildCourseDocuments(courseSeedOptions);
-    let kb = findCourseKb();
+    if (rag.store.seedCourse) return rag.store.seedCourse(documents, COURSE_KB_NAME);
+    let kb = await findCourseKb();
     const created = !kb;
-    if (!kb) kb = rag.store.create({ name: COURSE_KB_NAME, engine: 'local-index' });
-    rag.store.replaceDocuments(kb.id, documents);
+    if (!kb) kb = await rag.store.create({ name: COURSE_KB_NAME, engine: 'local-index' });
+    await rag.store.replaceDocuments(kb.id, documents);
     const manifest = await rag.store.buildIndex(kb.id);
     return { created, kbId: kb.id, manifest };
   }
@@ -48,7 +49,7 @@ function createRagRoutes(options) {
     // 不传 kbId 时回落到课程知识库 —— 与 rag_search 工具的行为保持一致，
     // 否则同一件事在工具里能用、在 HTTP 上必须显式指定，接口之间会自相矛盾。
     const requested = String(kbId || '');
-    const course = requested ? null : findCourseKb();
+    const course = requested ? null : await findCourseKb();
     if (!requested && !course) fail(400, '缺少 kbId，且尚未建立课程知识库。');
     return rag.store.search(requested || course.id, text, Number(limit) || undefined);
   }
@@ -58,15 +59,16 @@ function createRagRoutes(options) {
     const isPost = req.method === 'POST';
 
     if (action === 'status' && !isPost) {
-      return send({ rag: { ...rag.capabilities(), dataRoot: rag.dataRoot }, courseKbId: findCourseKb() ? findCourseKb().id : null });
+      const course = await findCourseKb();
+      return send({ rag: { ...rag.capabilities(), dataRoot: rag.dataRoot }, courseKbId: course ? course.id : null });
     }
     if (action === 'kbs' && !isPost) {
-      return send({ kbs: rag.store.list() });
+      return send({ kbs: await rag.store.list() });
     }
     if (action === 'kb' && !isPost) {
       const kbId = url.searchParams.get('kbId');
       if (!kbId) fail(400, '缺少 kbId。');
-      return send({ kb: rag.store.info(kbId) });
+      return send({ kb: await rag.store.info(kbId) });
     }
     if (!isPost) {
       if (action === 'search') {
@@ -81,12 +83,12 @@ function createRagRoutes(options) {
 
     if (action === 'kb') {
       requireAdmin(req);
-      const kb = rag.store.create({ name: body.name, engine: body.engine });
+      const kb = await rag.store.create({ name: body.name, engine: body.engine });
       return send({ kb });
     }
     if (action === 'kb/remove') {
       requireAdmin(req);
-      return send(rag.store.remove(String(body.kbId || '')));
+      return send(await rag.store.remove(String(body.kbId || '')));
     }
     if (action === 'kb/documents') {
       requireAdmin(req);
@@ -100,7 +102,7 @@ function createRagRoutes(options) {
         if (text.length > MAX_DOCUMENT_CHARS) fail(413, '单篇文档不得超过 ' + MAX_DOCUMENT_CHARS + ' 字符。');
         return { title: item.title, source: item.source, kind: item.kind || 'text', text };
       });
-      return send(rag.store.addDocuments(kbId, documents));
+      return send(await rag.store.addDocuments(kbId, documents));
     }
     // 客户端读文件后按文本提交；格式判定与拒绝都在服务端做，不信任前端自报的类型。
     if (action === 'kb/upload') {
@@ -112,7 +114,7 @@ function createRagRoutes(options) {
         const parsed = rag.parseDocument(String(file.filename || ''), String(file.text || ''));
         return { title: parsed.title, source: parsed.title, kind: parsed.kind, text: parsed.text };
       });
-      return send(rag.store.addDocuments(kbId, documents));
+      return send(await rag.store.addDocuments(kbId, documents));
     }
     if (action === 'kb/index') {
       requireAdmin(req);
@@ -120,7 +122,7 @@ function createRagRoutes(options) {
     }
     if (action === 'kb/activate') {
       requireAdmin(req);
-      return send({ manifest: rag.store.activate(String(body.kbId || ''), Number(body.version)) });
+      return send({ manifest: await rag.store.activate(String(body.kbId || ''), Number(body.version)) });
     }
     if (action === 'search') {
       return send({ result: await search({ kbId: body.kbId, query: body.query, limit: body.limit }, fail) });
