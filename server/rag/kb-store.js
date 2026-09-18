@@ -17,7 +17,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
 const { chunkText } = require('./chunker');
-const { openVectorStore } = require('./vector-store');
+const { openVectorStore, explainBackendChoice } = require('./vector-store');
 const { resolveEngine } = require('./engines');
 const { badRequest, notFound, conflict } = require('../errors');
 
@@ -250,9 +250,19 @@ function createKbStore(options = {}) {
       }
       const vector = (await embedder.embed([text]))[0];
       const hits = store.search(vector, Math.max(1, Math.min(Number(limit) || DEFAULT_LIMIT, 20)));
+      // 降级必须随结果一起返回，且以**此刻实际用的后端**为准，而不是照抄建索引时的清单：
+      // 清单说的是「当时」，调用方要知道的是「这一次检索是不是在兜底上跑的」。
+      const choice = explainBackendChoice(store.id, preferredBackend);
+      const backend = {
+        ...manifest.backend, id: store.id, requestedBackend: preferredBackend,
+        degraded: choice.degraded, degradeReason: choice.reason
+      };
+      const warnings = [];
+      if (backend.degraded) warnings.push('检索索引后端已降级为 ' + backend.id + '：' + backend.degradeReason);
+      if (!manifest.embedder.semantic) warnings.push('本次检索使用 ' + manifest.embedder.id + '（词面重合嵌入），不是语义检索。');
       return {
         query: text, kbId: id, version: kb.activeVersion, rebuilt,
-        embedder: manifest.embedder, backend: manifest.backend,
+        embedder: manifest.embedder, backend, degraded: backend.degraded, warnings,
         hits: hits.map(hit => {
           const chunk = byId.get(hit.id);
           return {

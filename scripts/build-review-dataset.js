@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-// Builds 200 explanation samples with two VIRTUAL rule-based annotators.
+// Builds 200 AI-generated explanation samples scored by two rule-based scorers (no human annotators).
 // These are AI//rule-generated artefacts. They are NOT real student submissions and
 // the two raters are NOT independent humans. Any report must say so.
 const nodes = require('../.local/evaluation/course-nodes.json');
@@ -84,7 +84,7 @@ const payload = {
     datasetVersion: 'ai-master-explanations-200@seed-20260918',
     commit: 'a3b3c8c9e5496dacdd7f5aabb3e6f954d743fe9e',
     dataProvenance: 'AI/rule-generated explanations over real course nodes. NOT real student submissions.',
-    annotators: 'Two VIRTUAL rule-based annotators with different heuristics. NOT two independent human annotators. Agreement between them is therefore not evidence of human inter-rater reliability.',
+    annotators: 'Two rule-based scorers with different heuristics applied to AI-generated test samples. NOT two independent human annotators. Agreement between them is therefore not evidence of human inter-rater reliability.',
     adjudication: 'Disagreements resolved against the injected ground truth.'
   },
   rows

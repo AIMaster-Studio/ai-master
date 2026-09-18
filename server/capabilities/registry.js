@@ -43,7 +43,8 @@ function registerBuiltinTools(registry, deps) {
       const result = await rag.store.search(kbId, args.query, limit);
       return {
         kbId, version: result.version, embedder: result.embedder.id, semantic: result.embedder.semantic,
-        notice: result.embedder.semantic ? '' : '本次检索使用词面重合嵌入，不是语义检索。',
+        backend: result.backend.id, degraded: Boolean(result.degraded),
+        notice: (result.warnings || []).join(' ') || (result.embedder.semantic ? '' : '本次检索使用词面重合嵌入，不是语义检索。'),
         hits: result.hits.map(hit => ({ title: hit.title, source: hit.source, score: hit.score, text: hit.text }))
       };
     }

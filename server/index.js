@@ -227,7 +227,7 @@ function createApp(options = {}) {
     const body = req.method === 'POST' ? await readBody(req) : null;
     const state = await store.state(user.id);
     const send = payload => json(res, 200, { ok: true, ...payload });
-    if (route.startsWith('rag/')) return ragRoutes({ req, url, route, body, send, fail });
+    if (route.startsWith('rag/')) return ragRoutes({ req, res, url, route, body, send, fail });
     if (route.startsWith('memory/')) return memoryRoutes({ req, url, route, body, send, fail, user });
     if (route.startsWith('agent/')) return agentRoutes({ req, url, route, body, send, fail, user });
     if (route === 'skills' || route.startsWith('skills/')) return skillRoutes({ req, url, route, body, send, fail });
@@ -237,9 +237,15 @@ function createApp(options = {}) {
     if (req.method === 'GET') {
       if (route === 'status') {
         const config = await store.config();
+        // 检索链路的降级必须在总状态里可见（2026-09-18 线上实测：sqlite-vec 加载失败、静默落到 js-cosine，
+        // 而 /api/status 一切正常）。rag 为注入的测试替身时可能没有 health，按「无信息」处理而不是崩。
+        const ragHealth = typeof rag.health === 'function' ? rag.health() : null;
         const payload = { mode: 'server', ai: publicConfig(config), version: 'ican-1.0',
           build: { sha: /^[a-f0-9]{7,40}$/i.test(process.env.VERCEL_GIT_COMMIT_SHA || '') ? process.env.VERCEL_GIT_COMMIT_SHA : null },
-          storage: options.storageStatus || { learning: persistentDb ? 'persistent-configured' : 'ephemeral-memory', learningPersistent: persistentDb, files: persistentDb ? 'local-files' : 'ephemeral-tmp', filesPersistent: persistentDb }
+          storage: options.storageStatus || { learning: persistentDb ? 'persistent-configured' : 'ephemeral-memory', learningPersistent: persistentDb, files: persistentDb ? 'local-files' : 'ephemeral-tmp', filesPersistent: persistentDb },
+          rag: ragHealth,
+          degraded: Boolean(ragHealth && ragHealth.backendDegraded),
+          warnings: ragHealth ? ragHealth.warnings : []
         };
         // 默认不探活（保持 status 快速、零上游费用）。?probe=1 时实测上游连通性并缓存 1 分钟。
         // 注意：即便 aiReachable=true，验收仍以 POST /api/explanation 返回 mode:"ai" 为准（ACCEPTANCE.md §1.1）。

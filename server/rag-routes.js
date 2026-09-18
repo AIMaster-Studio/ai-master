@@ -54,7 +54,14 @@ function createRagRoutes(options) {
     return rag.store.search(requested || course.id, text, Number(limit) || undefined);
   }
 
-  return async function handleRag({ req, url, route, body, send, fail }) {
+  // 检索结果带降级标记时，除 JSON 里的 degraded/warnings 外再加一个响应头：
+  // 只看状态码或只看头的监控、代理与脚本也能发现「这不是正常路径」，而不是把 200 当成一切正常。
+  function sendSearch(res, send, result) {
+    if (res && result.degraded) res.setHeader('X-AIMaster-Degraded', 'rag-backend');
+    return send({ result, degraded: Boolean(result.degraded), warnings: result.warnings || [] });
+  }
+
+  return async function handleRag({ req, res, url, route, body, send, fail }) {
     const action = route.slice(4); // 去掉 'rag/'
     const isPost = req.method === 'POST';
 
@@ -72,11 +79,11 @@ function createRagRoutes(options) {
     }
     if (!isPost) {
       if (action === 'search') {
-        return send({ result: await search({
+        return sendSearch(res, send, await search({
           kbId: url.searchParams.get('kbId'),
           query: url.searchParams.get('query'),
           limit: url.searchParams.get('limit')
-        }, fail) });
+        }, fail));
       }
       fail(405, '该接口需要 POST。');
     }
@@ -125,7 +132,7 @@ function createRagRoutes(options) {
       return send({ manifest: await rag.store.activate(String(body.kbId || ''), Number(body.version)) });
     }
     if (action === 'search') {
-      return send({ result: await search({ kbId: body.kbId, query: body.query, limit: body.limit }, fail) });
+      return sendSearch(res, send, await search({ kbId: body.kbId, query: body.query, limit: body.limit }, fail));
     }
     if (action === 'course/seed') {
       requireAdmin(req);
