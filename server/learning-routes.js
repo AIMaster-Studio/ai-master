@@ -119,7 +119,7 @@ function createLearningRoutes(options) {
       // A new plan invalidates unfinished evidence; completed tasks remain available.
       for (const p of Object.values(state.progress)) if (!p.completedAt) { p.explanation = null; p.quiz = null; p.revision = null; }
       addAttempt(state, { type: 'plan', goal, level: body.level, dailyMinutes: body.dailyMinutes }); await save();
-      recordMemory(user.id, 'plan', { goal, level: body.level, dailyMinutes: body.dailyMinutes, modules: state.plan.modules });
+      await recordMemory(user.id, 'plan', { goal, level: body.level, dailyMinutes: body.dailyMinutes, modules: state.plan.modules });
       return send({ state });
     }
     if (route === 'explanation') {
@@ -137,7 +137,7 @@ function createLearningRoutes(options) {
       // 且模型必须回报引用了哪几条，引用号会在服务端复核。
       let grounding = { available: false, reason: '未建立课程知识库。', evidence: [], queries: [] };
       try {
-        grounding = await retrieveEvidence({ rag, kbId: courseKbId(), module, studentText: body.text });
+        grounding = await retrieveEvidence({ rag, kbId: await courseKbId(), module, studentText: body.text });
       } catch (error) {
         grounding = { available: false, reason: '证据检索失败：' + error.message, evidence: [], queries: [] };
       }
@@ -151,7 +151,7 @@ function createLearningRoutes(options) {
       if (state.planRevision !== planRevision || state.progress[module.id]?.revision !== revision) fail(409, '已有更新的讲解或计划，请查看最新结果。');
       state.progress[module.id].explanation = { ...result, text: body.text, at: stamp(), revision };
       addAttempt(state, { type: 'explanation', moduleId: module.id, revision, text: body.text, ...result }); await save();
-      recordMemory(user.id, 'explain', {
+      await recordMemory(user.id, 'explain', {
         moduleId: module.id, revision, mode: result.mode, accepted: result.accepted === true,
         score: typeof result.score === 'number' ? result.score : null,
         grounded: result.grounded === true, evidenceIntegrity: result.evidenceIntegrity || '',
@@ -186,7 +186,7 @@ function createLearningRoutes(options) {
       recordWrongAnswers(state, result, at);
       addAttempt(state, { type: 'quiz', moduleId: quiz.moduleId, mode: quiz.mode, ...result });
       await store.transaction(async () => { await save(); await store.putQuiz(quiz.id, user.id, { ...quiz, result }); });
-      recordMemory(user.id, 'quiz', {
+      await recordMemory(user.id, 'quiz', {
         moduleId: quiz.moduleId, mode: quiz.mode, score: result.score, passed: result.passed === true,
         correct: result.correct, total: result.total
       });
@@ -213,7 +213,7 @@ function createLearningRoutes(options) {
       wrong.dueAt = new Date(Date.now() + reviewDelayDays(wrong.correctStreak) * DAY).toISOString();
       if (!correct) wrong.mistakes++;
       addAttempt(state, { type: 'review', moduleId: question.moduleId, ...result }); await save();
-      recordMemory(user.id, 'review', { questionId: question.id, moduleId: question.moduleId, correct, reviewCount: wrong.reviewCount });
+      await recordMemory(user.id, 'review', { questionId: question.id, moduleId: question.moduleId, correct, reviewCount: wrong.reviewCount });
       return send({ result, state });
     }
     return fail(404, '接口不存在。');

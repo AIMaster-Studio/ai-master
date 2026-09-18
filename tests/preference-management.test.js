@@ -2,9 +2,12 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');const os=require('node:os');const path=require('node:path');
 const {once}=require('node:events');const {createApp}=require('../server');
-test('preferences replace and clear only the authenticated learner preference',async t=>{
+for (const durable of [false, true]) test('preferences isolate authenticated learners; durable=' + durable,async t=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'aimaster-preference-test-'));
- const app=createApp({inMemory:true,dataRoot:root,allowRemote:false,configToken:''});
+ const db=durable ? require('@libsql/client').createClient({url:'file::memory:'}) : null;
+ if(db)t.after(()=>db.close());
+ const memoryRepository=db ? require('../server/durable-files').createSnapshotRepository(db) : undefined;
+ const app=createApp({inMemory:true,dataRoot:root,allowRemote:false,configToken:'',memoryRepository});
  app.server.listen(0,'127.0.0.1');await once(app.server,'listening');
  t.after(async()=>{await new Promise(r=>app.server.close(r));fs.rmSync(root,{recursive:true,force:true});});
  const base='http://127.0.0.1:'+app.server.address().port;

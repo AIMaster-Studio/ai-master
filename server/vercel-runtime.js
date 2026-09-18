@@ -2,9 +2,7 @@
 const os = require('node:os');
 const path = require('node:path');
 function vercelOptions(env = process.env) {
-  const hasUrl = Boolean(String(env.TURSO_URL || '').trim());
-  const hasToken = Boolean(String(env.TURSO_AUTH_TOKEN || '').trim());
-  if (hasUrl !== hasToken) throw new Error('TURSO_CONFIGURATION_INCOMPLETE');
+  const { configured: hasUrl } = require('./turso-config').tursoConfig(env);
   const dataRoot = path.join(os.tmpdir(), 'aimaster-vercel-' + process.pid);
   return {
     // Database and file storage have different lifetimes on serverless.

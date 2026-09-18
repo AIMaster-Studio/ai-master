@@ -137,9 +137,9 @@ function createApp(options = {}) {
     const injected = typeof options.ragConfig === 'function' ? options.ragConfig() : (options.ragConfig || {});
     return { ...injected, embedding: { ...envEmbedding, ...(injected.embedding || {}) }, fetchImpl: options.fetchImpl };
   };
-  const rag = options.rag || createRagService({ dataRoot: dataRoots.rag, root: ROOT, config: readRagConfig });
-  const courseKbId = () => {
-    const kb = rag.store.list().find(item => item.name === COURSE_KB_NAME);
+  const rag = options.rag || createRagService({ dataRoot: dataRoots.rag, root: ROOT, config: readRagConfig, repository: options.ragRepository });
+  const courseKbId = async () => {
+    const kb = (await rag.store.list()).find(item => item.name === COURSE_KB_NAME);
     return kb ? kb.id : null;
   };
   // 管理操作统一门禁，与 /api/ai/config 同一条规则：未暴露时要求回环对端；暴露后必须再带
@@ -152,7 +152,9 @@ function createApp(options = {}) {
   const memoryRoot = dataRoots.memory;
   const memoryStores = new Map();
   const memoryFor = userId => {
-    if (!memoryStores.has(userId)) memoryStores.set(userId, createMemoryStore({ dataRoot: path.join(memoryRoot, userId) }));
+    if (!memoryStores.has(userId)) memoryStores.set(userId, options.memoryRepository
+      ? require('./durable-adapters').durableMemory(options.memoryRepository, userId)
+      : createMemoryStore({ dataRoot: path.join(memoryRoot, userId) }));
     return memoryStores.get(userId);
   };
   const memoryRoutes = createMemoryRoutes({ memoryFor, requireAdmin });
@@ -166,8 +168,8 @@ function createApp(options = {}) {
   });
   const skillRoutes = createSkillRoutes({ skillRegistry, requireAdmin });
   // 记忆写入失败不得中断学习流程：轨迹是旁路记录，不是通关判定的必要条件。
-  const recordMemory = (userId, surface, event) => {
-    try { memoryFor(userId).record(surface, event); }
+  const recordMemory = async (userId, surface, event) => {
+    try { await memoryFor(userId).record(surface, event); }
     catch (error) { if (options.onError) options.onError(error); }
   };
   // 学习闭环的领域规则（路线校验、测验配额、判分、错题登记、限流）抽到

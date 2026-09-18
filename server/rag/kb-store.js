@@ -122,6 +122,7 @@ function createKbStore(options = {}) {
     const kb = findKb(registry, id);
     const existing = readJsonl(docFile(id));
     const added = documents.map(normalizeDocument);
+    fs.mkdirSync(kbDir(id), { recursive: true });
     writeJsonl(docFile(id), existing.concat(added));
     kb.updatedAt = new Date().toISOString();
     writeRegistry(registry);
@@ -135,6 +136,7 @@ function createKbStore(options = {}) {
     const registry = readRegistry();
     const kb = findKb(registry, id);
     const next = documents.map(normalizeDocument);
+    fs.mkdirSync(kbDir(id), { recursive: true });
     writeJsonl(docFile(id), next);
     kb.updatedAt = new Date().toISOString();
     writeRegistry(registry);

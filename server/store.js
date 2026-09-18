@@ -116,13 +116,13 @@ function createSqliteStore(filename) {
 // Turso (libSQL) 远程模式（用于公网部署，数据持久化不丢失）
 // 环境变量：TURSO_URL, TURSO_AUTH_TOKEN
 // ---------------------------------------------------------------------------
-function createTursoStore() {
+function createTursoStore(config) {
   const { createClient } = require('@libsql/client');
   // libsql:// 协议在部分环境下兼容性不佳，统一转为 https://
-  const tursoUrl = (process.env.TURSO_URL || '').replace(/^libsql:\/\//, 'https://');
+  const tursoUrl = config.url;
   const db = createClient({
     url: tursoUrl,
-    authToken: process.env.TURSO_AUTH_TOKEN
+    authToken: config.authToken
   });
 
   async function exec(sql, args = []) {
@@ -212,8 +212,9 @@ function createTursoStore() {
 
 function openStore(filename, forceSqlite = false) {
   // 测试模式（:memory:）或 forceSqlite 时始终使用本地 SQLite，不受 TURSO_URL 影响
-  if (!forceSqlite && filename !== ':memory:' && process.env.TURSO_URL) {
-    return createTursoStore();
+  if (!forceSqlite && filename !== ':memory:') {
+    const config = require('./turso-config').tursoConfig();
+    if (config.configured) return createTursoStore(config);
   }
   return createSqliteStore(filename);
 }

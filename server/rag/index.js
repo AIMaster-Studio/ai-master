@@ -12,10 +12,12 @@ const { createEmbedder } = require('./embedder');
 function createRagService(options = {}) {
   const dataRoot = options.dataRoot || path.join(options.root || process.cwd(), '.local', 'rag');
   const readConfig = typeof options.config === 'function' ? options.config : () => ({});
-  const store = createKbStore({ dataRoot, config: readConfig });
+  const store = options.repository
+    ? require('../durable-adapters').durableRag(options.repository, readConfig)
+    : createKbStore({ dataRoot, config: readConfig });
 
   return {
-    dataRoot,
+    dataRoot: options.repository ? 'remote-database' : dataRoot,
     store,
     // 能力自述：引擎与后端各自的可用状态与不可用原因。UI 用这个回答「为什么现在不能用」。
     capabilities: () => ({
