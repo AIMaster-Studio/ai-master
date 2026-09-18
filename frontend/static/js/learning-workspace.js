@@ -99,7 +99,10 @@
     $('#ai-status').classList.toggle('ai',!!ai.configured);
     $('#ai-status').title = ai.configured ? '模型：' + (ai.model || '已配置') : '配置模型复评';
     $('#account-button').textContent = app.user.isGuest !== false ? '访客档案' : app.user.name || '我的档案';
-    $('#storage-status').textContent = app.user.isGuest !== false ? '访客 · 保存在本机' : (app.user.name || '账号') + ' · 保存在本机';
+    const storage = app.status.storage;
+    const storageLabel = storage ? (storage.learningPersistent ? '服务端学习记录' : '临时记录 · 可能丢失') : (app.status.mode === 'local' ? '本地练习记录' : '存储方式待核验');
+    $('#storage-status').textContent = (app.user.isGuest !== false ? '访客' : app.user.name || '账号') + ' · ' + storageLabel;
+    $('#storage-status').title = storage && storage.warning || '请导出重要学习记录；登录状态不等于持久化保障。';
     const done = modules().filter(id => progress(id).completedAt).length;
     $('#route-progress').textContent = done + ' / ' + modules().length;
     $('#route-progress-bar').max = modules().length || 1; $('#route-progress-bar').value = done;
@@ -280,7 +283,7 @@
     return svg + '<p class="small muted">连线粗细按事件数取对数缩放。灰显的记忆面表示尚无数据 —— 不是不存在。</p>';
   }
   function renderMemory() {
-    const head = '<header class="page-heading"><div><p class="eyebrow">本机学习记忆</p><h1>学习记忆</h1>';
+    const head = '<header class="page-heading"><div><p class="eyebrow">学习记忆与显式偏好</p><h1>学习记忆</h1>';
     if (app.memoryError) {
       main.innerHTML = head + '</div></header><div class="notice error">' + esc(app.memoryError) + '<br>记忆由本机后端提供；静态模式（没有后端）下不可用，这不影响学习流程。</div>';
       return;
@@ -300,7 +303,7 @@
       '<button type="button" class="icon-button" title="刷新记忆" aria-label="刷新记忆" data-action="refresh-memory">↻</button></header>' +
       '<div class="notice">' + esc(memory.notice || '') +
         '<br>L2/L3 由事件轨迹<strong>确定性聚合</strong>（计数与比例），不是模型摘要，也没有语义归纳能力 —— 它不会得出「你偏好类比式讲解」这类结论。' +
-        '<br>数据只存在这台电脑，不跨设备同步；清空记忆需要本机管理权限。</div>' +
+        '<br>' + esc(app.status.storage && app.status.storage.warning || '记忆保存位置由后端决定，尚未核验跨实例持久化。') + '；清空全部学习记忆仍需管理权限。</div>' +
       '<section class="section-band"><h2>记忆图谱</h2>' + memoryGraphHtml(app.memory.graph) + '</section>' +
       '<section class="section-band"><h2>记忆面（L1 → L2）</h2>' + surfaces.map(item =>
         '<div class="memory-surface"><div class="memory-surface-head"><strong>' + esc(item.label) + '</strong>' +
@@ -318,7 +321,11 @@
           : '<p class="muted">还没有 L1 事件，L3 没有可汇总的依据，因此这里不提供生成按钮 —— 在零事件上生成的综合只会是一份全 0 的空文件，容易被误读成学习结果不佳。先完成一次讲解或测验。</p>') + '</section>' +
       '<section class="section-band"><h2>显式偏好</h2>' + (memory.preferences
         ? '<pre class="memory-md">' + esc(memory.preferences) + '</pre>'
-        : '<p class="muted">尚未写入偏好。偏好只能显式写入，既不参与自动综合，也不会被 L3 生成覆盖。</p>') + '</section>';
+        : '<p class="muted">尚未写入偏好。偏好只能显式写入，既不参与自动综合，也不会被 L3 生成覆盖。</p>') +
+        '<label for="preference-text">填写新的学习偏好（保存后替换上方记录，最多 2000 字符）</label>' +
+        '<textarea id="preference-text" maxlength="2000" rows="4" placeholder="例如：先给生活类比，再解释公式。不要填写密码、手机号或其他敏感信息。" style="display:block;width:100%;margin:12px 0;padding:12px;font:inherit"></textarea>' +
+        '<button type="button" class="primary" data-action="save-preference">保存偏好</button> <button type="button" data-action="clear-preference">清除我的偏好</button>' +
+        '<p class="small muted">这里只管理你明确填写的偏好，不代表系统会自动推断偏好，也不保证所有功能都会采用。</p></section>';
   }
   // 知识库视图。
   // 关键设计：**把「本集嵌入是不是语义检索」放在最显眼处**。
@@ -472,6 +479,16 @@
     if (action === 'diagnostic-done') return showDialog('设置学习计划',planForm(true));
     if (action === 'next-module') { const next = modules().find(id => !progress(id).completedAt); if (next) selectModule(next); else { app.view = 'records'; render(); toast('当前学习航线已完成，记得按期复习。'); } return; }
     if (action === 'export-json') { try { const blob = new Blob([JSON.stringify(app.state,null,2)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'aimaster-learning-' + Date.now() + '.json'; a.click(); URL.revokeObjectURL(a.href); toast('学习档案已导出。'); } catch(e) { toast('导出失败。',true); } return; }
+    if (action === 'save-preference') return void task(button,async () => {
+      const text = $('#preference-text').value.trim();
+      if (!text) throw new Error('请先填写偏好。');
+      await api('memory/preference',{text,operation:'replace'});
+      await loadMemory(); render(); toast('偏好已提交；保存期限以当前存储提示为准。');
+    });
+    if (action === 'clear-preference') {
+      if (!window.confirm('只清除你显式填写的偏好，不删除学习轨迹。是否继续？')) return;
+      return void task(button,async () => { await api('memory/preference',{operation:'clear'}); await loadMemory(); render(); toast('显式偏好已清除。'); });
+    }
     if (action === 'refresh-memory') return void task(button,async () => { await loadMemory(); render(); });
     if (action === 'synthesize-memory') return void task(button,async () => { await api('memory/synthesize',{}); await loadMemory(); render(); toast('L3 综合已按 L2 事实生成。'); });
     if (button.dataset.researchAnswer !== undefined) return void task(button,async () => {

@@ -1,0 +1,7 @@
+# Async memory integration — 2026-09-18
+
+Implemented opt-in createApp({memoryRepository}) wiring to durableMemory. Default local storage remains unchanged; there is no automatic production enablement. All memory HTTP route operations and capability read_memory/write_preference operations now await async results. Learning-route recordMemory calls await the async writer; its existing best-effort failure policy remains (learning saves and memory saves are NOT one atomic transaction; failed memory writes can still be reported only via onError).
+
+Validation: preference HTTP integration now runs against both local filesystem and SQL-backed snapshot adapters, testing authenticated-owner isolation, replace, clear and validation. Added async-memory-routes test proving a rejected remote write propagates rather than sending success. npm run verify passed 163 tests plus frontend structural checks (57/57 nodes). Server diagnostics returned no errors or warnings. These tests use local in-memory libsql, not a cloud database. Structural node coverage does not constitute factual review.
+
+Remaining: remote credentials/storage selection, Vercel authorization, production status reporting for durable mode, RAG async wiring, course capacity and cold-start validation, skills/research persistence, memory input hardening and broader lifecycle tests. Full persistence and real sample evaluation remain incomplete. No new commit, push or deployment in this continuation. Changes and prior untracked files preserved in the remediation worktree.

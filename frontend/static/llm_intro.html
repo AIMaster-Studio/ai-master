@@ -483,7 +483,7 @@ body::before{
       <h2 class="reveal-up d1">准备好开启<br>AI 之旅了吗？</h2>
       <div class="en2 reveal-up d2">YOUR JOURNEY INTO AI STARTS HERE</div>
       <p class="reveal-up d3">你已经了解了大模型的历史、定义与训练流程。接下来，让我们走进 AI 教学应用，亲手探索、动手实践，真正掌握这门改变世界的技术。</p>
-      <button class="start-btn reveal-up d4" id="start-btn">开始具体学习 <span class="ar">→</span></button>
+      <a class="start-btn reveal-up d4" id="start-btn" href="../dashboard/" style="text-decoration:none">开始具体学习 <span class="ar">→</span></a>
     </div>
     <div class="cta-foot">CHAPTER 01 · INTRODUCTION COMPLETE · 点击按钮进入学习应用</div>
   </section>
@@ -494,8 +494,7 @@ body::before{
 /* ============================================================
    ⚙️ 配置区：把这里改成你的 AI 教学应用地址
    ============================================================ */
-const APP_URL = "../chapter/1/index.html";
-// 也支持运行时覆盖：window.__AI_APP_URL__ = "..."
+// 结尾入口使用原生相对链接返回课程总览，兼容根目录、/frontend/ 与项目子路径。
 
 /* ============================================================
    1. 全局背景粒子神经网络
@@ -792,13 +791,7 @@ bindHProgress('#train-scroll','train-bar');
 /* ============================================================
    6. CTA 按钮 → 跳转到你的 AI 教学应用
    ============================================================ */
-document.getElementById('start-btn').addEventListener('click',()=>{
-  const url=(typeof window!=='undefined'&&window.__AI_APP_URL__)||APP_URL;
-  // 跳转前可加一个淡出效果
-  document.body.style.transition='opacity .5s';
-  document.body.style.opacity='0';
-  setTimeout(()=>{window.location.href=url;},480);
-});
+// 使用原生链接，支持键盘、另开标签及浏览器返回；不再把页面透明度设为零。
 </script>
 
   

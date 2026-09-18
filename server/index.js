@@ -108,7 +108,15 @@ function createApp(options = {}) {
   }
   const core = options.core || require('../frontend/static/js/learning-core');
   const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
-  const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
+  const storage = require('./storage-paths').storagePaths(options, process.env, ROOT);
+  const store = openStore(storage.dbPath, options.forceSqlite);
+  if (options.durableSnapshots && typeof store.db.execute !== 'function') {
+    store.close();
+    throw new Error('DURABLE_SNAPSHOTS_REQUIRE_REMOTE_DB');
+  }
+  const snapshotRepository = options.durableSnapshots
+    ? require('./durable-files').createSnapshotRepository(store.db, store.ready) : null;
+  const memoryRepository = options.memoryRepository || snapshotRepository;
   // 「本机持久化」与「临时实例」两种形态必须一起切换，不能只切数据库。
   //
   // 背景（2026-09-15 实测发现）：inMemory 原先只作用于 SQLite（:memory:），
@@ -117,7 +125,7 @@ function createApp(options = {}) {
   // createApp 会在建目录那一步直接抛错 —— 结果是**所有 /api/* 返回 500**，而不只是新接口。
   // 因此：只要数据库不是持久的（inMemory 或 dbPath=':memory:'），文件类存储一并指向可写的临时目录。
   const persistentDb = !(options.inMemory || options.dbPath === ':memory:');
-  const dataRoot = options.dataRoot || (persistentDb ? path.join(ROOT, '.local') : path.join(os.tmpdir(), 'aimaster-ephemeral-' + process.pid));
+  const dataRoot = storage.dataRoot;
   const dataRoots = {
     base: dataRoot,
     rag: options.ragDataRoot || path.join(dataRoot, 'rag'),
@@ -136,22 +144,38 @@ function createApp(options = {}) {
     const injected = typeof options.ragConfig === 'function' ? options.ragConfig() : (options.ragConfig || {});
     return { ...injected, embedding: { ...envEmbedding, ...(injected.embedding || {}) }, fetchImpl: options.fetchImpl };
   };
-  const rag = options.rag || createRagService({ dataRoot: dataRoots.rag, root: ROOT, config: readRagConfig });
-  const courseKbId = () => {
-    const kb = rag.store.list().find(item => item.name === COURSE_KB_NAME);
+  const rag = options.rag || createRagService({ dataRoot: dataRoots.rag, root: ROOT, config: readRagConfig, repository: options.ragRepository || snapshotRepository });
+  const courseKbId = async () => {
+    const kb = (await rag.store.list()).find(item => item.name === COURSE_KB_NAME);
     return kb ? kb.id : null;
   };
-  // 管理操作统一门禁，与 /api/ai/config 同一条规则：未暴露时要求回环对端；暴露后必须再带
-  // AIMASTER_CONFIG_TOKEN。不这样做就会出现「配置写不了、但知识库能被任意访客重建」的缺口。
+  // 内容管理门禁（知识库、记忆维护等，不含模型密钥配置）。
+  // 默认与原先完全一致：未暴露要求回环对端，暴露后还需 AIMASTER_CONFIG_TOKEN。
+  // 附加通道：无服务器部署里对端永远不是回环，若不给一条显式出口，云端知识库将无法维护。
+  // 因此仅当运维显式配置了独立的 AIMASTER_REMOTE_ADMIN_TOKEN 时，才接受带该令牌的远程调用；
+  // 未配置则恒为 false（fail-closed），且此令牌不能用于写模型密钥（/api/ai/config 仍走原规则）。
+  const remoteAdminTokenValid = request => {
+    const expected = options.remoteAdminToken !== undefined
+      ? String(options.remoteAdminToken)
+      : String(process.env.AIMASTER_REMOTE_ADMIN_TOKEN || '');
+    if (!expected) return false;
+    const supplied = Buffer.from(String(request.headers['x-aimaster-admin-token'] || ''), 'utf8');
+    const wanted = Buffer.from(expected, 'utf8');
+    return supplied.length === wanted.length && timingSafeEqual(supplied, wanted);
+  };
+  const adminAllowed = request =>
+    (isLoopbackPeer(request) && (!exposed || configTokenValid(request))) || remoteAdminTokenValid(request);
   const requireAdmin = request => {
-    if (!isLoopbackPeer(request) || (exposed && !configTokenValid(request))) fail(403, '此操作仅限在本机执行。');
+    if (!adminAllowed(request)) fail(403, '此操作仅限在本机执行，或需提供有效的远程管理令牌。');
   };
   const ragRoutes = createRagRoutes({ rag, requireAdmin });
   // 记忆按用户隔离，各自一份文件；同进程内按 userId 缓存实例，避免重复建目录。
   const memoryRoot = dataRoots.memory;
   const memoryStores = new Map();
   const memoryFor = userId => {
-    if (!memoryStores.has(userId)) memoryStores.set(userId, createMemoryStore({ dataRoot: path.join(memoryRoot, userId) }));
+    if (!memoryStores.has(userId)) memoryStores.set(userId, memoryRepository
+      ? require('./durable-adapters').durableMemory(memoryRepository, userId)
+      : createMemoryStore({ dataRoot: path.join(memoryRoot, userId) }));
     return memoryStores.get(userId);
   };
   const memoryRoutes = createMemoryRoutes({ memoryFor, requireAdmin });
@@ -165,8 +189,8 @@ function createApp(options = {}) {
   });
   const skillRoutes = createSkillRoutes({ skillRegistry, requireAdmin });
   // 记忆写入失败不得中断学习流程：轨迹是旁路记录，不是通关判定的必要条件。
-  const recordMemory = (userId, surface, event) => {
-    try { memoryFor(userId).record(surface, event); }
+  const recordMemory = async (userId, surface, event) => {
+    try { await memoryFor(userId).record(surface, event); }
     catch (error) { if (options.onError) options.onError(error); }
   };
   // 学习闭环的领域规则（路线校验、测验配额、判分、错题登记、限流）抽到
@@ -192,17 +216,18 @@ function createApp(options = {}) {
         if (!allowedOrigins.includes(req.headers.origin)) fail(403, '请求来源不匹配。');
       }
     }
+    if (store.ready) await store.ready;
     let token = String(req.headers.cookie || '').match(/(?:^|;\s*)aimaster_session=([a-f0-9]{64})(?:;|$)/)?.[1];
     let user = await store.session(token);
     function setSession(next) {
       user = next.user; token = next.token;
-      res.setHeader('Set-Cookie', `aimaster_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000`);
+      res.setHeader('Set-Cookie', `aimaster_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000${options.secureCookies || req.socket.encrypted ? '; Secure' : ''}`);
     }
     if (!user) setSession(await store.guest());
     const body = req.method === 'POST' ? await readBody(req) : null;
     const state = await store.state(user.id);
     const send = payload => json(res, 200, { ok: true, ...payload });
-    if (route.startsWith('rag/')) return ragRoutes({ req, url, route, body, send, fail });
+    if (route.startsWith('rag/')) return ragRoutes({ req, res, url, route, body, send, fail });
     if (route.startsWith('memory/')) return memoryRoutes({ req, url, route, body, send, fail, user });
     if (route.startsWith('agent/')) return agentRoutes({ req, url, route, body, send, fail, user });
     if (route === 'skills' || route.startsWith('skills/')) return skillRoutes({ req, url, route, body, send, fail });
@@ -212,7 +237,16 @@ function createApp(options = {}) {
     if (req.method === 'GET') {
       if (route === 'status') {
         const config = await store.config();
-        const payload = { mode: 'server', ai: publicConfig(config), version: 'ican-1.0' };
+        // 检索链路的降级必须在总状态里可见（2026-09-18 线上实测：sqlite-vec 加载失败、静默落到 js-cosine，
+        // 而 /api/status 一切正常）。rag 为注入的测试替身时可能没有 health，按「无信息」处理而不是崩。
+        const ragHealth = typeof rag.health === 'function' ? rag.health() : null;
+        const payload = { mode: 'server', ai: publicConfig(config), version: 'ican-1.0',
+          build: { sha: /^[a-f0-9]{7,40}$/i.test(process.env.VERCEL_GIT_COMMIT_SHA || '') ? process.env.VERCEL_GIT_COMMIT_SHA : null },
+          storage: options.storageStatus || { learning: persistentDb ? 'persistent-configured' : 'ephemeral-memory', learningPersistent: persistentDb, files: persistentDb ? 'local-files' : 'ephemeral-tmp', filesPersistent: persistentDb },
+          rag: ragHealth,
+          degraded: Boolean(ragHealth && ragHealth.backendDegraded),
+          warnings: ragHealth ? ragHealth.warnings : []
+        };
         // 默认不探活（保持 status 快速、零上游费用）。?probe=1 时实测上游连通性并缓存 1 分钟。
         // 注意：即便 aiReachable=true，验收仍以 POST /api/explanation 返回 mode:"ai" 为准（ACCEPTANCE.md §1.1）。
         if (url.searchParams.get('probe') === '1') payload.aiReachable = await probeReachable(config, options.fetchImpl);
@@ -303,7 +337,7 @@ function createApp(options = {}) {
   };
   const server = http.createServer(handleRequest);
   server.on('close', () => store.close());
-  return { server, store, handleRequest, rag, dataRoots, persistentDb };
+  return { server, store, handleRequest, rag, dataRoots, persistentDb, adminGate: adminAllowed };
 }
 
 if (require.main === module) {

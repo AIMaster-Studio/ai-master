@@ -17,6 +17,24 @@ const { cosineSimilarity } = require('./embedder');
 
 const VECTORS_FILE = 'vectors.json';
 const SQLITE_FILE = 'vectors.sqlite';
+const PREFERRED_BACKEND = 'sqlite-vec';
+// 运维开关：置 1 时强制视 sqlite-vec 为不可用，走纯 JS 兜底。用途：
+//   1) 测试「降级必须可见」这条判据的反方向（不靠删依赖）；2) 线上扩展异常时人工切到兜底。
+const DISABLE_SQLITE_VEC_ENV = 'AIMASTER_DISABLE_SQLITE_VEC';
+
+// 打包提示（不是运行逻辑）：sqlite-vec 的 index.cjs 用「拼字符串 + require.resolve」定位平台包里的
+// vec0 扩展，Vercel 的静态追踪器（@vercel/nft）看不见动态拼出的路径，于是 vec0.so 不进函数包。
+// 线上实测（2026-09-18，build a3b3c8c9）：/api/rag/status 报
+//   "Cannot find module 'sqlite-vec-linux-x64/vec0.so'"，检索静默退化为 js-cosine。
+// 本机 nft 追踪同样只带上 index.cjs 与 package.json。下面的字面量 require.resolve 只为让追踪器
+// 把对应平台的扩展文件带上；当前机器缺该平台包时静默跳过，不影响任何行为。
+function declarePlatformExtensionsForBundlers() {
+  try { require.resolve('sqlite-vec-linux-x64/vec0.so'); } catch { /* 非 linux-x64 或未安装 */ }
+  try { require.resolve('sqlite-vec-linux-arm64/vec0.so'); } catch { /* 非 linux-arm64 或未安装 */ }
+  try { require.resolve('sqlite-vec-darwin-x64/vec0.dylib'); } catch { /* 非 darwin-x64 或未安装 */ }
+  try { require.resolve('sqlite-vec-darwin-arm64/vec0.dylib'); } catch { /* 非 darwin-arm64 或未安装 */ }
+  try { require.resolve('sqlite-vec-windows-x64/vec0.dll'); } catch { /* 非 windows-x64 或未安装 */ }
+}
 
 function toBase64(vector) {
   return Buffer.from(vector.buffer, vector.byteOffset, vector.byteLength).toString('base64');
@@ -45,11 +63,25 @@ function loadSqliteVec() {
   }
 }
 
+// 探测结果按进程缓存：扩展能否加载在进程生命周期内不会变，而 /api/status 与每次检索都会问。
+// 缓存键带上运维开关的值，使同进程内切换开关（测试会这么做）不会读到旧结论。
+const probeCache = new Map();
 function probeSqliteVec() {
+  const disabled = String(process.env[DISABLE_SQLITE_VEC_ENV] || '');
+  if (probeCache.has(disabled)) return probeCache.get(disabled);
+  const result = disabled === '1'
+    ? { available: false, reason: '已由环境变量 ' + DISABLE_SQLITE_VEC_ENV + '=1 显式停用 sqlite-vec。' }
+    : probeSqliteVecUncached();
+  probeCache.set(disabled, result);
+  return result;
+}
+
+function probeSqliteVecUncached() {
   const loaded = loadSqliteVec();
   if (!loaded) return { available: false, reason: '未安装 sqlite-vec（npm i sqlite-vec），或当前 Node 不支持 node:sqlite。' };
   let db;
   try {
+    declarePlatformExtensionsForBundlers();
     db = new loaded.DatabaseSync(':memory:', { allowExtension: true });
     db.loadExtension(loaded.sqliteVec.getLoadablePath());
     const row = db.prepare('select vec_version() as version').get();
@@ -162,6 +194,21 @@ function backendStatus() {
 }
 
 /**
+ * 回答「当前实际用的后端是不是降级结果」。检索时索引是按清单里记录的后端打开的（保证文件格式一致），
+ * 所以 handle.degraded 只能反映「打开清单后端」这一步；真正的判据是 actual 与引擎首选是否一致。
+ * 不一致时给出首选后端此刻不可用的原因；若首选此刻其实可用（索引是在降级环境下建的），如实说明需重建。
+ */
+function explainBackendChoice(actualId, preferredId = PREFERRED_BACKEND) {
+  if (actualId === preferredId) return { degraded: false, reason: '' };
+  const preferred = BACKENDS[preferredId];
+  const probe = preferred ? preferred.probe() : { available: false, reason: '未注册的后端：' + preferredId };
+  const reason = probe.available
+    ? '索引建立时首选后端 ' + preferredId + ' 不可用，当前索引仍为 ' + actualId + '；重建索引即可切回。'
+    : '首选后端 ' + preferredId + ' 不可用：' + probe.reason;
+  return { degraded: true, reason };
+}
+
+/**
  * 打开索引后端。`preferred` 不可用时自动降级，并把实际使用的后端与降级原因一起返回 ——
  * 调用方必须把这个事实写进索引清单，不能让「用了兜底」看起来像「用了向量库」。
  */
@@ -187,4 +234,7 @@ function openVectorStore(dir, dimensions, preferred = 'sqlite-vec') {
   throw new Error('没有可用的向量索引后端：' + failures.map(f => f.id + '（' + f.reason + '）').join('；'));
 }
 
-module.exports = { openVectorStore, backendStatus, BACKENDS, VECTORS_FILE, SQLITE_FILE, probeSqliteVec };
+module.exports = {
+  openVectorStore, backendStatus, explainBackendChoice, BACKENDS, VECTORS_FILE, SQLITE_FILE,
+  probeSqliteVec, PREFERRED_BACKEND, DISABLE_SQLITE_VEC_ENV
+};

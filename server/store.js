@@ -116,13 +116,13 @@ function createSqliteStore(filename) {
 // Turso (libSQL) 远程模式（用于公网部署，数据持久化不丢失）
 // 环境变量：TURSO_URL, TURSO_AUTH_TOKEN
 // ---------------------------------------------------------------------------
-function createTursoStore() {
+function createTursoStore(config) {
   const { createClient } = require('@libsql/client');
   // libsql:// 协议在部分环境下兼容性不佳，统一转为 https://
-  const tursoUrl = (process.env.TURSO_URL || '').replace(/^libsql:\/\//, 'https://');
+  const tursoUrl = config.url;
   const db = createClient({
     url: tursoUrl,
-    authToken: process.env.TURSO_AUTH_TOKEN
+    authToken: config.authToken
   });
 
   async function exec(sql, args = []) {
@@ -134,14 +134,12 @@ function createTursoStore() {
   }
 
   // 初始化表结构（executeMultiple 在部分网络环境下 fetch failed，逐条执行更稳妥）
-  (async () => {
-    try {
-      const stmts = SCHEMA_SQL.split(';').map(s => s.trim()).filter(Boolean);
-      for (const sql of stmts) await db.execute(sql);
-    } catch (e) {
-      console.error('[turso] schema init failed:', e.message);
-    }
+  const ready = (async () => {
+    const stmts = SCHEMA_SQL.split(';').map(s => s.trim()).filter(Boolean);
+    for (const sql of stmts) await db.execute(sql);
   })();
+  // Requests await ready; attach a handler immediately to avoid an unhandled rejection on a cold start.
+  ready.catch(() => {});
 
   async function createSession(id) {
     const token = randomBytes(32).toString('hex');
@@ -152,6 +150,7 @@ function createTursoStore() {
 
   return {
     db,
+    ready,
     async state(id) { return JSON.parse((await get('SELECT state FROM users WHERE id=?', [id])).state); },
     async save(id, value) { await exec('UPDATE users SET state=? WHERE id=?', [JSON.stringify(value), id]); },
     async user(id) { return publicUser(await get('SELECT id, name, login FROM users WHERE id=?', [id])); },
@@ -213,8 +212,9 @@ function createTursoStore() {
 
 function openStore(filename, forceSqlite = false) {
   // 测试模式（:memory:）或 forceSqlite 时始终使用本地 SQLite，不受 TURSO_URL 影响
-  if (!forceSqlite && filename !== ':memory:' && process.env.TURSO_URL) {
-    return createTursoStore();
+  if (!forceSqlite && filename !== ':memory:') {
+    const config = require('./turso-config').tursoConfig();
+    if (config.configured) return createTursoStore(config);
   }
   return createSqliteStore(filename);
 }
