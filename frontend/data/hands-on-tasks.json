@@ -159,7 +159,7 @@
           "id": "ch2-t3",
           "title": "在架构图上标出一次文本从输入到输出的路径",
           "goal": "产出一张标注输入、编码、注意力计算与输出位置的架构图，能按顺序复述数据经过的模块。",
-          "whereToStart": "本项目自带页面：frontend/static/transformer_cg.html 和 frontend/static/transformer_lab.html。无需登录。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch2-t3（填路径编号表并导出记录）。先看 frontend/static/transformer_cg.html 的流程图，也可对照 frontend/static/transformer_lab.html。无需登录。",
           "steps": [
             "打开 transformer_cg.html，找到 Transformer 的整体流程图。",
             "任选一个短句作为输入，在纸上或截图上依次标注输入表示、注意力层、前馈层和输出位置。",
@@ -168,10 +168,10 @@
           ],
           "expected": "一张有 4 个以上编号的路径图和一条校正记录。成功信号：编号顺序从输入开始并终于输出，不跳过中间模块。",
           "antiCheat": "只贴未标注的原图不算完成；每个编号须包含你自己的流程说明。",
-          "tools": ["项目自带 · transformer_cg.html", "项目自带 · transformer_lab.html"],
+          "tools": ["项目自带 · labs/#ch2-t3 工作台", "项目自带 · transformer_cg.html（概念动画）", "项目自带 · transformer_lab.html"],
           "minutes": 12,
           "knowledgePoints": ["Transformer 整体架构"],
-          "verifyState": "已核实：frontend/static/transformer_cg.html 与 frontend/static/transformer_lab.html 存在于仓库"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch2-t3 为可填写工作台（5 项形式自检、可导出 Markdown）；transformer_cg.html 为概念动画，仅供看图"
         },
         {
           "id": "ch2-t4",
@@ -259,7 +259,7 @@
           "id": "ch3-t3",
           "title": "把一条需求拆成提示词的任务、背景与输出格式",
           "goal": "产出一条可直接执行的提示词，并用标注证明它包含任务、背景、约束和验收格式。",
-          "whereToStart": "本项目自带页面：frontend/static/prompt_cg.html；可在本地文本编辑器中写作，不需要外部账户。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch3-t3（四要素分栏填写、删减预测、验收条件，自动拼合提示词）。概念动画见 frontend/static/prompt_cg.html。不需要外部账户。",
           "steps": [
             "从自己的学习或工作中选一个小需求，例如整理一段会议纪要。",
             "写出第一版提示词，并用方括号标注任务、背景、约束和输出格式。",
@@ -268,10 +268,10 @@
           ],
           "expected": "一条带 4 类标注的提示词和一条验收条件。成功信号：每个标注段都有实际文本，不是只写标签。",
           "antiCheat": "不能用「帮我做好」一类空泛句代替四类要素；删减预测必须对应被删的具体部分。",
-          "tools": ["项目自带 · prompt_cg.html", "本地文本编辑器"],
+          "tools": ["项目自带 · labs/#ch3-t3 工作台", "项目自带 · prompt_cg.html（概念动画）"],
           "minutes": 12,
           "knowledgePoints": ["什么是提示词工程？"],
-          "verifyState": "已核实：frontend/static/prompt_cg.html 存在于仓库；本题不依赖外部模型"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch3-t3 为可填写工作台（5 项形式自检、可导出 Markdown）；prompt_cg.html 为概念动画，无输入框；本题不依赖外部模型"
         },
         {
           "id": "ch3-t4",
@@ -339,7 +339,7 @@
           "id": "ch4-t2",
           "title": "在自己搭的智能体上，标出「感知—决策—执行」三步各发生在哪",
           "goal": "把抽象的三段循环，落到你自己刚做的智能体的具体位置上，产出带标注的循环图。",
-          "whereToStart": "先看本项目自带页面 frontend/static/agentic_cg/index.html（驾驭工程与智能体的兴起）理解概念，再回到你 ch4-t1 搭的智能体上做标注。",
+          "whereToStart": "先看本项目自带动画 frontend/static/agentic_cg/index.html 理解三段循环，再到工作台 frontend/static/labs/index.html#ch4-t2 贴入你 ch4-t1 那次真实对话并逐条标注。",
           "steps": [
             "打开 frontend/static/agentic_cg/index.html，记下它对三段循环的定义。",
             "回到扣子上你的智能体，做一次完整对话，逐条回看：哪一步是「感知」（它读到了什么）、哪一步是「决策」（它判断要干什么）、哪一步是「执行」（它真的做了什么）。",
@@ -349,16 +349,16 @@
           ],
           "expected": "一张带三处标注的对话截图，或一份说明「哪一步缺失、为什么」的记录。成功的判定信号：标注落到了具体消息上，而不是画在空白处。",
           "antiCheat": "标注必须落在你自己 ch4-t1 的那次真实对话上；用网图或概念图代替的判未完成。",
-          "tools": ["项目自带 · agentic_cg", "扣子（https://www.coze.cn/）"],
+          "tools": ["项目自带 · labs/#ch4-t2 工作台", "项目自带 · agentic_cg（概念动画）", "前置：ch4-t1 在扣子（https://www.coze.cn/）搭的智能体"],
           "minutes": 15,
           "knowledgePoints": ["AI Agent 架构：感知-决策-执行循环", "多 Agent 协作与通信机制"],
-          "verifyState": "已核实：frontend/static/agentic_cg/index.html 存在于仓库；扣子官网存在"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch4-t2 为可填写工作台（4 项形式自检）；agentic_cg 为概念动画；扣子官网存在"
         },
         {
           "id": "ch4-t3",
           "title": "把一个重复提问填进可复用的 Prompt 模板",
           "goal": "产出一个含变量槽位的提示模板和两次不同填充结果，说明模板如何减少重复改写。",
-          "whereToStart": "本地文本编辑器，参考项目自带 frontend/static/agentic_cg/index.html 的链路说明；不要求安装 LangChain 或申请密钥。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch4-t3（写模板、识别 {变量}、两次填充自动替换）。链路概念见 frontend/static/agentic_cg/index.html。不要求安装 LangChain 或申请密钥。",
           "steps": [
             "选一个会反复询问的任务，例如把材料概括成三个要点。",
             "将固定指令写成模板，并用 {材料}、{受众} 两个变量槽位替代可变部分。",
@@ -367,16 +367,16 @@
           ],
           "expected": "一个含至少 2 个变量的模板和 2 次填充结果。成功信号：两次结果使用同一固定指令，只有变量值不同。",
           "antiCheat": "两次提示若完全重新写，不能证明模板复用；必须保留原始变量槽位版本。",
-          "tools": ["本地文本编辑器", "项目自带 · agentic_cg"],
+          "tools": ["项目自带 · labs/#ch4-t3 工作台", "项目自带 · agentic_cg（概念动画）"],
           "minutes": 12,
           "knowledgePoints": ["LangChain 核心：Chain 与 Prompt 模板"],
-          "verifyState": "已核实：本题是本地模板练习；不声称已安装或运行 LangChain"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch4-t3 为可填写工作台（4 项形式自检）；本题是本地模板练习，不声称已安装或运行 LangChain"
         },
         {
           "id": "ch4-t4",
           "title": "把一份材料画成接入、索引、提问三段数据链路",
           "goal": "产出一张数据从原始材料到可回答问题的三段流程图，并为每段写一个失败信号。",
-          "whereToStart": "本项目自带：frontend/static/rag_cg/index.html；使用自己的短文本和纸笔或本地编辑器，不连接外部云服务。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch4-t4（材料 / 问题 / 三段链路 / 失败信号 / 排查顺序）。概念动画见 frontend/static/rag_cg/index.html。不连接外部云服务。",
           "steps": [
             "准备一段 150 字以内的自拟材料，写出一个材料内能回答的问题。",
             "画出「接入材料 → 切分/索引 → 提问/取回」三段箭头。",
@@ -385,10 +385,10 @@
           ],
           "expected": "一张三段流程图、3 个失败信号和 1 条排查顺序。成功信号：问题与材料内容相对应，不能用无关问题充数。",
           "antiCheat": "只抄概念图不算；必须使用自己的材料标题和自己提出的问题。",
-          "tools": ["项目自带 · rag_cg", "纸笔或本地文本编辑器"],
+          "tools": ["项目自带 · labs/#ch4-t4 工作台", "项目自带 · rag_cg（概念动画）"],
           "minutes": 15,
           "knowledgePoints": ["LlamaIndex：数据连接与 RAG 框架"],
-          "verifyState": "已核实：frontend/static/rag_cg/index.html 存在于仓库；本题不宣称实际构建 LlamaIndex 索引"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch4-t4 为可填写工作台（4 项形式自检）；rag_cg 为概念动画；本题不宣称实际构建 LlamaIndex 索引"
         },
         {
           "id": "ch4-t5",
@@ -418,7 +418,7 @@
           "id": "ch5-t1",
           "title": "装一次，并在自己新建的空目录里让它真做一件事",
           "goal": "在本机跑通一次真实调用，产出一份「它实际做了什么」的记录。",
-          "whereToStart": "先读本项目自带页面 frontend/static/claude_cg/index.html（Claude Code × Codex 入门到精通）了解全貌；安装与配置以该工具官方文档为准。",
+          "whereToStart": "先看本项目自带动画 frontend/static/claude_cg/index.html 了解全貌；安装与配置以该工具官方文档为准；在本机终端完成后，用工作台 frontend/static/labs/index.html#ch5-t1 记录目录、回显、文件列表与卡点（含密钥粗扫）。",
           "steps": [
             "新建一个空目录（不要用项目目录），例如 D:\\cc-lab。",
             "按官方文档完成安装与首次配置，注意：API 凭据只放在本机环境变量里，不要写进任何会被提交的文件。",
@@ -429,16 +429,16 @@
           ],
           "expected": "一份记录，含终端回显 + 目录文件列表（证明它真的写了文件）。成功的判定信号：你能指出「这一步是它做的，不是我手打的」。",
           "antiCheat": "要求在你自己新建的目录里操作，且路径是你自己起的名字；使用项目目录或别人的路径，无法证明是你亲自做的。",
-          "tools": ["项目自带 · claude_cg", "外部：该工具官方文档（安装步骤以其官方说明为准）"],
+          "tools": ["项目自带 · labs/#ch5-t1 记录台", "项目自带 · claude_cg（概念动画）", "外部：该工具官方文档（安装步骤以其官方说明为准）"],
           "minutes": 25,
           "knowledgePoints": ["Claude Code 安装与首次配置", "核心命令与斜杠指令"],
-          "verifyState": "待核实：该工具的安装方式、免费额度与是否需要付费账户会变化，安装前请以官方文档当前说明为准。本任务只要求如实记录，不要求一定成功"
+          "verifyState": "待核实：该工具的安装方式、免费额度与是否需要付费账户会变化，安装前请以官方文档当前说明为准。已核实：frontend/static/labs/index.html#ch5-t1 为记录工作台，只做格式与密钥粗扫，不执行安装；本任务只要求如实记录，不要求一定成功"
         },
         {
           "id": "ch5-t2",
           "title": "把「指令 / 技能 / 钩子」三者的触发时机排成一张表",
           "goal": "产出三列对照表（触发时机 / 由谁触发 / 典型用途），说清这三类扩展到底差在哪。",
-          "whereToStart": "本项目自带页面 frontend/static/claude_cg/index.html，配合该工具的官方文档中关于自定义扩展的部分。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch5-t2（抄定义、填三行三列表、写本质区别；自检会比对最后一句与定义原文是否雷同）。定义来源：frontend/static/claude_cg/index.html 与该工具官方文档中关于自定义扩展的部分。",
           "steps": [
             "读 claude_cg 页面里关于 Hooks、Skills、MCP 的段落，先把原始定义抄下来。",
             "画一张表，三个行分别是：斜杠指令 / 技能 / 钩子。",
@@ -448,10 +448,10 @@
           ],
           "expected": "一张完整的三行三列表 + 一句本质区别的说明。成功的判定信号：你的那一句能让人看懂「哪个是人主动按下去的，哪个是系统在特定事件上自动跑起来的」。",
           "antiCheat": "要求最后一句是自己的话；直接抄页面定义原文的，只能算完成了抄写，不算完成了该题。",
-          "tools": ["项目自带 · claude_cg"],
+          "tools": ["项目自带 · labs/#ch5-t2 工作台", "项目自带 · claude_cg（概念动画）"],
           "minutes": 15,
           "knowledgePoints": ["Hooks 系统：事件驱动的自动化", "Skills 开发：自定义技能体系", "MCP 协议：连接外部工具与数据"],
-          "verifyState": "已核实：frontend/static/claude_cg/index.html 存在于仓库（标题为「Claude Code × Codex | 从入门到精通」）"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch5-t2 为可填写工作台（4 项形式自检）；claude_cg/index.html 存在于仓库（标题为「Claude Code × Codex | 从入门到精通」）"
         },
         {
           "id": "ch5-t3",
@@ -501,7 +501,7 @@
           "id": "ch6-t2",
           "title": "手工制造一次「检索失败」，并把它归因到具体环节",
           "goal": "产出一次失败归因记录，区分「没入库」「检索没命中」「召回了但没用上」三种不同失败。",
-          "whereToStart": "本项目自带页面 frontend/static/rag_starlab/index.html（Private RAG Starlab）与 frontend/static/rag_cg/index.html（RAG 检索技术科普）。",
+          "whereToStart": "先在本项目自带 frontend/static/rag_starlab/index.html（Private RAG Starlab）做一次入库 + 检索，再到工作台 frontend/static/labs/index.html#ch6-t2 记录现象、归类、依据与先改哪一环。流程概念见 frontend/static/rag_cg/index.html。",
           "steps": [
             "先在 rag_cg 页面里读一遍完整流程：切分 → 入库 → 召回 → 重排 → 生成。",
             "打开 rag_starlab，按页面说明做一次入库 + 检索。",
@@ -512,16 +512,16 @@
           ],
           "expected": "一份失败记录，含「现象 / 判断属于哪类失败 / 依据 / 会先改哪一环」。成功的判定信号：你的依据指的是具体现象（例如召回的段落内容），而不是笼统的「感觉不准」。",
           "antiCheat": "要求现象具体到可复核（例如贴出召回的那段文字）；只写「效果不好」的判未完成。",
-          "tools": ["项目自带 · rag_starlab", "项目自带 · rag_cg"],
+          "tools": ["项目自带 · rag_starlab（实际操作）", "项目自带 · labs/#ch6-t2 归因记录台", "项目自带 · rag_cg（概念动画）"],
           "minutes": 20,
           "knowledgePoints": ["向量数据库与 Embedding", "检索策略：从朴素到智能", "RAG 评估与质量保障"],
-          "verifyState": "已核实：frontend/static/rag_starlab/index.html 与 frontend/static/rag_cg/index.html 均存在于仓库"
+          "verifyState": "已核实：frontend/static/rag_starlab/index.html 为可交互页面；frontend/static/labs/index.html#ch6-t2 为可填写工作台（5 项形式自检）；rag_cg 为概念动画"
         },
         {
           "id": "ch6-t3",
           "title": "为一个难问题选择检索增强、改写或拒答路线",
           "goal": "产出 3 个问题的路由表，区分何时应补充检索、改写查询，何时应明确拒答。",
-          "whereToStart": "本项目自带页面：frontend/static/rag_cg/index.html 与 frontend/static/rag_starlab/index.html；本题不需上传真实私密材料。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch6-t3（三行路由表 + 二次处理；自检要求三种路线各出现一次）。概念动画见 frontend/static/rag_cg/index.html；可在 frontend/static/rag_starlab/index.html 试验。本题不需上传真实私密材料。",
           "steps": [
             "自拟 3 个问题：一个材料明确包含、一个措辞不同但可能相关、一个材料明显没有。",
             "为每个问题选择「直接检索、先改写再检索、明确拒答」之一。",
@@ -530,16 +530,16 @@
           ],
           "expected": "一张 3 行路由表和一个二次处理方案。成功信号：三种路线至少各出现一次，理由与问题类型对应。",
           "antiCheat": "不能把所有问题都选同一路线；每行必须解释选择，而非只填术语。",
-          "tools": ["项目自带 · rag_cg", "项目自带 · rag_starlab"],
+          "tools": ["项目自带 · labs/#ch6-t3 工作台", "项目自带 · rag_cg（概念动画）", "项目自带 · rag_starlab"],
           "minutes": 15,
           "knowledgePoints": ["高阶 RAG 范式"],
-          "verifyState": "已核实：两个项目自带 RAG 页面存在；本题是路由设计练习，不宣称实现某一种生产级高阶 RAG"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch6-t3 为可填写工作台（4 项形式自检）；本题是路由设计练习，不宣称实现某一种生产级高阶 RAG"
         },
         {
           "id": "ch6-t4",
           "title": "为一个 RAG 回答写出「不能保证」清单",
           "goal": "产出至少 4 条能力边界，把检索命中、来源时效、缺失材料和生成误差分别写清。",
-          "whereToStart": "本项目自带：frontend/static/rag_cg/index.html，配合 docs/ican/facts-and-limits.md；无需外部平台。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch6-t4（四条边界 / 缓解动作 / 一句改写；自检要求四条互不相同且改写句含条件词）。配合 docs/ican/facts-and-limits.md；概念动画见 frontend/static/rag_cg/index.html。无需外部平台。",
           "steps": [
             "选 ch6-t1 或 ch6-t2 的一次回答，写下它声称回答了什么。",
             "分别从材料是否完整、材料是否最新、检索是否命中、生成是否忠实四个角度写一条不能保证的内容。",
@@ -548,10 +548,10 @@
           ],
           "expected": "4 条「不能保证 / 缓解动作」记录和 1 句改写。成功信号：每条边界都对应不同失败来源。",
           "antiCheat": "不得将所有边界写成泛泛的「可能不准确」；必须说明不准确来自哪个环节。",
-          "tools": ["项目自带 · rag_cg", "项目自带 · docs/ican/facts-and-limits.md"],
+          "tools": ["项目自带 · labs/#ch6-t4 工作台", "项目自带 · rag_cg（概念动画）", "项目自带 · docs/ican/facts-and-limits.md"],
           "minutes": 12,
           "knowledgePoints": ["RAG 的局限性与未来方向"],
-          "verifyState": "已核实：frontend/static/rag_cg/index.html 与 docs/ican/facts-and-limits.md 存在；未来方向仅作待验证讨论，不当作现有能力"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch6-t4 为可填写工作台（4 项形式自检）；docs/ican/facts-and-limits.md 存在；未来方向仅作待验证讨论，不当作现有能力"
         }
       ]
     },
@@ -685,7 +685,7 @@
           "id": "ch8-t3",
           "title": "把四段自拟材料切块并手工找出最相关片段",
           "goal": "产出一张「问题 / 候选片段 / 相关排序 / 依据」表，演练 RAG 中切块、检索和引用的最小链路。",
-          "whereToStart": "本地文本编辑器或纸笔；可参考项目自带 frontend/static/rag_cg/index.html。无需创建外部向量数据库或上传私密材料。",
+          "whereToStart": "本项目自带工作台：frontend/static/labs/index.html#ch8-t3（四段材料字数校验、排序表、原句核对、带编号回答）。概念动画见 frontend/static/rag_cg/index.html。无需创建外部向量数据库或上传私密材料。",
           "steps": [
             "写 4 段各 40 至 80 字的自拟材料，并给每段编号。",
             "提出一个只能由其中一段明确回答的问题。",
@@ -694,10 +694,10 @@
           ],
           "expected": "一张 4 行排序表和一条带片段编号的回答。成功信号：被引用的原句确实能支撑结论。",
           "antiCheat": "材料与问题必须由学习者自拟，且排序表保留全部 4 个候选；只给最终答案不能验证检索过程。",
-          "tools": ["本地文本编辑器或纸笔", "项目自带 · rag_cg"],
+          "tools": ["项目自带 · labs/#ch8-t3 工作台", "项目自带 · rag_cg（概念动画）"],
           "minutes": 15,
           "knowledgePoints": ["RAG 架构与向量数据库"],
-          "verifyState": "已核实：本题为本地最小链路模拟；不宣称构建、部署或评测真实向量数据库"
+          "verifyState": "已核实：frontend/static/labs/index.html#ch8-t3 为可填写工作台（5 项形式自检，含「原句确在第 1 名片段中」核对）；本题为本地最小链路模拟，不宣称构建、部署或评测真实向量数据库"
         }
       ]
     },

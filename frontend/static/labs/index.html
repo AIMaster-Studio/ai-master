@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#030611">
+<title>动手实践工作台 · AI Master</title>
+<meta name="description" content="AI Master 动手实践操作题配套工作台：在浏览器里完成填写、形式自检并导出 Markdown 记录，不依赖后端与外部账户。">
+<link rel="icon" href="../favicon.svg">
+<style>
+:root{
+--bg:#030611;--panel:rgba(255,255,255,.045);--panel-2:rgba(255,255,255,.07);
+--line:rgba(255,255,255,.12);--line-2:rgba(255,255,255,.2);
+--text:#edf5ff;--muted:#b2c0d9;--dim:#8d9cbd;
+--accent:#72f6e4;--purple:#aaa0ff;--warn:#ffc962;--danger:#ff8fa3;
+--sans:system-ui,-apple-system,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+--r:14px;--r-in:8px;
+--gutter:88px;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(900px 500px at 15% -5%,rgba(114,246,228,.10),transparent 60%),radial-gradient(700px 420px at 85% 10%,rgba(170,160,255,.08),transparent 60%)}
+a{color:inherit}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.skip{position:absolute;left:-9999px;top:0;background:var(--accent);color:#030611;padding:10px 16px;border-radius:0 0 8px 0;font-weight:600;z-index:99}
+.skip:focus{left:0}
+
+/* ---- 顶栏：与 hands-on 一致 ---- */
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px 28px;background:rgba(3,6,17,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.06em;text-decoration:none;font-size:14px}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--accent);display:block;box-shadow:0 0 12px var(--accent)}
+.brand em{font-style:normal;color:var(--dim);font-weight:400;font-size:11px;letter-spacing:.14em}
+.nav-links{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:13px;padding:4px 0;border-bottom:1px solid transparent;transition:border-color 150ms,color 150ms}
+.nav-links a:hover,.nav-links a:focus-visible{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ---- 三栏工作区 ---- */
+.layout{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:0 28px 80px;display:grid;grid-template-columns:190px minmax(0,1fr) 320px;column-gap:0;align-items:start}
+.side{position:sticky;top:64px;max-height:calc(100vh - 64px);overflow:auto;padding:36px 18px 36px 0;border-right:1px solid var(--line)}
+.side h2{margin:0 0 12px;font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;font-weight:600}
+.lab-list{margin:0;padding:0;list-style:none}
+.lab-list li{margin:0}
+.lab-list .chap{margin:16px 0 4px;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em}
+.lab-list a{display:block;padding:6px 0 6px 10px;border-left:2px solid transparent;text-decoration:none;font-size:13px;color:var(--muted);line-height:1.45;transition:border-color 150ms,color 150ms}
+.lab-list a:hover,.lab-list a:focus-visible{color:var(--text);border-left-color:var(--line-2)}
+.lab-list a[aria-current="page"]{border-left-color:var(--accent);color:var(--text)}
+.lab-list .tid{display:block;font-family:var(--mono);font-size:11px;color:var(--accent)}
+
+main{min-width:0;padding:44px 40px 0 40px}
+.kicker{margin:0 0 10px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+.kicker b{color:var(--dim);font-weight:400;margin-left:14px;letter-spacing:.1em}
+h1{margin:0 0 14px;font-size:clamp(30px,4.6vw,58px);line-height:1.12;font-weight:600;letter-spacing:-.01em;text-wrap:balance;max-width:20ch}
+.lead{margin:0;max-width:62ch;color:var(--muted);font-size:15px}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.tag{padding:3px 9px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);font-size:11px;color:var(--dim);text-decoration:none;transition:border-color 150ms,color 150ms}
+.tag--ok{color:var(--accent);border-color:rgba(114,246,228,.35)}
+.tag--todo{color:var(--warn);border-color:rgba(255,201,98,.35)}
+a.tag:hover,a.tag:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+/* ---- 分区：编号即结构 ---- */
+.sheet{margin:40px 0 0;border-top:1px solid var(--line-2)}
+.section{position:relative;display:grid;grid-template-columns:var(--gutter) minmax(0,1fr);padding:28px 0 34px;border-bottom:1px solid var(--line)}
+.section .num{font-family:var(--mono);font-size:72px;line-height:.8;font-weight:400;color:rgba(114,246,228,.22);letter-spacing:-.04em;font-variant-numeric:tabular-nums;user-select:none}
+.section .body{min-width:0}
+.section h3{margin:8px 0 4px;font-size:18px;font-weight:600;line-height:1.35}
+.section .hint{margin:0 0 18px;font-size:13px;color:var(--dim);max-width:60ch}
+.field{margin:0 0 16px}
+.field:last-child{margin-bottom:0}
+.field label,.field .lbl{display:block;font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+.field .sub{font-size:12px;color:var(--dim);margin:-2px 0 6px;letter-spacing:0;text-transform:none}
+input[type=text],textarea,select{width:100%;padding:10px 12px;border-radius:var(--r-in);border:1px solid var(--line);background:rgba(3,6,17,.55);color:var(--text);font:14px/1.6 var(--mono);transition:border-color 150ms}
+textarea{resize:vertical;min-height:84px}
+select{font-family:var(--sans)}
+input:hover,textarea:hover,select:hover{border-color:var(--line-2)}
+.derived{padding:12px 14px;border-radius:var(--r-in);border:1px dashed var(--line-2);background:rgba(255,255,255,.02);font:13px/1.7 var(--mono);color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;min-height:44px}
+.derived b{color:var(--accent);font-weight:600}
+.derived s{color:var(--danger);text-decoration:line-through}
+.derived em{font-style:normal;color:var(--text);background:rgba(114,246,228,.12);padding:0 3px;border-radius:3px}
+.derived i{font-style:normal;color:var(--dim)}
+.rows{width:100%;border-collapse:collapse;font-size:13px}
+.rows th,.rows td{text-align:left;padding:8px 8px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.rows th{color:var(--accent);font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.rows td:first-child{font-family:var(--mono);color:var(--dim);white-space:nowrap;width:64px;padding-top:14px}
+.rows textarea{min-height:56px}
+.rows td select{min-width:96px}
+.count{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:4px}
+.count.bad{color:var(--warn)}
+.warn-note{margin:0 0 16px;padding:10px 14px;border-left:2px solid var(--warn);color:var(--muted);font-size:13px;background:rgba(255,201,98,.05)}
+.warn-note strong{color:var(--warn)}
+
+/* ---- 右栏：产物 / 自检 常驻面板 ---- */
+.rail{position:sticky;top:64px;max-height:calc(100vh - 64px);overflow:auto;padding:36px 0 36px 24px;border-left:1px solid var(--line)}
+.rail h2{margin:0 0 6px;font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;font-weight:600}
+.score{display:flex;align-items:baseline;gap:10px;margin:0 0 16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.score b{font-family:var(--mono);font-size:44px;line-height:1;font-weight:400;color:var(--text);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.score b.done{color:var(--accent)}
+.score span{font-size:12px;color:var(--dim)}
+.rail-out{margin:0 0 18px}
+.rail-out .lbl{display:block;font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+.rail-out .derived{font-size:12px;max-height:260px;overflow:auto}
+.checks{margin:0;padding:0;list-style:none}
+.checks li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px;color:var(--dim)}
+.checks li:last-child{border-bottom:0}
+.checks .st{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--dim);padding-top:3px}
+.checks li.ok{color:var(--text)}
+.checks li.ok .st{color:var(--accent)}
+.checks .why{display:block;color:var(--dim);font-size:11px;margin-top:2px}
+.rail .note{margin:12px 0 0;font-size:11px;color:var(--dim);line-height:1.6}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0 0;padding-top:16px;border-top:1px solid var(--line)}
+button{padding:9px 12px;border-radius:var(--r-in);border:1px solid var(--line-2);background:var(--panel-2);color:var(--text);font:600 12px var(--sans);cursor:pointer;transition:border-color 150ms,color 150ms}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{grid-column:1/-1;background:var(--accent);color:#030611;border-color:var(--accent)}
+button.primary:hover{color:#030611;filter:brightness(1.06)}
+button.ghost{background:transparent;color:var(--dim)}
+.saved{grid-column:1/-1;font-family:var(--mono);font-size:11px;color:var(--dim);min-height:1.4em}
+.export{margin:12px 0 0}
+.export textarea{min-height:220px;font-size:11px}
+
+.empty{padding:40px 26px;text-align:center;color:var(--dim);border:1px dashed var(--line);border-radius:var(--r)}
+.intro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:32px 0 0}
+.intro-grid div{background:var(--bg);padding:18px 20px}
+.intro-grid b{display:block;font-family:var(--mono);font-size:28px;color:var(--accent);font-weight:400;line-height:1.2;margin-bottom:6px}
+.intro-grid span{font-size:13px;color:var(--muted)}
+.footer{grid-column:1/-1;margin-top:40px;padding-top:22px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:12px;color:var(--dim)}
+.footer i{flex:1;min-width:20px;height:1px;background:var(--line)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:1180px){
+.layout{grid-template-columns:180px minmax(0,1fr)}
+.rail{grid-column:2;position:static;max-height:none;border-left:0;border-top:1px solid var(--line-2);padding:28px 0 0 40px;margin-top:8px}
+.rail-out .derived{max-height:none}
+.actions{grid-template-columns:repeat(4,auto);justify-content:start}
+button.primary,.saved{grid-column:auto}
+}
+@media (max-width:860px){
+:root{--gutter:56px}
+.layout{grid-template-columns:1fr;padding:0 18px 60px}
+.side{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:16px 0 12px}
+.side h2{margin-bottom:8px}
+.lab-list{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.lab-list .chap{display:none}
+.lab-list a{flex:0 0 auto;padding:5px 10px;border:1px solid var(--line);border-left-width:1px;border-radius:999px;font-size:12px;line-height:1.4;white-space:nowrap}
+.lab-list a[aria-current="page"]{border-color:var(--accent)}
+.lab-list .tid{display:inline;margin-right:6px}
+main{padding:28px 0 0}
+.rail{grid-column:1;padding:24px 0 0}
+.section .num{font-size:44px}
+.nav{padding:12px 18px}
+.actions{grid-template-columns:1fr 1fr}
+button.primary,.saved{grid-column:1/-1}
+}
+@media print{
+body{background:#fff;color:#111}
+body::before,.nav,.side,.actions,.skip,.export{display:none}
+.layout{display:block}
+.section{border-color:#ccc;break-inside:avoid}
+.section .num{color:#bbb}
+.rail{position:static;border:0;padding:0}
+input,textarea,select,.derived{border-color:#ccc;background:#fff;color:#111}
+.derived b,.field label,.field .lbl,.rail h2,.rail-out .lbl{color:#333}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<nav class="nav" aria-label="站点导航">
+  <a class="brand" href="../../dashboard/"><i aria-hidden="true"></i>AI MASTER <em>/ LABS</em></a>
+  <div class="nav-links">
+    <a href="../../hands-on/">动手实践题</a>
+    <a href="../../dashboard/">课程总览</a>
+    <a href="../../learning-center/">讲解通关</a>
+    <a href="../../knowledge-stars/">知识星海</a>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="side" aria-label="工作台列表">
+    <h2>工作台</h2>
+    <ul class="lab-list" id="labList"></ul>
+  </aside>
+
+  <main id="main">
+    <div id="labHost"><div class="empty">正在载入工作台配置……</div></div>
+  </main>
+
+  <aside class="rail" id="rail" aria-label="产物与自检" hidden></aside>
+
+  <p class="footer"><span>所有内容只保存在你这台浏览器的 localStorage 里，不上传、不调用模型。</span><i aria-hidden="true"></i><span id="version"></span></p>
+</div>
+
+<script src="labs.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>
