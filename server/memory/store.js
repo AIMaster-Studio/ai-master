@@ -64,7 +64,7 @@ function createMemoryStore(options = {}) {
   const l3File = slot => path.join(root, L3_DIR, slot + '.md');
 
   function requireSurface(surface) {
-    if (!SURFACES[surface]) throw badRequest('未登记的记忆面：' + surface + '。可用的面：' + Object.keys(SURFACES).join('、'));
+    if (typeof surface !== 'string' || !Object.hasOwn(SURFACES, surface)) throw badRequest('未登记的记忆面：' + surface + '。可用的面：' + Object.keys(SURFACES).join('、'));
     return surface;
   }
 
@@ -82,6 +82,7 @@ function createMemoryStore(options = {}) {
   }
 
   function l1Dates(surface) {
+    requireSurface(surface);
     const dir = path.join(root, TRACE_DIR, surface);
     if (!fs.existsSync(dir)) return [];
     return fs.readdirSync(dir).filter(name => name.endsWith('.jsonl')).map(name => name.slice(0, -6)).sort();
@@ -89,6 +90,12 @@ function createMemoryStore(options = {}) {
 
   function l1(surface, options2 = {}) {
     requireSurface(surface);
+    if (options2.date !== undefined) {
+      const date = options2.date;
+      if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw badRequest('日期必须为 YYYY-MM-DD。');
+      const parsed = new Date(date + 'T00:00:00.000Z');
+      if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) throw badRequest('日期无效。');
+    }
     const dates = options2.date ? [options2.date] : l1Dates(surface);
     const selected = options2.limit ? dates.slice(-Math.ceil(options2.limit / 200)) : dates;
     const events = [];
