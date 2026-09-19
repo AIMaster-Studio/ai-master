@@ -48,9 +48,7 @@
       "agent-video.html",
       "agent-video.css",
       "agent-video.js",
-      "agentic-engineering-cg/**/*",
       "frontend/**/*",
-      "private-rag-starlab/**/*",
       "vibe-coding-starlab/**/*",
       "README.md",
       "LICENSE"
