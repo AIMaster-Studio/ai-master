@@ -187,3 +187,51 @@ test('the memory empty state is reachable and offers a next step, not a no-op', 
   const zeroEventNoteAt = script.indexOf('在零事件上生成的综合');
   assert.ok(synthesizeAt > 0 && zeroEventNoteAt > synthesizeAt, 'L3 生成按钮未限定在有事件的分支，或未说明零事件为何不生成');
 });
+
+// Knowledge Stars 进度契约（防止 Design System 重新生成时静默丢回归）。
+// 钉住的是：规范源模板 -> 生成页 的确定性关系，以及诚实进度语义。
+// knowledge_stars.js 依赖 #progressSignal / #panelProgress / knowledge-progress.js，
+// 若模板或生成页悄悄丢掉它们，运行时不会报错，只会静默失效——正是本契约要拦住的。
+test('knowledge stars keeps its honest progress contract across source and generated page', () => {
+  const SRC = path.resolve(__dirname, '../frontend/static/knowledge_stars.html');
+  const GEN = path.resolve(__dirname, '../frontend/knowledge-stars/index.html');
+  const PROGRESS_JS = path.resolve(__dirname, '../frontend/static/js/knowledge-progress.js');
+  const STARS_JS = path.resolve(__dirname, '../frontend/static/js/knowledge_stars.js');
+
+  // 1. 规范源模板存在
+  assert.ok(fs.existsSync(SRC), '缺少规范源模板 knowledge_stars.html');
+  const src = fs.readFileSync(SRC, 'utf8');
+
+  // 2. 源模板包含进度契约元素与脚本
+  assert.match(src, /id="progressSignal"/, '源模板缺少 #progressSignal');
+  assert.match(src, /id="panelProgress"/, '源模板缺少 #panelProgress');
+  assert.match(src, /src="js\/knowledge-progress\.js/, '源模板未加载 knowledge-progress.js');
+
+  // 3. 生成页存在且包含契约（含 ../static 相对路径）
+  assert.ok(fs.existsSync(GEN), '缺少生成页 knowledge-stars/index.html');
+  const gen = fs.readFileSync(GEN, 'utf8');
+  assert.match(gen, /id="progressSignal"/, '生成页缺少 #progressSignal');
+  assert.match(gen, /id="panelProgress"/, '生成页缺少 #panelProgress');
+  assert.match(gen, /src="\.\.\/static\/js\/knowledge-progress\.js/, '生成页未加载 ../static/js/knowledge-progress.js');
+
+  // 4. 诚实语义：描述“关联/通过/完成”，不得暗示逐个知识点的独立测评
+  for (const doc of [src, gen]) {
+    assert.match(doc, /不代表逐个知识点经过独立测验/, '缺少诚实进度说明');
+    assert.doesNotMatch(doc, /0% EXPLORED/, '出现夸大测量含义的 “0% EXPLORED”');
+  }
+
+  // 5. knowledge-progress.js 仍存在
+  assert.ok(fs.existsSync(PROGRESS_JS), 'knowledge-progress.js 已丢失');
+
+  // 6. knowledge_stars.js 的依赖不能再次变成孤儿：它引用的元素/接口必须在页面契约内
+  const starsJs = fs.readFileSync(STARS_JS, 'utf8');
+  if (starsJs.includes('#panelProgress')) {
+    assert.match(gen, /id="panelProgress"/, 'knowledge_stars.js 引用 #panelProgress 但生成页缺失');
+  }
+  if (starsJs.includes('#progressSignal')) {
+    assert.match(gen, /id="progressSignal"/, 'knowledge_stars.js 引用 #progressSignal 但生成页缺失');
+  }
+  if (starsJs.includes('AIMasterKnowledgeProgress')) {
+    assert.match(gen, /src="\.\.\/static\/js\/knowledge-progress\.js/, 'knowledge_stars.js 依赖 AIMasterKnowledgeProgress 但生成页未加载其脚本');
+  }
+});
