@@ -24,9 +24,25 @@ function jsFiles() {
   return fs.readdirSync(JS_DIR).filter(name => name.endsWith('.js')).map(name => path.join(JS_DIR, name));
 }
 
+// 产品契约：learning-center/index.html 真正加载的核心脚本。
+// 不纳入 Firebase（可降级，待 Wave C）与 vendored / avatar-widget（不在本目录）。
+const REQUIRED_JS = [
+  'ai-config.js',
+  'build-info.js',
+  'learning-local-fallback.js',
+  'learning-workspace.js',
+];
+
+test('core frontend entry scripts exist — the maintained learning workspace must keep loading', () => {
+  for (const name of REQUIRED_JS) {
+    assert.ok(fs.existsSync(path.join(JS_DIR, name)), '缺少核心前端脚本：' + name);
+  }
+});
+
 test('every frontend script parses — there is no build step to catch syntax errors', () => {
   const files = jsFiles();
-  assert.ok(files.length >= 15, '前端脚本数量异常，可能目录被改动：' + files.length);
+  // 不再用「至少 N 个 .js」魔术数判断目录健康：删除死代码不应让契约变红。
+  // 目录误删由下方「核心入口存在」用例守住；此处只把实际存在的脚本逐个解析。
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
     assert.doesNotThrow(
