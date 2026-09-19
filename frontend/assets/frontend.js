@@ -1,2 +1,84 @@
-(() => {"use strict";const canvas=document.querySelector("#demo-stars");if(!canvas)return;const ctx=canvas.getContext("2d"),reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;let stars=[];function resize(){const r=Math.min(devicePixelRatio||1,1.5);canvas.width=innerWidth*r;canvas.height=innerHeight*r;canvas.style.width=`${innerWidth}px`;canvas.style.height=`${innerHeight}px`;ctx.setTransform(r,0,0,r,0,0);stars=Array.from({length:innerWidth<700?150:320},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,z:Math.random()*1.2+.2,p:Math.random()*6.28}));}function draw(t){ctx.clearRect(0,0,innerWidth,innerHeight);stars.forEach(s=>{const a=.15+(Math.sin(t*.001+s.p)+1)*.16;ctx.beginPath();ctx.arc(s.x,s.y,s.z,0,Math.PI*2);ctx.fillStyle=`rgba(196,222,255,${a})`;ctx.fill();});if(!reduced)requestAnimationFrame(draw);}addEventListener("resize",resize,{passive:true});resize();requestAnimationFrame(draw);})();
+(() => {
+  "use strict";
 
+  // 1. Read real localStorage learning progress
+  function getCompletionStats() {
+    let completedPoints = {};
+    try {
+      completedPoints = JSON.parse(localStorage.getItem("aimaster_completed") || "{}");
+    } catch (_) {}
+
+    let localWorkspace = {};
+    try {
+      localWorkspace = JSON.parse(localStorage.getItem("aimaster_local_workspace_v1") || "{}");
+    } catch (_) {}
+
+    return { completedPoints, localWorkspace };
+  }
+
+  // 2. Initialize Dashboard Chapter Progress Meters
+  function initDashboardProgress() {
+    const table = document.querySelector("#chapter-table");
+    if (!table) return;
+
+    const { completedPoints } = getCompletionStats();
+    const completedCount = Object.keys(completedPoints).length;
+
+    // Update Top KPI
+    const kpiPassed = document.querySelector("#kpi-passed-count");
+    if (kpiPassed) {
+      kpiPassed.textContent = completedCount;
+    }
+
+    // Update each row
+    const rows = table.querySelectorAll("tr[data-chapter-id]");
+    rows.forEach(row => {
+      const cid = row.getAttribute("data-chapter-id");
+      const totalNodes = parseInt(row.getAttribute("data-total-nodes") || "0", 10);
+      const nodeTitles = (row.getAttribute("data-node-titles") || "").split("||");
+      
+      let passInChapter = 0;
+      nodeTitles.forEach(t => {
+        if (t && completedPoints[t]) passInChapter++;
+      });
+
+      const pct = totalNodes > 0 ? Math.round((passInChapter / totalNodes) * 100) : 0;
+      const meterFill = row.querySelector(".meter-fill");
+      const pctLabel = row.querySelector(".progress-pct");
+      if (meterFill) meterFill.style.width = `${pct}%`;
+      if (pctLabel) pctLabel.textContent = `${pct}% (${passInChapter}/${totalNodes})`;
+    });
+  }
+
+  // 3. Sticky TOC Scroll Spy for Chapter Pages
+  function initTocScrollSpy() {
+    const toc = document.querySelector(".chapter-toc");
+    if (!toc) return;
+
+    const cards = document.querySelectorAll(".knowledge-card");
+    const tocItems = toc.querySelectorAll(".toc-item");
+    if (!cards.length || !tocItems.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          tocItems.forEach(item => {
+            if (item.getAttribute("href") === `#${id}`) {
+              item.classList.add("active");
+            } else {
+              item.classList.remove("active");
+            }
+          });
+        }
+      });
+    }, { rootMargin: "-10% 0px -70% 0px" });
+
+    cards.forEach(c => observer.observe(c));
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initDashboardProgress();
+    initTocScrollSpy();
+  });
+})();
