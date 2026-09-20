@@ -202,7 +202,7 @@ function registerHistoryIpc() {
 registerHistoryIpc();
 
 /* ---------- 沉浸刷题题库读取 ---------- */
-const QUIZ_BANK_FILE = path.join(__dirname, '..', 'frontend', 'data', 'quiz_bank.json');
+const QUIZ_BANK_FILE = path.join(__dirname, '..', 'server', 'data', 'quiz-bank.json');
 
 function registerQuizIpc() {
   ipcMain.handle('quiz:get-bank', () => {

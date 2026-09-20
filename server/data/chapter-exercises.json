@@ -1,0 +1,553 @@
+{
+  "1": [
+    {
+      "question": "Scaling Laws 的研究表明，在计算预算固定时，以下哪种分配策略最优？",
+      "options": [
+        "A. 只增加模型参数量，训练 token 数保持不变",
+        "B. 只增加训练 token 数，参数量保持不变",
+        "C. 模型参数量和训练 token 数等比例扩展",
+        "D. 增加推理时的计算量而非训练计算量"
+      ],
+      "answer": 2,
+      "explanation": "Chinchilla 论文发现，对于给定的计算预算，模型参数量 N 和训练 token 数 D 应该<strong>等比例扩展</strong>（Total_Compute = 6×N×D）。"
+    },
+    {
+      "question": "以下关于 Tokenization 的描述，哪项是正确的？",
+      "options": [
+        "A. 每个 token 都是具有独立语义的最小单位",
+        "B. Token 是分词器划分的文本片段，不保证具有独立语义",
+        "C. 一个汉字在所有模型中都恰好对应一个 token",
+        "D. BPE 训练总是合并频率最高的三个相邻字符"
+      ],
+      "answer": 1,
+      "explanation": "Token 可以对应词、子词、标点、空白或字节片段，具体划分由分词器决定。BPE 训练逐步合并相邻 token 对；不能用固定比例推断所有中文或英文文本的 token 数量。"
+    },
+    {
+      "question": "在 RLHF 的 PPO 训练阶段，为什么需要在目标函数中加入 KL 散度惩罚项？",
+      "options": [
+        "A. 为了减少模型参数量以加快推理速度",
+        "B. 为了防止模型在追求奖励时偏离 SFT 模型太远",
+        "C. 为了增加模型的随机性以获得更多样化的输出",
+        "D. 为了消除奖励模型的预测误差"
+      ],
+      "answer": 1,
+      "explanation": "KL 散度惩罚项防止模型找到奖励模型的漏洞（Reward Hacking），确保优化后的模型在统计分布上不偏离 SFT 模型太远。"
+    },
+    {
+      "question": "以下哪种现象最能说明 LLM 的「涌现能力」？",
+      "options": [
+        "A. 当模型参数量从 1.5B 增加到 175B 时，突然展现出可靠的 Few-shot 推理能力",
+        "B. 模型在更多数据上训练后，困惑度持续平滑下降",
+        "C. 使用更大的 batch size 训练时，训练速度线性提升",
+        "D. 增加模型的层数后，训练损失稳步降低"
+      ],
+      "answer": 0,
+      "explanation": "涌现能力是指模型规模跨过某个阈值后<strong>突然出现</strong>的能力，GPT-3（175B）相比 GPT-2（1.5B）展现出的 Few-shot 学习能力爆发是典型例子。"
+    },
+    {
+      "type": "code",
+      "question": "实现简化版 BPE Tokenization",
+      "code_prompt": "实现一个简化版字符级 BPE：1) 将文本拆成基础字符序列 2) 用 collections.Counter 统计相邻 token 对 3) 逐轮合并最高频的一对并记录规则 4) 使用已学规则及其优先级编码新文本。",
+      "explanation": "训练时记录每一轮的合并规则及先后顺序；编码时按已学规则的优先级执行适用的相邻合并，不能把一般的最长词匹配当作 BPE 合并过程。"
+    },
+    {
+      "type": "code",
+      "question": "模拟缩放定律曲线",
+      "code_prompt": "导入 matplotlib 和 numpy，根据 Loss(N) = a/N^α + c 绘制曲线。a=100, α=0.076, c=3，N 从 10^7 到 10^12。",
+      "explanation": "幂律关系意味着增加参数量带来的收益边际递减，解释了模型需要在参数和数据之间平衡的原因。"
+    }
+  ],
+  "2": [
+    {
+      "question": "为什么 Self-Attention 计算中需要将 QK^T 的结果除以 √d_k？",
+      "options": [
+        "A. 为了减少模型参数数量",
+        "B. 为了防止点积结果方差过大导致 softmax 梯度消失",
+        "C. 为了加速矩阵乘法运算",
+        "D. 为了增加注意力权重的稀疏性"
+      ],
+      "answer": 1,
+      "explanation": "当 d_k 较大时，点积结果的方差为 d_k。除以 √d_k 后方差变为 1，确保 softmax 的输入值落入非饱和区，维持梯度正常流动。"
+    },
+    {
+      "question": "在 Transformer 的 Decoder 中，因果掩码（Causal Mask）的作用是？",
+      "options": [
+        "A. 防止模型过拟合训练数据",
+        "B. 确保每个位置只能关注前面的位置，不能看到未来 token",
+        "C. 减少注意力计算的参数量",
+        "D. 允许每个位置关注所有其他位置"
+      ],
+      "answer": 1,
+      "explanation": "因果掩码将上三角矩阵设为 -∞，确保位置 i 只能关注位置 1 到 i。这是自回归生成的关键设计——每个 token 只能基于已生成的内容进行预测。"
+    },
+    {
+      "question": "以下关于 KV-Cache 的描述，哪项是错误的？",
+      "options": [
+        "A. KV-Cache 通过缓存已计算的 Key 和 Value 矩阵避免重复计算",
+        "B. KV-Cache 能显著降低自回归生成的计算延迟",
+        "C. KV-Cache 的内存消耗随序列长度线性增长，可能成为长上下文瓶颈",
+        "D. KV-Cache 能减少模型推理时的参数量"
+      ],
+      "answer": 3,
+      "explanation": "KV-Cache 不影响模型参数量，它缓存的是 K 和 V 矩阵的计算结果。内存消耗确实随序列长度线性增长，这也是 GQA 等技术被提出的原因。"
+    },
+    {
+      "question": "FlashAttention 通过什么技术降低显存占用？",
+      "options": [
+        "A. 减少模型的层数",
+        "B. 分块计算（Tiling）和内核融合，避免实例化完整注意力矩阵",
+        "C. 使用更低精度的数据类型",
+        "D. 减少注意力头的数量"
+      ],
+      "answer": 1,
+      "explanation": "FlashAttention 的核心创新是<strong>分块计算</strong>：将 Q/K/V 切分成小块，每个块完全在 GPU 的 SRAM 中计算，避免将 n×n 的注意力矩阵写入 HBM，将显存需求从 O(n²) 降到 O(n)。"
+    },
+    {
+      "type": "code",
+      "question": "实现 Self-Attention 计算",
+      "code_prompt": "用 numpy 实现 self_attention(Q, K, V) 函数。1) 计算 Q@K^T 2) 除以 sqrt(d_k) 3) softmax 4) 加权求和。添加 mask 参数支持因果掩码。",
+      "explanation": "核心公式：softmax(QK^T/sqrt(d_k)) @ V。注意 softmax 的 axis 参数和数值稳定性（减最大值）。"
+    },
+    {
+      "type": "code",
+      "question": "模拟 KV-Cache 加速效果",
+      "code_prompt": "实现两个生成函数：一个带 KV-Cache，一个不带。对相同长度的序列，对比计算每一步的矩阵乘法次数，验证带缓存的计算量是 O(1) 而不仅是 O(n)。",
+      "explanation": "带 KV-Cache 时每一步只计算新 token 的 Q, K, V，拼接历史缓存，每步计算量恒定。"
+    }
+  ],
+  "3": [
+    {
+      "question": "在提示词工程中，Many-shot 相比 Few-shot 的主要优势是什么？",
+      "options": [
+        "A. Many-shot 需要的 token 更少，成本更低",
+        "B. Many-shot 能处理更复杂的模式学习，效果更接近微调",
+        "C. Many-shot 不需要写提示词模板",
+        "D. Many-shot 适用于所有模型的免费额度"
+      ],
+      "answer": 1,
+      "explanation": "Many-shot 提供 20-100+ 个示例，长上下文模型能从中学习复杂模式。研究表明 Many-shot 的效果可以接近微调。<strong>缺点</strong>是 token 消耗更大。"
+    },
+    {
+      "question": "以下哪种提示词技巧利用了模型的「近因效应」？",
+      "options": [
+        "A. 在提示词末尾重复最重要的指令",
+        "B. 使用全大写单词强调关键要求",
+        "C. 在提示词开头设置复杂的角色背景",
+        "D. 在提示词中间提供大量示例"
+      ],
+      "answer": 0,
+      "explanation": "近因效应指模型更关注提示词末尾的内容。因此<strong>最重要的指令应该放在开头和结尾</strong>，中间部分容易被模型相对忽视。"
+    },
+    {
+      "question": "在设置 LLM 的 Temperature 参数时，以下哪个描述正确？",
+      "options": [
+        "A. Temperature 越高，输出越确定和可重复",
+        "B. Temperature 为 0 时模型完全不工作",
+        "C. Temperature 控制 softmax 输出的概率分布的平滑程度，值越大分布越均匀",
+        "D. Temperature 只影响输出长度，不影响内容"
+      ],
+      "answer": 2,
+      "explanation": "Temperature 控制 softmax 的平滑程度。值越大（>1），概率分布越均匀，输出越多样；值越小（<1），分布越尖锐，输出越确定。"
+    },
+    {
+      "question": "在提示词中同时使用角色设定和示例，这两种技术分别作用于模型的什么层面？",
+      "options": [
+        "A. 角色设定影响训练数据选择，示例影响推理路径",
+        "B. 角色设定激活相关参数子空间，示例提供具体的输出格式模板",
+        "C. 两者作用相同，都是给模型提供更多文本",
+        "D. 角色设定只在简短的提示词中有效，示例只在长提示词中有效"
+      ],
+      "answer": 1,
+      "explanation": "角色设定激活训练数据中与该角色相关的<strong>参数子空间</strong>，调用特定的知识和风格。而示例提供<strong>具体的格式和推理模板</strong>供模型模仿。两者互补。"
+    },
+    {
+      "type": "code",
+      "question": "实现 Prompt 模板类",
+      "code_prompt": "实现一个 PromptTemplate 类，支持：1) 变量注入（用 {var} 语法）2) 可选块（用 [optional] 标记）3) 版本管理 4) 格式化输出。",
+      "explanation": "模板类需要支持 system prompt + user prompt 的拼接，以及动态变量的安全替换。"
+    },
+    {
+      "type": "code",
+      "question": "提示词质量评估器",
+      "code_prompt": "写一个函数 evaluate_prompt(prompt)，从 5 个维度评分（角色/任务/上下文/格式/约束），每个维度 0-10 分，返回总分和改进建议。",
+      "explanation": "用关键词检测和正则表达式判断各要素是否存在。例如检查是否有角色词、任务动词、格式指示符等。"
+    }
+  ],
+  "4": [
+    {
+      "question": "使用 LangChain 的 LCEL，'|' 管道符的核心作用是什么？",
+      "options": [
+        "A. 用于 Python 的类型注解",
+        "B. 将多个 Runnable 组件串联为声明式处理流水线",
+        "C. 用于连接 LLM 到外部数据库",
+        "D. 仅用于格式化 Prompt 输出"
+      ],
+      "answer": 1,
+      "explanation": "LCEL 中的 | 管道符将前一个组件的输出作为后一个组件的输入，形成声明式的处理流水线。"
+    },
+    {
+      "question": "在设计 AI Agent 时，以下哪个是最容易被忽视但至关重要的要素？",
+      "options": [
+        "A. 使用最新的 LLM 模型",
+        "B. 工具描述的清晰度和函数签名的精确性",
+        "C. Agent 的对话轮数上限",
+        "D. 前端 UI 的美观程度"
+      ],
+      "answer": 1,
+      "explanation": "工具的 description 是 LLM 选择调用哪个工具的唯一依据。模糊的描述会导致 LLM 选错工具——这是 Agent 失败最常见的原因。"
+    },
+    {
+      "question": "RAG 原型升级到生产环境时，最关键的改造是什么？",
+      "options": [
+        "A. 将所有代码迁移到 Java",
+        "B. 增加 Prompt 缓存、错误重试、可观测性和评测体系",
+        "C. 删除测试代码减少体积",
+        "D. 只用单一模型"
+      ],
+      "answer": 1,
+      "explanation": "原型和生产的关键差距在工程化：Token 预算控制、缓存策略、分级重试与熔断、结构化日志与链路追踪、自动评测回归。"
+    },
+    {
+      "question": "以下哪种 Agent 架构最适合处理需要多步推理的复杂编程任务？",
+      "options": [
+        "A. 单 Agent + 固定 Prompt",
+        "B. Manager-Worker 多 Agent 层级式协作",
+        "C. 不用 Agent，写 if-else 逻辑",
+        "D. 只用一个 ReAct Agent 一直循环"
+      ],
+      "answer": 1,
+      "explanation": "复杂编程任务需要需求分析、编码、审查、测试等不同专长的子任务。Manager-Worker 模式将任务拆解分配给专业 Agent，效率和质量都远超单 Agent。"
+    },
+    {
+      "type": "code",
+      "question": "实现 ReAct Agent 循环",
+      "code_prompt": "实现一个简化版 ReAct Agent：1) 定义 Tool 类和 execute 方法 2) 实现 Thought-Action-Observation 循环 3) 至少包含3个工具（search/calculate/weather）4) 模拟 LLM 决策过程（用规则而非真实API）5) 运行一个需要多步工具调用的任务并打印完整推理链。",
+      "explanation": "ReAct 循环是 AI Agent 的通用决策框架：观察→思考→行动→观察下一状态→继续直到完成。理解这个循环就理解了 Agent 的核心。"
+    },
+    {
+      "type": "code",
+      "question": "LangChain Chain 机制模拟",
+      "code_prompt": "用 Python 模拟 LangChain Chain 核心机制：1) 实现 Runnable 基类（含 invoke 和 __or__ 方法）2) 创建 PromptTemplate/LLM/OutputParser 三个组件 3) 用 chain = prompt | llm | parser 语法构建流水线 4) 演示 invoke 如何自动传递数据。不安装 langchain，只实现核心概念。",
+      "explanation": "Chain 本质：每个组件是一个 Runnable，| 操作符将前一个输出接给下一个输入。理解这一点就能从使用者变架构者。"
+    }
+  ],
+  "5": [
+    {
+      "question": "Claude Code 的 CLAUDE.md 文件的主要作用是什么？",
+      "options": [
+        "A. 只是一个 README 的别名，用于项目介绍",
+        "B. 项目级指令文件，Claude 每次启动都会读取，等于配置了专属工作手册",
+        "C. 用于存储 API Key 的加密文件",
+        "D. 记录项目的 Git 提交历史"
+      ],
+      "answer": 1,
+      "explanation": "CLAUDE.md 是 Claude Code 的核心配置文件。它像一个「发起人给助手的项目手册」——写清项目结构、代码规范、常用命令和项目约定，Claude 就能像熟悉项目的老员工一样工作。"
+    },
+    {
+      "question": "Claude Code 的 Hooks 系统中，如果你想在 Claude 每次写文件后自动运行 Python 代码格式化，应该使用哪种 Hook？",
+      "options": [
+        "A. PreToolUse，matcher 设为 \"Read\"",
+        "B. PostToolUse，matcher 设为 \"Write\"",
+        "C. UserPromptSubmit",
+        "D. PreCompact"
+      ],
+      "answer": 1,
+      "explanation": "PostToolUse 在工具执行后触发。matcher 设为 \"Write\" 意味着只在写文件操作后触发——这正是自动格式化代码的正确时机。"
+    },
+    {
+      "question": "MCP（Model Context Protocol）的核心价值是什么？",
+      "options": [
+        "A. 加速模型推理速度",
+        "B. 统一的开放协议标准，让 Claude 安全连接外部工具和数据源",
+        "C. 替代 REST API 的新通信方式",
+        "D. Claude Code 的插件市场"
+      ],
+      "answer": 1,
+      "explanation": "MCP 就像一个「AI 世界的 USB-C 协议」——定义了 AI 与外部系统交互的统一标准。通过 MCP Server，Claude 可以查询数据库、调用 API、操作文件系统，而不需要你手动写胶水代码。"
+    },
+    {
+      "question": "在 Claude Code 中，什么时候应该使用 /compact 命令？",
+      "options": [
+        "A. 每次输入命令前都要执行",
+        "B. 长对话中，当上下文过长导致响应变慢或 token 消耗过大时",
+        "C. 只在项目初始化时使用",
+        "D. 用于删除项目的缓存文件"
+      ],
+      "answer": 1,
+      "explanation": "/compact 将完整对话历史压缩为结构化摘要，保留关键信息的同时释放上下文空间。长对话中 token 成本会线性增长，适时压缩能显著降低费用并提高响应质量。"
+    },
+    {
+      "type": "code",
+      "question": "模拟 Claude Code Shell 环境",
+      "code_prompt": "编写一个 initialize_claude_environment() 函数：1) 检查系统中是否安装了 Node.js（>=18）和 npm 2) 模拟 claude --version 命令输出的解析 3) 创建示例 .claude/settings.json 配置（含 model、permissions、hooks）4) 创建示例 CLAUDE.md 文件 5) 输出完整的安装和配置报告。",
+      "explanation": "理解 Claude Code 的配置体系是高效使用它的基础。settings.json 控制行为，CLAUDE.md 定义项目上下文，hooks 实现自动化——三者协同构成完整的开发环境。"
+    },
+    {
+      "type": "code",
+      "question": "实现 MCP 工具注册系统",
+      "code_prompt": "实现一个简化版 MCP 工具注册和调用系统：1) 定义 Tool 类（name/description/parameters/execute）2) 实现 ToolRegistry（注册/查找/列出工具）3) 模拟 JSON-RPC 请求处理（解析 method/params → 找到工具 → 执行 → 返回结果）4) 注册3个不同功能的工具 5) 演示完整的 RPC 调用流程。",
+      "explanation": "MCP 的底层通信基于 JSON-RPC 协议。理解这个核心机制，你就能开发自己的 MCP Server，让 Claude 连接任何外部系统。"
+    }
+  ],
+  "6": [
+    {
+      "question": "在 RAG 系统中，当检索到的文档与用户问题相关性不高时，以下哪种策略最合理？",
+      "options": [
+        "A. 让 LLM 忽略检索结果，完全凭自身知识回答",
+        "B. 增加检索数量（增大 top-k）并采用 Corrective RAG 的思路进行质量评估",
+        "C. 直接拒绝回答用户问题",
+        "D. 减少检索数量（减小 top-k）以降低噪声"
+      ],
+      "answer": 1,
+      "explanation": "Corrective RAG（CRAG）的核心思想就是对检索结果进行质量评估。当相关性不高时，不应该简单地丢弃或忽略，而应该：1) 评估当前检索质量 2) 触发补充策略（如查询改写、网络搜索）3) 在确保信息充分的前提下生成回答。这是对检索结果负责任的态度。"
+    },
+    {
+      "question": "稠密检索和稀疏检索（BM25）的核心区别是什么？",
+      "options": [
+        "A. 稠密检索速度更快，稀疏检索更慢",
+        "B. 稠密检索基于语义相似度，稀疏检索基于关键词匹配",
+        "C. 两者实际上没有本质区别",
+        "D. 稠密检索不需要索引，稀疏检索需要建立倒排索引"
+      ],
+      "answer": 1,
+      "explanation": "稠密检索（Dense Retrieval）将文本映射为语义向量，能理解「猫和狗都是宠物」这类语义关系，但对「cats vs felines」这种罕见词匹配可能不如稀疏检索。稀疏检索（BM25）基于精确的关键词频率统计，对「Transformer 注意力机制」这类专有名词的匹配更精准。两者的本质差异在于：<strong>语义理解 vs 精确匹配</strong>。这也是为什么生产系统通常采用混合检索，取长补短。"
+    },
+    {
+      "question": "为什么 HNSW 算法在向量搜索中能够同时保证高速度和高召回率？它的设计哲学是什么？",
+      "options": [
+        "A. 因为 HNSW 采用了暴力搜索，所以精度高",
+        "B. HNSW 通过牺牲精度来换取速度，实际召回率很低",
+        "C. HNSW 构建了多层图索引，从粗到细搜索，灵感来自社交网络的六度分隔理论",
+        "D. HNSW 使用哈希表替代了向量比较"
+      ],
+      "answer": 2,
+      "explanation": "HNSW（Hierarchical Navigable Small World）的精妙之处在于多层图结构：顶层是粗粒度的导航层，快速定位到目标区域；底层是细粒度的精确层，找到最近邻。这种「先粗后细」的策略本质上模拟了人类在社交网络中找人的方式——先确定在哪个圈子，再精确锁定。搜索时间复杂度从 O(N) 降至 O(log N)，同时通过多层图的冗余连接保持高召回率（95%+）。"
+    },
+    {
+      "question": "Self-RAG 与标准 RAG 的核心区别是什么？",
+      "options": [
+        "A. Self-RAG 不需要检索，完全靠模型自身知识",
+        "B. Self-RAG 训练模型自主决定何时检索以及如何评估检索结果",
+        "C. Self-RAG 只用于文本分类任务",
+        "D. Self-RAG 是 RAG 的简化版本，减少了组件数量"
+      ],
+      "answer": 1,
+      "explanation": "Self-RAG 的突破性在于：传统 RAG 是「先检索再生成」的固定流水线，而 Self-RAG 让模型学会在生成过程中自主反思：「我是否需要更多信息来回答这个问题？」「检索到的资料真的支持我的说法吗？」通过训练特殊的反思 token，模型获得了<strong>元认知能力</strong>——它能感知自己知识的边界，这是一个从「被动检索」到「主动求知」的本质飞跃。"
+    },
+    {
+      "type": "code",
+      "question": "实现混合检索融合器",
+      "code_prompt": "实现 HybridRetriever 类：1) 同时支持稠密检索（SentenceTransformer）和稀疏检索（基于 TF-IDF 或 BM25 的模拟实现）2) 实现 RRF（Reciprocal Rank Fusion）融合算法 3) 支持可调节的融合权重 alpha 4) 对同一组测试查询，对比纯稠密、纯稀疏、混合检索三种策略的 top-5 结果差异。",
+      "explanation": "混合检索是生产级 RAG 系统的标配。RRF 融合策略的核心优势是：它不要求不同检索器返回的分数在同一尺度上，而是基于排位（rank）进行融合，鲁棒性极强。"
+    }
+  ],
+  "7": [
+    {
+      "question": "阿里云 PAI 平台中，PAI-DSW、PAI-DLC、PAI-EAS 三个组件的正确功能对应是？",
+      "options": [
+        "A. 分布式训练、在线推理、交互式开发",
+        "B. 交互式开发、分布式训练、在线推理",
+        "C. 在线推理、交互式开发、分布式训练",
+        "D. 分布式训练、交互式开发、在线推理"
+      ],
+      "answer": 1,
+      "explanation": "PAI-DSW = 交互式开发（Notebook），PAI-DLC = 分布式训练（Deep Learning Cluster），PAI-EAS = 在线推理（Elastic Algorithm Service）。这是常考题型。"
+    },
+    {
+      "question": "在模型评估中，当正负样本极度不平衡时（如欺诈检测：正样本仅占 1%），以下哪个评估指标最合适？",
+      "options": [
+        "A. 准确率（Accuracy）",
+        "B. 精确率（Precision）和召回率（Recall）以及 F1-Score",
+        "C. BLEU 分数",
+        "D. 模型参数量"
+      ],
+      "answer": 1,
+      "explanation": "当正负样本极度不平衡时，准确率会虚假偏高（全部预测为负类也有 99% 准确率）。Precision、Recall 和 F1-Score 能更好反映模型在<strong>少数类（正类）</strong>上的表现。"
+    },
+    {
+      "question": "百炼平台相比 DashScope 的核心差异是什么？",
+      "options": [
+        "A. 百炼是底层 API 调用，DashScope 是上层应用平台",
+        "B. 百炼提供完整的 AI 应用开发工作流（数据→训练→评测→部署），DashScope 主要提供模型推理 API",
+        "C. 百炼只支持通义千问系列，DashScope 支持所有模型",
+        "D. 两者功能完全相同"
+      ],
+      "answer": 1,
+      "explanation": "百炼是<strong>应用开发平台</strong>，提供数据管理、模型调优、评测、部署等全链路能力。DashScope 是<strong>模型服务 API</strong>，主要提供模型推理调用。百炼包含 DashScope 的底层能力。"
+    },
+    {
+      "question": "在 ACP 认证考试中，以下哪个不属于阿里云 PAI 平台的功能组件？",
+      "options": [
+        "A. PAI-Studio（可视化建模）",
+        "B. PAI-DataWorks（数据集成与开发）",
+        "C. PAI-DSW（交互式 Notebook）",
+        "D. PAI-EAS（在线推理服务）"
+      ],
+      "answer": 1,
+      "explanation": "DataWorks 是阿里云的<strong>独立大数据开发治理平台</strong>，不属于 PAI 平台组件。PAI 平台的组件包括 Studio（可视化）、DSW（Notebook）、DLC（训练）、EAS（推理）。"
+    },
+    {
+      "type": "code",
+      "question": "实现评估指标计算函数",
+      "code_prompt": "实现函数计算混淆矩阵的各项指标：accuracy(y_true, y_pred), precision(y_true, y_pred), recall(y_true, y_pred), f1_score(y_true, y_pred)。支持处理除零情况。",
+      "explanation": "从混淆矩阵的 TP/TN/FP/FN 出发，逐项实现。注意除零保护（返回 0.0）。"
+    },
+    {
+      "type": "code",
+      "question": "模拟 DashScope API 调用",
+      "code_prompt": "实现一个 DashScopeClient 类：1) 支持设置 API Key 2) call(model, prompt, **kwargs) 方法 3) 模拟不同模型的响应 4) 错误处理（认证失败、速率限制）。",
+      "explanation": "使用 requests 库或模拟响应。注意实现重试机制和错误处理。"
+    }
+  ],
+  "8": [
+    {
+      "question": "将 70B 模型从 FP16 量化到 INT8，理论上显存需求减少多少？",
+      "options": [
+        "A. 从 140GB 减少到 70GB（减少 50%）",
+        "B. 从 280GB 减少到 70GB（减少 75%）",
+        "C. 从 140GB 减少到 35GB（减少 75%）",
+        "D. 显存需求不变"
+      ],
+      "answer": 0,
+      "explanation": "FP16 每个参数占 2 字节，INT8 占 1 字节，所以 70B 模型从 FP16（140GB）量化为 INT8（70GB），显存需求<strong>减少 50%</strong>。INT4 可进一步减到 35GB。FP32 则需 280GB。"
+    },
+    {
+      "question": "在 RAG 系统中，当检索到的文档包含大量不相关内容时，最有效的缓解方法是什么？",
+      "options": [
+        "A. 增加检索的文档数量",
+        "B. 加入重排序（Rerank）步骤，只将最相关的文档注入 Prompt",
+        "C. 降低 LLM 的 temperature",
+        "D. 使用更大的 embedding 模型"
+      ],
+      "answer": 1,
+      "explanation": "当检索结果中包含大量不相关内容时，<strong>重排序</strong>可以通过交叉编码器（cross-encoder）对检索结果进行精排，只保留最相关的文档，减少 LLM 被不相关信息干扰。"
+    },
+    {
+      "question": "在安全评测中，ASR（Attack Success Rate）指标衡量的是什么？",
+      "options": [
+        "A. 模型回答的正确率",
+        "B. 攻击者成功突破模型安全防护的比例",
+        "C. 模型的推理速度",
+        "D. 训练数据的准确率"
+      ],
+      "answer": 1,
+      "explanation": "ASR（Attack Success Rate）是<strong>攻击成功率</strong>，指在红队测试中成功绕过模型安全防护的测试用例占总测试用例的比例。ASR 越低，模型的安全韧性越好。"
+    },
+    {
+      "question": "HNSW（Hierarchical Navigable Small World）向量索引相比暴力搜索（KNN）的优势是什么？",
+      "options": [
+        "A. 搜索结果更准确",
+        "B. 搜索时间复杂度从 O(n×d) 降低到 O(log n)",
+        "C. 不需要消耗任何内存",
+        "D. 支持模糊搜索"
+      ],
+      "answer": 1,
+      "explanation": "HNSW 通过构建<strong>分层可导航小世界图</strong>，搜索时间复杂度为 O(log n)，远优于暴力搜索的 O(n×d)。这是目前最流行的高性能向量检索算法。"
+    },
+    {
+      "type": "code",
+      "question": "实现模型量化工具",
+      "code_prompt": "实现一个简化版量化工具 Quantizer：1) quantize_fp32_to_int8(tensor, scale) 2) dequantize_int8_to_fp32(tensor, scale) 3) calculate_scale(tensor) 计算最佳缩放因子。",
+      "explanation": "量化核心公式：x_int8 = round(x_float / scale)，scale = max(|x_float|) / 127。注意处理对称量化的边界。"
+    },
+    {
+      "type": "code",
+      "question": "实现简化版向量数据库",
+      "code_prompt": "实现 VectorDB 类：1) add(id, vector) 存储 2) search(query_vector, k) 相似度搜索 3) 使用余弦相似度 4) delete(id) 删除。支持至少 1000 条数据。",
+      "explanation": "余弦相似度公式：cos(A,B) = (A·B)/(||A||×||B||)。简单实现用暴力搜索，进阶尝试用 IVF 索引。"
+    }
+  ],
+  "9": [
+    {
+      "question": "在 EDD（评估驱动开发）实践中，黄金用例、常规用例、边界用例的推荐比例是？",
+      "options": [
+        "A. 黄金 10%、常规 70%、边界 20%",
+        "B. 黄金 20%、常规 60%、边界 15%、对抗 5%",
+        "C. 黄金 30%、常规 50%、边界 20%",
+        "D. 黄金 50%、常规 50%"
+      ],
+      "answer": 1,
+      "explanation": "推荐的评估集分布：黄金用例 20%（核心场景必须通过）、常规用例 60%（典型使用场景）、边界用例 15%（边缘情况）、对抗用例 5%（安全测试）。"
+    },
+    {
+      "question": "在多工具编排中，当多个工具间没有数据依赖关系时，最有效的执行策略是？",
+      "options": [
+        "A. 顺序执行",
+        "B. 并行执行",
+        "C. 随机执行",
+        "D. 只执行其中一个"
+      ],
+      "answer": 1,
+      "explanation": "当工具间<strong>没有数据依赖</strong>时，应<strong>并行执行</strong>，可以充分利用系统资源并减少总耗时。这与 Map-Reduce 模式中的 Map 阶段相似。"
+    },
+    {
+      "question": "Prompt Caching 技术能显著降低成本的主要原因是？",
+      "options": [
+        "A. 每次请求不需要经过网络传输",
+        "B. 重复使用的长前缀（系统提示词、工具定义）只计算一次，后续复用",
+        "C. Prompt Caching 可以完全替代模型推理",
+        "D. 使用了更便宜的模型型号"
+      ],
+      "answer": 1,
+      "explanation": "Prompt Caching 的核心机制：<strong>重复使用的长前缀</strong>（系统提示词、Few-shot 示例、工具定义）在第一次请求时计算并缓存，后续请求只计算增量部分，可节省 50-80% 的输入 Token 成本。"
+    },
+    {
+      "question": "在生产级推理架构中，LLM 推理服务因过载导致响应时间显著增加时，应最先采用什么措施？",
+      "options": [
+        "A. 重启所有推理服务",
+        "B. 启用限流和熔断机制，保护系统不被压垮，同时快速扩容",
+        "C. 降低所有请求的 temperature",
+        "D. 关闭缓存层释放资源"
+      ],
+      "answer": 1,
+      "explanation": "过载时应先<strong>启用限流和熔断</strong>防止系统雪崩，同时<strong>触发 HPA 自动扩容</strong>。熔断可以快速失败而非让请求排队等待，保护整体可用性。"
+    },
+    {
+      "type": "code",
+      "question": "实现 Agent 框架",
+      "code_prompt": "实现一个 Agent 框架：1) Tool 基类（name, description, run()） 2) Agent 类（register_tool, plan, execute） 3) 内置至少 3 个工具 4) 支持 Thought-Action-Observation 循环。",
+      "explanation": "Agent 的核心是 ReAct 循环。解析 LLM 的输出中的 Action 标记，匹配已注册的工具并调用。"
+    },
+    {
+      "type": "code",
+      "question": "实现多工具编排引擎",
+      "code_prompt": "实现一个 DAG 编排引擎 Orchestrator：1) add_tool(name, deps) 注册工具和依赖 2) 自动拓扑排序 3) 并行执行无依赖的工具 4) 结果聚合。",
+      "explanation": "用拓扑排序确定执行顺序，用 concurrent.futures.ThreadPoolExecutor 实现并行执行。"
+    }
+  ],
+  "10": [
+    {
+      "question": "在 ReAct 模式中，Agent 每次循环的正确执行顺序是？",
+      "options": [
+        "A. Action → Observation → Thought → Final Answer",
+        "B. Thought → Action → Observation → 下一轮 Thought 或 Final Answer",
+        "C. Observation → Thought → Action → Final Answer",
+        "D. Thought → Final Answer → Action → Observation"
+      ],
+      "answer": 1,
+      "explanation": "ReAct 的核心循环是 <strong>Thought（思考）→ Action（行动）→ Observation（观察）</strong>，然后根据观察结果进入下一轮 Thought 或给出 Final Answer。这个交替循环让 Agent 的决策过程可解释、可审计。"
+    },
+    {
+      "question": "为防止提示注入攻击，最有效的做法是？",
+      "options": [
+        "A. 完全禁止用户输入任何文本",
+        "B. 将不可信输入与系统指令物理隔离，并用分隔符和角色标记区分",
+        "C. 让 LLM 自己判断输入是否包含攻击",
+        "D. 对所有用户输入进行关键词过滤，包含\"忽略\"就拒绝"
+      ],
+      "answer": 1,
+      "explanation": "提示注入的本质是<strong>不可信内容污染了系统指令</strong>。最有效的防护是将用户输入和工具返回值与系统提示词<strong>物理隔离</strong>，用明确的分隔符和角色标记区分，同时对工具返回值做净化转义，不直接拼入系统提示词。关键词过滤和依赖 LLM 自判都不可靠。"
+    },
+    {
+      "question": "关于 AI Agent 工具调用的安全设计，下列哪项是错误的？",
+      "options": [
+        "A. 遵循最小权限原则，每个工具只授予完成任务所需的最低权限",
+        "B. 对 LLM 生成的工具参数做类型和范围校验",
+        "C. 写操作工具不需要幂等，重复调用没关系",
+        "D. 敏感操作（如转账、删除）应增加人工二次确认"
+      ],
+      "answer": 2,
+      "explanation": "写操作工具应当尽量<strong>幂等</strong>，因为 Agent 可能因重试机制重复调用同一个工具。如果写操作不幂等，重复调用可能导致数据重复插入、资金重复扣除等严重副作用。其他三项都是正确的安全设计原则。"
+    }
+  ]
+}

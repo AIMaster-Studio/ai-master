@@ -12,7 +12,7 @@ const assert = require('node:assert/strict');
 
 const { createLearningDomain, reviewDelayDays } = require('../server/learning/domain');
 const core = require('../frontend/static/js/learning-core');
-const catalog = require('../frontend/data/learning-curriculum.json');
+const catalog = require('../server/data/learning-curriculum.json');
 
 // 与 server/index.js 的 fail 同构：抛一个带 status 的 Error。
 const fail = (status, message) => { throw Object.assign(new Error(message), { status }); };

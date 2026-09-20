@@ -13,6 +13,7 @@ const { reviewExplanation } = require('../server/ai-review');
 const { buildCourseDocuments, stripHtml } = require('../server/rag/course-seed');
 const { createRagService } = require('../server/rag');
 const core = require('../frontend/static/js/learning-core');
+// 公开投影：本用例只校验公开元数据到证据文档的映射，不依赖答案键。
 const catalog = require('../frontend/data/learning-curriculum.json');
 
 const explanation = '大模型先把输入文本转成 token，再根据上下文预测后续片段，通过反复预测组成回答。这样的训练让它学习语言模式，但不能保证内容符合真实世界。比如我请它查询学校今年的奖学金截止日期，它可能根据旧资料生成流畅的回答，甚至编造一个日期。因此我会找到学校官方网站的最新通知，核验日期和适用年级；如果没有可靠证据，就说明目前无法确定，避免把幻觉当成已经证实的事实。';

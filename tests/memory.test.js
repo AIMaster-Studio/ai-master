@@ -208,7 +208,7 @@ test('learning activity flows into memory without the learner asking, and memory
   await request('/api/explanation', { moduleId: 'llm-basics', text: explanation });
   const quiz = (await request('/api/quiz?module=llm-basics')).data.quiz;
   const answers = Object.fromEntries(quiz.questions.map(q => {
-    const source = require('../frontend/data/learning-curriculum.json').modules.flatMap(m => m.questions).find(item => item.id === q.id);
+    const source = require('../server/data/learning-curriculum.json').modules.flatMap(m => m.questions).find(item => item.id === q.id);
     return [q.id, q.options.indexOf(source.options[source.answer])];
   }));
   await request('/api/quiz', { attemptId: quiz.id, answers });

@@ -13,7 +13,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const core = require('../frontend/static/js/learning-core');
-const catalog = require('../frontend/data/learning-curriculum.json');
+const catalog = require('../server/data/learning-curriculum.json');
 
 const MODULES = catalog.modules;
 const N = 20; // 每个模块每个 bot 生成 20 个变体

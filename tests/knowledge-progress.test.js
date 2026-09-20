@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const universe = require('../frontend/data/knowledge-universe.json');
+// 公开投影：mergeProgress 在浏览器侧消费的就是这个形状（/api/catalog），
+// 因此这里刻意使用公开文件，而不是服务端私有源。
 const curriculum = require('../frontend/data/learning-curriculum.json');
 const { mergeProgress } = require('../frontend/static/js/knowledge-progress.js');
 

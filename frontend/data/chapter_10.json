@@ -16,40 +16,5 @@
       "title": "多智能体协作与安全边界",
       "content": "<h3>多智能体协作模式</h3><table><tr><th>模式</th><th>结构</th><th>适用场景</th></tr><tr><td>主从模式</td><td>一个 Planner 分配任务给多个 Worker</td><td>任务可明确分解、各子任务独立</td></tr><tr><td>辩论模式</td><td>多个 Agent 对同一问题给出方案并互相评审</td><td>需要多角度论证、降低单点偏见</td></tr><tr><td>流水线模式</td><td>Agent A 的输出是 Agent B 的输入</td><td>有明确先后依赖的处理流程</td></tr><tr><td>黑板模式</td><td>所有 Agent 共享一个公共状态空间，各自读写</td><td>复杂问题求解、各 Agent 关注点不同</td></tr></table><h3>三大安全风险与防护</h3><h4>1. 提示注入（Prompt Injection）</h4><p><strong>风险</strong>：用户输入或工具返回的内容中包含\"忽略之前指令\"等攻击文本，劫持 Agent 行为。</p><p><strong>防护</strong>：</p><ul><li>将不可信输入与系统指令<strong>物理隔离</strong>，用明确的分隔符和角色标记</li><li>对工具返回值做<strong>净化和转义</strong>，不直接拼入系统提示词</li><li>关键操作（转账、删除）要求<strong>二次确认</strong>，不允许仅靠 LLM 判断</li></ul><h4>2. 权限越界（Privilege Escalation）</h4><p><strong>风险</strong>：Agent 通过工具调用获得超出预期的权限，如读敏感文件、执行系统命令。</p><p><strong>防护</strong>：</p><ul><li>遵循<strong>最小权限原则</strong>，每个工具只授予完成任务所需的最低权限</li><li>在<strong>沙箱</strong>中执行代码和命令，限制文件系统和网络访问</li><li>敏感操作加<strong>审批闸门</strong>，高风险操作必须人工确认</li></ul><h4>3. 工具滥用（Tool Abuse）</h4><p><strong>风险</strong>：Agent 在错误推理下重复调用工具、调用错误工具，或被诱导执行破坏性操作。</p><p><strong>防护</strong>：</p><ul><li>设置<strong>最大循环次数</strong>和<strong>单次任务超时</strong>，防止死循环</li><li>维护<strong>工具调用白名单</strong>，未授权工具一律拒绝</li><li>记录完整的<strong>审计日志</strong>：谁、在何时、调用了什么工具、参数是什么</li></ul>"
     }
-  ],
-  "exercises": [
-    {
-      "question": "在 ReAct 模式中，Agent 每次循环的正确执行顺序是？",
-      "options": [
-        "A. Action → Observation → Thought → Final Answer",
-        "B. Thought → Action → Observation → 下一轮 Thought 或 Final Answer",
-        "C. Observation → Thought → Action → Final Answer",
-        "D. Thought → Final Answer → Action → Observation"
-      ],
-      "answer": 1,
-      "explanation": "ReAct 的核心循环是 <strong>Thought（思考）→ Action（行动）→ Observation（观察）</strong>，然后根据观察结果进入下一轮 Thought 或给出 Final Answer。这个交替循环让 Agent 的决策过程可解释、可审计。"
-    },
-    {
-      "question": "为防止提示注入攻击，最有效的做法是？",
-      "options": [
-        "A. 完全禁止用户输入任何文本",
-        "B. 将不可信输入与系统指令物理隔离，并用分隔符和角色标记区分",
-        "C. 让 LLM 自己判断输入是否包含攻击",
-        "D. 对所有用户输入进行关键词过滤，包含\"忽略\"就拒绝"
-      ],
-      "answer": 1,
-      "explanation": "提示注入的本质是<strong>不可信内容污染了系统指令</strong>。最有效的防护是将用户输入和工具返回值与系统提示词<strong>物理隔离</strong>，用明确的分隔符和角色标记区分，同时对工具返回值做净化转义，不直接拼入系统提示词。关键词过滤和依赖 LLM 自判都不可靠。"
-    },
-    {
-      "question": "关于 AI Agent 工具调用的安全设计，下列哪项是错误的？",
-      "options": [
-        "A. 遵循最小权限原则，每个工具只授予完成任务所需的最低权限",
-        "B. 对 LLM 生成的工具参数做类型和范围校验",
-        "C. 写操作工具不需要幂等，重复调用没关系",
-        "D. 敏感操作（如转账、删除）应增加人工二次确认"
-      ],
-      "answer": 2,
-      "explanation": "写操作工具应当尽量<strong>幂等</strong>，因为 Agent 可能因重试机制重复调用同一个工具。如果写操作不幂等，重复调用可能导致数据重复插入、资金重复扣除等严重副作用。其他三项都是正确的安全设计原则。"
-    }
   ]
 }
