@@ -3,7 +3,8 @@
    Aligned with tokens.css: 4px grid, 3 signal colors, radius: 0px
    ========================================================================== */
 
-@import url("../../assets/tokens.css");
+/* Dependency: tokens.css is loaded by the consuming page (learning-center/index.html)
+   via <link> BEFORE this file. Do not re-add @import here - it would load tokens twice. */
 
 :root {
   font-family: var(--font-sans);
@@ -11,14 +12,6 @@
   background: var(--bg);
   font-size: 14px;
   line-height: 1.65;
-  --ink: #f8fafc;
-  --muted: #94a3b8;
-  --line: #22324f;
-  --blue: #2dd4bf;   /* mapped to --go */
-  --green: #2dd4bf;  /* mapped to --go */
-  --red: #f43f5e;    /* mapped to --stop */
-  --amber: #f59e0b;  /* mapped to --hold */
-  --surface: #0e1526;
   letter-spacing: 0;
 }
 
