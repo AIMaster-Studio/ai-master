@@ -125,7 +125,7 @@ npx wrangler pages deploy ./frontend --project-name=ai-master --branch=main --co
 ```
 
 - 项目名是 **`ai-master`**；`ai-master-aw5.pages.dev` 是它被分配到的**子域**，不是项目名。
-- **单文件上限 25 MiB**，超了 wrangler 直接拒绝。当前 `frontend/` 共 **56.1 MB / 152 个文件**，最大的是 `static/trae_intro.mp4`（**20.23 MB**）—— **只剩约 4.8 MB 余量，往里塞素材会先炸在这里**。
+- **单文件上限 25 MiB**，超了 wrangler 直接拒绝。当前 `frontend/` 共 **21.0 MiB（22,020,749 字节）/ 120 个文件**，最大的是 `static/bgm.mp3`（**13.80 MiB**）—— **距单文件上限还有约 11.2 MiB 余量，往里塞素材会先炸在这里**。
 
 ### 部署后必须验的四条
 
