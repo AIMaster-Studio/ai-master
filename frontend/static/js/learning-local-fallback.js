@@ -219,11 +219,11 @@
       saveState(state);
       return { ok: true, state: state, user: { id: 'local', name: '本地学习者', isGuest: true } };
     },
-    quiz: function (query, body) {
+    quiz: function (body, path) {
       if (body) {
         // 提交测验
         const state = loadState();
-        const moduleId = query.match(/module=([^&]+)/);
+        const moduleId = path.match(/module=([^&]+)/);
         const mid = moduleId ? moduleId[1] : '';
         const quiz = generateQuiz(mid);
         const result = gradeQuiz(quiz, body.answers);
@@ -242,9 +242,9 @@
         return { ok: true, result: result, state: state };
       } else {
         // 获取测验
-        const moduleId = query.match(/module=([^&]+)/);
+        const moduleId = path.match(/module=([^&]+)/);
         const mid = moduleId ? moduleId[1] : '';
-        const isDiagnostic = query.includes('mode=diagnostic');
+        const isDiagnostic = path.includes('mode=diagnostic');
         const quiz = isDiagnostic ? generateQuiz(getCatalog()[0].id) : generateQuiz(mid);
         return { ok: true, quiz: quiz };
       }
@@ -308,14 +308,20 @@
     }
   };
 
+  // 路由键优先取完整路径（如 'ai/config'、'auth/login'），否则退回首段
+  // （如 'quiz?module=...'、'plan'）。其他 dispatcher 行为不变。
+  function routeKey(path) {
+    const clean = path.split('?')[0].replace(/^\/+|\/+$/g, '');
+    return handlers[clean] ? clean : clean.split('/')[0];
+  }
+
   // 暴露本地 API
   window.LearningLocalAPI = {
     canHandle: function (path) {
-      const key = path.split('?')[0].split('/')[0];
-      return !!handlers[key];
+      return !!handlers[routeKey(path)];
     },
     handle: function (path, body) {
-      const key = path.split('?')[0].split('/')[0];
+      const key = routeKey(path);
       const handler = handlers[key];
       if (!handler) throw new Error('本地模式不支持此操作：' + path);
       return handler(body, path);
