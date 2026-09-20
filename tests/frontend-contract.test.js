@@ -235,3 +235,116 @@ test('knowledge stars keeps its honest progress contract across source and gener
     assert.match(gen, /src="\.\.\/static\/js\/knowledge-progress\.js/, 'knowledge_stars.js 依赖 AIMasterKnowledgeProgress 但生成页未加载其脚本');
   }
 });
+
+// T-1 —— 学习工作台 token 决议契约。
+//
+// 契约由三件事组成，全部按"机制"判定，不依赖行号、不写死变量个数或声明次数：
+//   ① 依赖必须存在：learning-workspace.css 必须有一条生效的 tokens.css 依赖路径；
+//   ② 机制必须唯一：该路径只能有一条，否则同一张 token 表被加载两次；
+//   ③ 变量必须可解析：工作台用到的每个 var(--x) 都能由 tokens.css
+//      或工作台有意保留的局部 :root 定义解析。
+//
+// 本页面采用的规范机制：learning-center/index.html 用 <link> 加载 tokens.css，
+// 且必须先于 learning-workspace.css。
+test('learning workspace has exactly one token dependency and resolves every token it uses', () => {
+  const TOKENS = path.resolve(__dirname, '../frontend/assets/tokens.css');
+  const TOKENS_HREF = '../assets/tokens.css';
+  const stripComments = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  const html = fs.readFileSync(WORKSPACE_HTML, 'utf8');
+  const wsSrc = stripComments(fs.readFileSync(WORKSPACE_CSS, 'utf8'));
+
+  // 收集页面上的样式表（不假设属性顺序）。
+  const stylesheets = [];
+  for (const tag of html.matchAll(/<link\b[^>]*>/gi)) {
+    const rel = (tag[0].match(/\brel=["']([^"']*)["']/i) || [])[1] || '';
+    const href = (tag[0].match(/\bhref=["']([^"']*)["']/i) || [])[1] || '';
+    if (href && rel.split(/\s+/).includes('stylesheet')) stylesheets.push(href);
+  }
+
+  // ① 依赖存在：页面必须显式加载 tokens.css。
+  const tokenSheets = stylesheets.filter((href) => path.posix.basename(href) === 'tokens.css');
+  assert.equal(
+    tokenSheets.length,
+    1,
+    '缺少或重复的 token 依赖：learning-center 应当恰好一条 <link> 加载 tokens.css，实际 ' + tokenSheets.length + ' 条',
+  );
+  assert.equal(tokenSheets[0], TOKENS_HREF, 'token 依赖路径不是预期值：' + tokenSheets[0]);
+
+  // ② 机制唯一：页面加载的其它样式表都不得再 @import 同一张 token 表。
+  const tokenImporters = [];
+  const collectImports = (css) => [...stripComments(css).matchAll(/@import\s+(?:url\(\s*)?["']?([^"')\s;]+)/g)].map((m) => m[1]);
+  for (const href of stylesheets) {
+    if (path.posix.basename(href) === 'tokens.css') continue;
+    const file = path.resolve(path.dirname(WORKSPACE_HTML), href);
+    if (!fs.existsSync(file)) continue;
+    if (collectImports(fs.readFileSync(file, 'utf8')).some((u) => path.posix.basename(u) === 'tokens.css')) {
+      tokenImporters.push(href);
+    }
+  }
+  // 工作台样式自身也算一份（它在上面的循环里已被覆盖，这里显式断言以点名失败原因）。
+  if (collectImports(wsSrc).some((u) => path.posix.basename(u) === 'tokens.css')) tokenImporters.push('learning-workspace.css');
+  const seen = new Set();
+  const duplicateImporters = tokenImporters.filter((href) => {
+    const key = path.posix.basename(href);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  assert.deepEqual(
+    duplicateImporters,
+    [],
+    '重复加载 token 表：页面已用 <link> 加载 tokens.css，以下样式表又 @import 了它 → ' + duplicateImporters.join(', '),
+  );
+
+  // ③ 加载顺序：tokens.css 必须先于工作台样式，变量才能被后者使用。
+  const tokensAt = stylesheets.findIndex((href) => path.posix.basename(href) === 'tokens.css');
+  const workspaceAt = stylesheets.findIndex((href) => path.posix.basename(href) === 'learning-workspace.css');
+  assert.ok(workspaceAt >= 0, 'learning-center 未加载 learning-workspace.css');
+  assert.ok(tokensAt < workspaceAt, 'tokens.css 必须先于 learning-workspace.css 加载');
+
+  // ④ 变量可解析：tokens.css 的共享定义 + 工作台有意保留的局部 :root 定义。
+  const defined = new Set();
+  for (const m of stripComments(fs.readFileSync(TOKENS, 'utf8')).matchAll(/(--[\w-]+)\s*:/g)) defined.add(m[1]);
+  for (const root of wsSrc.matchAll(/:root\s*\{([\s\S]*?)\}/g)) {
+    for (const m of root[1].matchAll(/(--[\w-]+)\s*:/g)) defined.add(m[1]);
+  }
+  const used = [...wsSrc.matchAll(/var\((--[\w-]+)/g)].map((m) => m[1]);
+  assert.ok(used.length > 0, '工作台样式未使用任何变量，契约失去意义');
+  const missing = [...new Set(used.filter((name) => !defined.has(name)))];
+  assert.deepEqual(missing, [], '存在未解析的设计变量：' + missing.join(', '));
+});
+// T-2 —— Trae 教程构建产物新鲜度契约（仅限 trae_tutorial/ 目录）。
+// 钉住的事实：该目录曾同时躺着新旧两套哈希构建（.js/.css/.map 共 4 个过期文件，
+// 约 2.6 MB），旧产物无任何引用。允许 bundler 产物内合理分块，只拦"三无"过期文件。
+test('trae tutorial keeps no stale hashed bundles beside the active ones', () => {
+  const DIR = path.resolve(__dirname, '../frontend/static/trae_tutorial');
+  const ASSETS = path.join(DIR, 'assets');
+  const html = fs.readFileSync(path.join(DIR, 'index.html'), 'utf8');
+  const files = fs.readdirSync(ASSETS);
+
+  // 页面直接引用的顶层产物。
+  const referenced = new Set();
+  for (const m of html.matchAll(/["'](?:\.\/)?assets\/([^"'?#]+)/g)) referenced.add(m[1]);
+  assert.ok(referenced.size > 0, 'trae 教程页未引用任何产物，契约失去意义');
+
+  // 活跃产物源码：用于识别其内部 import 的合法分块，及 .map 被宣告情况。
+  let activeCode = '';
+  for (const name of files) {
+    if ((name.endsWith('.js') || name.endsWith('.css')) && referenced.has(name)) {
+      activeCode += fs.readFileSync(path.join(ASSETS, name), 'utf8');
+    }
+  }
+
+  const stale = [];
+  for (const name of files) {
+    if (name.endsWith('.js') || name.endsWith('.css')) {
+      if (!referenced.has(name) && !activeCode.includes(name)) stale.push(name);
+    } else if (name.endsWith('.map')) {
+      const owner = name.slice(0, -4);
+      const ownerActive = referenced.has(owner) || activeCode.includes(owner);
+      if (!(ownerActive && activeCode.includes(name))) stale.push(name);
+    }
+  }
+  assert.deepEqual(stale, [], '存在过期构建产物：' + stale.join(', '));
+});

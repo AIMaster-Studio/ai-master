@@ -320,3 +320,9 @@
   background: var(--hold);
 }
 
+/* 8. Keyboard Focus Contract (.btn / .chip) */
+.btn:focus-visible,
+.chip:focus-visible {
+  outline: 2px solid var(--go);
+  outline-offset: 2px;
+}
