@@ -566,9 +566,10 @@ p {
 .stage-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  background: var(--line);
   margin: 24px 0 0;
-  gap: 8px;
+  gap: 1px;
 }
 
 .stage-tabs button {
@@ -577,9 +578,8 @@ p {
   justify-content: center;
   gap: 8px;
   border: 0;
-  border-bottom: 2px solid transparent;
   border-radius: var(--radius);
-  background: transparent;
+  background: var(--bg-panel);
   padding: 12px 6px;
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -592,9 +592,10 @@ p {
 }
 
 .stage-tabs button.selected {
-  border-bottom-color: var(--go);
   color: var(--go);
   font-weight: 600;
+  background: var(--go-dim);
+  box-shadow: inset 0 -2px 0 var(--go);
 }
 
 .stage-tabs .step-circle {
@@ -609,7 +610,68 @@ p {
 }
 
 .stage-panel {
-  padding-top: 24px;
+  position: relative;
+  padding: 32px 0 0 16px;
+  border-left: 1px solid var(--line);
+}
+
+.stage-panel::before {
+  content: "EVALUATION CHANNEL / " attr(data-stage);
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.plan-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  margin: 0 0 var(--space-4);
+  padding: 1px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+
+.plan-summary > span {
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-panel);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-summary .reinforcement {
+  color: var(--hold);
+}
+
+.plan-reason {
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line-dim);
+  padding-bottom: var(--space-3);
+}
+
+.plan-reason summary {
+  cursor: pointer;
+  color: var(--go);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage-panel {
+    animation: stage-state-in 160ms ease-out;
+  }
+}
+
+@keyframes stage-state-in {
+  from { opacity: 0.72; transform: translateX(2px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .explanation-prompt {

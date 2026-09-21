@@ -8,11 +8,22 @@
     const countDisplay = document.querySelector("#cases-visible-count");
     const matrixCells = document.querySelectorAll(".cell-matrix[data-filter-verdict]");
     const casesContainer = document.querySelector("#cases-container");
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let currentVerdict = "ALL";
     let currentModule = "ALL";
 
-    function updateFilters() {
+    function animateVisibleCards() {
+      if (reduceMotion || !Element.prototype.animate) return;
+      Array.from(cards).filter((card) => card.style.display !== "none").slice(0, 8).forEach((card) => {
+        card.animate(
+          [{ opacity: 0.72, transform: "translateY(2px)" }, { opacity: 1, transform: "translateY(0)" }],
+          { duration: 140, easing: "ease-out" }
+        );
+      });
+    }
+
+    function updateFilters(animate = false) {
       let visible = 0;
       cards.forEach((card) => {
         const v = card.getAttribute("data-verdict");
@@ -32,6 +43,7 @@
       if (countDisplay) {
         countDisplay.textContent = `显示 ${visible} / ${cards.length} 例`;
       }
+      if (animate) animateVisibleCards();
     }
 
     filterVerdictBtns.forEach((btn) => {
@@ -39,7 +51,7 @@
         filterVerdictBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         currentVerdict = btn.getAttribute("data-val") || "ALL";
-        updateFilters();
+        updateFilters(true);
       });
     });
 
@@ -48,7 +60,7 @@
         filterModuleBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         currentModule = btn.getAttribute("data-val") || "ALL";
-        updateFilters();
+        updateFilters(true);
       });
     });
 
@@ -65,7 +77,7 @@
           }
         });
         currentVerdict = targetVerdict;
-        updateFilters();
+        updateFilters(true);
 
         if (casesContainer) {
           casesContainer.scrollIntoView({ behavior: "smooth", block: "start" });

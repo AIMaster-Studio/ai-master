@@ -1088,7 +1088,7 @@ def rewrite_project_urls():
 
 
 def ai_review_css():
-    return """/* AI Review Evidence Wall - Dark Instrument System */
+    return r"""/* AI Review Evidence Wall - Dark Instrument System */
 .ai-review-page {
   padding-bottom: var(--space-16);
 }
@@ -1167,13 +1167,15 @@ def ai_review_css():
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-4);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
   margin-bottom: var(--space-8);
 }
 
 .kpi-card {
   background: var(--bg-panel);
-  border: 1px solid var(--line);
+  border: 0;
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -1190,7 +1192,7 @@ def ai_review_css():
 
 .kpi-readout {
   font-family: var(--font-mono);
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -1542,7 +1544,8 @@ def ai_review_css():
 
 .case-card {
   background: var(--bg-panel);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-dim);
+  border-left: 2px solid var(--line);
   display: flex;
   flex-direction: column;
   transition: border-color 0.15s ease;
@@ -1551,6 +1554,11 @@ def ai_review_css():
 .case-card:hover {
   border-color: var(--line-bright);
 }
+
+.case-card:has(.badge-tp) { border-left-color: var(--go); }
+.case-card:has(.badge-fn) { border-left-color: var(--hold); }
+.case-card:has(.badge-fp) { border-left-color: var(--stop); }
+.case-card:has(.badge-tn) { border-left-color: var(--ink-dim); }
 
 .case-card-header {
   display: flex;
@@ -1743,8 +1751,7 @@ def ai_review_css():
     font-size: 0.84rem;
     line-height: 1.55;
   }
-}
-"""
+}"""
 
 
 def build_ai_review(results_data):
@@ -2173,12 +2180,17 @@ def playground_css():
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: 1px;
+  width: max-content;
+  max-width: 100%;
+  padding: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
 }
 
 .category-btn {
   background: var(--bg-card);
-  border: 1px solid var(--line);
+  border: 0;
   color: var(--ink-muted);
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -2197,8 +2209,9 @@ def playground_css():
 .category-btn.active {
   background: var(--go-dim);
   color: var(--go);
-  border-color: var(--go);
   font-weight: 700;
+  outline: 1px solid var(--go);
+  outline-offset: -1px;
 }
 
 .search-box-wrap {
@@ -2248,22 +2261,27 @@ def playground_css():
 .labs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--space-5);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
   margin-bottom: var(--space-12);
 }
 
 .lab-card {
   background: var(--bg-panel);
-  border: 1px solid var(--line);
+  border: 0;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, outline-color 0.15s ease;
   border-radius: var(--radius);
+  position: relative;
 }
 
 .lab-card:hover {
-  border-color: var(--line-bright);
   background: var(--bg-card);
+  outline: 1px solid var(--line-bright);
+  outline-offset: -1px;
+  z-index: 1;
 }
 
 .lab-card-header {
@@ -2292,7 +2310,7 @@ def playground_css():
 }
 
 .lab-badge-algorithm { color: var(--go); border-color: var(--go-border); }
-.lab-badge-engineering { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+.lab-badge-engineering { color: var(--ink-muted); border-color: var(--line); }
 .lab-badge-simulation { color: var(--hold); border-color: var(--hold-border); }
 .lab-badge-core { color: var(--hold); border-color: var(--hold-border); }
 
@@ -2426,8 +2444,7 @@ def playground_css():
   .labs-grid {
     grid-template-columns: 1fr;
   }
-}
-"""
+}"""
 
 
 def build_playground():
@@ -2675,7 +2692,7 @@ def build_playground():
 
 
 def landing_css():
-    return """/* Competition Landing Page - Dark Instrument System */
+    return r"""/* Competition Landing Page - Dark Instrument System */
 .landing-page {
   padding-bottom: var(--space-16);
 }
@@ -2792,7 +2809,7 @@ def landing_css():
   padding: var(--space-3) var(--space-6);
   border: 1px solid var(--go);
   border-radius: var(--radius);
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -2802,6 +2819,11 @@ def landing_css():
   background: var(--go-hover);
   border-color: var(--go-hover);
   color: #041019;
+  transform: translateY(-1px);
+}
+
+.btn-hero-primary:active {
+  transform: translateY(0);
 }
 
 .btn-hero-secondary {
@@ -2829,16 +2851,18 @@ def landing_css():
 .metrics-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-4);
-  background: var(--bg-panel);
+  gap: 1px;
+  background: var(--line);
   border: 1px solid var(--line);
-  padding: var(--space-4) var(--space-6);
+  padding: 1px;
 }
 
 .metric-cell {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  background: var(--bg-panel);
+  padding: var(--space-4);
 }
 
 .metric-num {
@@ -2900,12 +2924,14 @@ def landing_css():
 .demo-steps-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-4);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
 }
 
 .demo-step-card {
   background: var(--bg-card);
-  border: 1px solid var(--line);
+  border: 0;
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
@@ -2915,8 +2941,9 @@ def landing_css():
 }
 
 .demo-step-card:hover {
-  border-color: var(--line-bright);
   background: var(--bg-card-hover);
+  outline: 1px solid var(--line-bright);
+  outline-offset: -1px;
 }
 
 .step-num-badge {
@@ -2969,13 +2996,15 @@ def landing_css():
 .pillars-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-5);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
   margin-top: var(--space-6);
 }
 
 .pillar-card {
   background: var(--bg-panel);
-  border: 1px solid var(--line);
+  border: 0;
   padding: var(--space-6);
   display: flex;
   flex-direction: column;
@@ -3090,7 +3119,9 @@ def landing_css():
 .dir-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-4);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
   margin-top: var(--space-4);
 }
 
@@ -3100,13 +3131,14 @@ def landing_css():
   gap: var(--space-1);
   padding: var(--space-3);
   background: var(--bg-card);
-  border: 1px solid var(--line);
-  transition: border-color 0.15s ease;
+  border: 0;
+  transition: outline-color 0.15s ease;
   border-radius: var(--radius);
 }
 
 .dir-item:hover {
-  border-color: var(--line-bright);
+  outline: 1px solid var(--line-bright);
+  outline-offset: -1px;
 }
 
 .dir-name {
@@ -3120,6 +3152,83 @@ def landing_css():
 .dir-desc {
   font-size: 0.75rem;
   color: var(--ink-dim);
+}
+
+
+@media (min-width: 1080px) {
+  .landing-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.65fr);
+    grid-template-areas:
+      "kicker mechanism"
+      "title mechanism"
+      "axiom mechanism"
+      "desc mechanism"
+      "actions mechanism"
+      "metrics metrics";
+    column-gap: var(--space-10);
+    align-items: start;
+  }
+  .hero-kicker { grid-area: kicker; }
+  .hero-title { grid-area: title; max-width: 760px; }
+  .hero-axiom { grid-area: axiom; justify-self: start; }
+  .hero-desc { grid-area: desc; max-width: 720px; }
+  .hero-actions { grid-area: actions; margin-bottom: 0; }
+  .mechanism-strip {
+    grid-area: mechanism;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-content: start;
+    align-self: stretch;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    counter-reset: pipeline;
+  }
+  .mechanism-strip::before {
+    content: "EVALUATION PIPELINE / 06 STAGES";
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+  .mechanism-step {
+    counter-increment: pipeline;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-bottom: 1px solid var(--line-dim);
+  }
+  .mechanism-step::before {
+    content: counter(pipeline, decimal-leading-zero);
+    width: 28px;
+    flex: 0 0 28px;
+    color: var(--go);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+  .mechanism-strip .mechanism-step:last-child { border-bottom: 0; }
+  .mechanism-arrow {
+    position: relative;
+    height: 1px;
+    margin: 0 var(--space-3);
+    background: var(--line-dim);
+    font-size: 0;
+  }
+  .mechanism-arrow::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: -2px;
+    width: 5px;
+    height: 5px;
+    background: var(--go);
+  }
+  .metrics-strip { grid-area: metrics; margin-top: var(--space-8); }
 }
 
 @media (max-width: 1024px) {
@@ -3159,8 +3268,7 @@ def landing_css():
   .metrics-strip {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-"""
+}"""
 
 
 def build_landing(courses, total_exercises=41):

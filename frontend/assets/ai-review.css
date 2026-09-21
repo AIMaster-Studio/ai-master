@@ -77,13 +77,15 @@
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-4);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
   margin-bottom: var(--space-8);
 }
 
 .kpi-card {
   background: var(--bg-panel);
-  border: 1px solid var(--line);
+  border: 0;
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -100,7 +102,7 @@
 
 .kpi-readout {
   font-family: var(--font-mono);
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -452,7 +454,8 @@
 
 .case-card {
   background: var(--bg-panel);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-dim);
+  border-left: 2px solid var(--line);
   display: flex;
   flex-direction: column;
   transition: border-color 0.15s ease;
@@ -461,6 +464,11 @@
 .case-card:hover {
   border-color: var(--line-bright);
 }
+
+.case-card:has(.badge-tp) { border-left-color: var(--go); }
+.case-card:has(.badge-fn) { border-left-color: var(--hold); }
+.case-card:has(.badge-fp) { border-left-color: var(--stop); }
+.case-card:has(.badge-tn) { border-left-color: var(--ink-dim); }
 
 .case-card-header {
   display: flex;

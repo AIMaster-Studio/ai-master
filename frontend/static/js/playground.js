@@ -6,11 +6,22 @@
     const searchInput = document.querySelector("#lab-search-input");
     const cards = document.querySelectorAll(".lab-card");
     const counter = document.querySelector("#lab-visible-counter");
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let currentCategory = "ALL";
     let searchQuery = "";
 
-    function filterCards() {
+    function animateVisibleCards() {
+      if (reduceMotion || !Element.prototype.animate) return;
+      Array.from(cards).filter((card) => card.style.display !== "none").slice(0, 8).forEach((card) => {
+        card.animate(
+          [{ opacity: 0.74, transform: "translateY(2px)" }, { opacity: 1, transform: "translateY(0)" }],
+          { duration: 130, easing: "ease-out" }
+        );
+      });
+    }
+
+    function filterCards(animate = false) {
       let visible = 0;
       const query = searchQuery.trim().toLowerCase();
 
@@ -34,6 +45,7 @@
       if (counter) {
         counter.textContent = `显示 ${visible} / ${cards.length} 个实验`;
       }
+      if (animate) animateVisibleCards();
     }
 
     categoryBtns.forEach((btn) => {
@@ -41,7 +53,7 @@
         categoryBtns.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         currentCategory = btn.getAttribute("data-cat") || "ALL";
-        filterCards();
+        filterCards(true);
       });
     });
 

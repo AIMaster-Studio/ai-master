@@ -120,6 +120,36 @@ test("ui-polish: evidence and lab pages retain competition density on tablet and
   assert.doesNotMatch(playgroundCss.toLowerCase(), /#a78bfa/, "Lab status badges must stay inside the three-signal palette");
 });
 
+test("ui-polish: autonomous design fusion uses continuous instrument surfaces and signal rails", () => {
+  const landingCss = fs.readFileSync(path.join(ASSETS, "landing.css"), "utf-8");
+  const reviewCss = fs.readFileSync(path.join(ASSETS, "ai-review.css"), "utf-8");
+  const playgroundCss = fs.readFileSync(path.join(ASSETS, "playground.css"), "utf-8");
+  const workspaceCss = fs.readFileSync(WORKSPACE_CSS, "utf-8");
+
+  assert.match(landingCss, /EVALUATION PIPELINE \/ 06 STAGES/, "Landing must expose the evaluator pipeline on wide screens");
+  assert.match(landingCss, /@media\s*\(min-width:\s*1080px\)[\s\S]*?grid-template-areas:/, "Landing must switch to a deliberate wide-screen instrument composition");
+  assert.match(reviewCss, /\.case-card:has\(\.badge-tp\)[^{]*\{\s*border-left-color:\s*var\(--go\)/, "Evidence cards must expose TP as a visible signal rail");
+  assert.match(reviewCss, /\.case-card:has\(\.badge-fn\)[^{]*\{\s*border-left-color:\s*var\(--hold\)/, "Evidence cards must expose FN as a visible hold rail");
+  assert.match(playgroundCss, /\.labs-grid\s*\{[\s\S]*?gap:\s*1px/, "Lab cards must read as a dense rack instead of a loose gallery");
+  assert.doesNotMatch(playgroundCss.toLowerCase(), /#38bdf8/, "Lab chrome must not introduce a fourth blue signal color");
+  assert.match(workspaceCss, /EVALUATION CHANNEL/, "Learning stages must read as an evaluator channel");
+  assert.match(workspaceCss, /@media\s*\(prefers-reduced-motion:\s*no-preference\)/, "Learning stage motion must respect reduced motion");
+});
+
+test("ui-polish: state motion is brief, optional and implemented without a new framework", () => {
+  const reviewJs = fs.readFileSync(path.join(FRONTEND, "static", "js", "ai-review.js"), "utf-8");
+  const playgroundJs = fs.readFileSync(path.join(FRONTEND, "static", "js", "playground.js"), "utf-8");
+  const workspaceJs = fs.readFileSync(path.join(FRONTEND, "static", "js", "learning-workspace.js"), "utf-8");
+
+  for (const [name, source] of [["AI Review", reviewJs], ["AI Lab", playgroundJs]]) {
+    assert.match(source, /prefers-reduced-motion:\s*reduce/, `${name} motion must respect reduced-motion preference`);
+    assert.match(source, /\.animate\(/, `${name} may use the native Web Animations API for state feedback`);
+    const durations = [...source.matchAll(/duration:\s*(\d+)/g)].map((match) => Number(match[1]));
+    assert.ok(durations.length > 0 && durations.every((duration) => duration <= 250), `${name} state motion must stay within the 250ms motion budget`);
+  }
+  assert.match(workspaceJs, /data-stage=/, "Learning workspace must expose the active stage as state, not decoration");
+});
+
 test("ui-polish: hands-on and beginner pages use the shared instrument system", () => {
   const forbidden = /blur\(|backdrop-filter\s*:|(?:linear|radial)-gradient\(|#aaa0ff|#bfb4ff|#a78bfa|border-radius:\s*(?:20|24|999)px/i;
   for (const relPage of STATIC_UTILITY_PAGES) {
