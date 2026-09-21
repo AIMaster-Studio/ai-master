@@ -19,7 +19,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { once } = require('node:events');
 const { createApp } = require('../server/index.js');
-const catalog = require('../frontend/data/learning-curriculum.json');
+const catalog = require('../server/data/learning-curriculum.json');
 
 // ---- 讲解模板（命中 7 项规则；刻意避开每个模块的 misconceptions 词面） ----
 function templateFor(module) {

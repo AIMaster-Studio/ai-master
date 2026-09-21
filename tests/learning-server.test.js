@@ -9,7 +9,7 @@ const { once } = require('node:events');
 const { createApp } = require('../server');
 const { reviewExplanation, validateConfig } = require('../server/ai-review');
 const core = require('../frontend/static/js/learning-core');
-const catalog = require('../frontend/data/learning-curriculum.json');
+const catalog = require('../server/data/learning-curriculum.json');
 
 const explanation = '大模型先把输入文本转成 token，再根据上下文预测后续片段，通过反复预测组成回答。这样的训练让它学习语言模式，但不能保证内容符合真实世界。比如我请它查询学校今年的奖学金截止日期，它可能根据旧资料生成流畅的回答，甚至编造一个日期。因此我会找到学校官方网站的最新通知，核验日期和适用年级；如果没有可靠证据，就说明目前无法确定，避免把幻觉当成已经证实的事实。';
 const profile = { goal: 'RAG 知识库', level: 'basic', dailyMinutes: 45 };
@@ -72,7 +72,7 @@ test('catalog strips answers, private files are blocked, animations support byte
   assert.equal(catalogResponse.status, 200);
   assert.equal(catalogResponse.data.modules.length, 7);
   assert.ok(catalogResponse.data.modules.every(m => !m.questions));
-  for (const route of ['/server/index.js', '/.git/config', '/.local/learning.sqlite', '/frontend/data/learning-curriculum.json', '/data/learning-curriculum.json', '/frontend/data/LEARNING-CURRICULUM.JSON', '/frontend/DATA/learning-curriculum.json', '/frontend/data/learning-curriculum.json.', '/frontend/data/learning-curriculum.json%20', '/frontend/data/learning-curriculum.json::$DATA', '/frontend/.local/test', '/frontend/data/users.json']) {
+  for (const route of ['/server/index.js', '/.git/config', '/.local/learning.sqlite', '/server/data/learning-curriculum.json', '/frontend/data/learning-curriculum.json', '/data/learning-curriculum.json', '/frontend/data/LEARNING-CURRICULUM.JSON', '/frontend/DATA/learning-curriculum.json', '/frontend/data/learning-curriculum.json.', '/frontend/data/learning-curriculum.json%20', '/frontend/data/learning-curriculum.json::$DATA', '/frontend/.local/test', '/frontend/data/users.json']) {
     assert.equal((await request(route)).status, 404, route);
   }
   const video = await request('/third_party/dsh-pet/dsh-pet/assets/webm/' + encodeURIComponent('待机呼吸休闲') + '.webm', undefined, { headers: { Range: 'bytes=0-99' } });

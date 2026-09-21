@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "frontend" / "data" / "quiz_bank.json"
+OUT = ROOT / "server" / "data" / "quiz-bank.json"
 
 SOURCES = {
     "google-mlcc": {

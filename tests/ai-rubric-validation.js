@@ -27,6 +27,7 @@ try {
 
 const { reviewExplanation } = require('../server/ai-review');
 const core = require('../frontend/static/js/learning-core');
+// 公开投影：本脚本只做 moduleId -> module 的映射，不需要答案键。
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'frontend/data/learning-curriculum.json'), 'utf8'));
 const modules = new Map(catalog.modules.map(m => [m.id, m]));
 

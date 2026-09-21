@@ -107,7 +107,7 @@ function createApp(options = {}) {
     return supplied.length === wanted.length && timingSafeEqual(supplied, wanted);
   }
   const core = options.core || require('../frontend/static/js/learning-core');
-  const catalog = options.catalog || require('../frontend/data/learning-curriculum.json');
+  const catalog = options.catalog || require('./data/learning-curriculum.json');
   const store = openStore(options.dbPath || (options.inMemory ? ':memory:' : path.join(ROOT, '.local/learning.sqlite')), options.forceSqlite);
   // 「本机持久化」与「临时实例」两种形态必须一起切换，不能只切数据库。
   //
@@ -267,7 +267,7 @@ function createApp(options = {}) {
         filename = path.join(filename, 'index.html'); stat = fs.statSync(filename);
       }
       const realFilename = fs.realpathSync(filename);
-      const answerFile = path.join(ROOT, 'frontend/data/learning-curriculum.json');
+      const answerFile = path.join(ROOT, 'server/data/learning-curriculum.json');
       if (!stat.isFile() || !realFilename.startsWith(ROOT + path.sep) || realFilename.toLowerCase() === answerFile.toLowerCase()) fail(404, '文件不存在。');
     } catch { fail(404, '文件不存在。'); }
     const headers = { 'Content-Type': MIME[path.extname(filename).toLowerCase()] || 'application/octet-stream', 'Accept-Ranges': 'bytes', 'Cache-Control': 'no-cache' };

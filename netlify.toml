@@ -1,5 +1,11 @@
 [build]
-  publish = "."
+  # 只发布 Web 前端资产（frontend/）。
+  #
+  # 此前 publish = "." 会把**整个仓库**上传为静态文件 —— 包括 server/data 下的评分答案源、
+  # tests/、scripts/ —— 仅靠下面那条 "/*  ->  /frontend/:splat" 通配重写才让它们"访问不到"。
+  # 那是遮蔽（shadowing），不是边界：通配规则一旦被改坏或调整顺序，私有文件立刻可下载。
+  # 发布根改为 frontend/ 后，非静态内容根本不进入 deploy artifact。
+  publish = "frontend"
   command = ""
 
 [build.environment]
@@ -7,20 +13,21 @@
   DEEPSEEK_MODEL = "deepseek-flash"
 
 [functions]
+  # 函数目录相对仓库根解析，不受 publish 影响；server/** 仍随函数打包（服务端使用，非静态资产）。
   directory = "netlify/functions"
   node_bundler = "zisi"
+
+# 规则处理顺序（Netlify 文档：docs.netlify.com/manage/routing/redirects/overview#rule-processing-order）：
+#   _redirects（位于**发布根目录**）先处理，netlify.toml 的规则后处理。
+#
+# 发布根已改为 frontend/，因此 frontend/_redirects 现在就是 Netlify 的生效规则文件：
+# 根路径 "/" 的规则统一写在那边，此处不再重复声明，避免两套语义并存。
+# 兜底：即使该规则失效，"/" 也会落到 frontend/index.html（其 meta refresh 进入 learning-center/）。
+#
+# 原 "/*  ->  /frontend/:splat" 通配重写已删除：发布根本身就是 frontend/，
+# 该重写已成自反映射，并会把每个真实的不存在路径都伪装成 200。
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api"
-  status = 200
-
-[[redirects]]
-  from = "/"
-  to = "/frontend/learning-center/"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/frontend/:splat"
   status = 200

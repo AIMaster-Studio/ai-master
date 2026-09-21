@@ -21,8 +21,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const QUESTION_SOURCES = [
-  path.resolve(__dirname, '../frontend/data/learning-curriculum.json'),
-  path.resolve(__dirname, '../frontend/data/quiz_bank.json')
+  path.resolve(__dirname, '../server/data/learning-curriculum.json'),
+  path.resolve(__dirname, '../server/data/quiz-bank.json')
 ];
 
 // 量级性数字的形态。刻意不含裸数字。
@@ -63,8 +63,12 @@ test('the question banks are non-empty and actually scanned', () => {
   const questions = collectQuestions();
   // 这条防的是「扫描器坏了所以永远通过」—— 这是这类守卫测试最常见的失效方式。
   assert.ok(questions.length >= 100, '扫描到的题目数量异常：' + questions.length);
-  assert.ok(questions.some(item => item.file === 'learning-curriculum.json'));
-  assert.ok(questions.some(item => item.file === 'quiz_bank.json'));
+  // 逐个题库都必须有题被扫到。名字从 QUESTION_SOURCES 派生，
+  // 这样题库文件改名/搬家时这条守卫不会悄悄变成空转。
+  for (const source of QUESTION_SOURCES) {
+    const name = path.basename(source);
+    assert.ok(questions.some(item => item.file === name), '未扫描到题库：' + name);
+  }
   for (const item of questions) {
     assert.equal(typeof item.question.answer, 'number', '题目缺少整数答案：' + JSON.stringify(item.question).slice(0, 80));
     assert.ok(item.question.answer >= 0 && item.question.answer < item.question.options.length);

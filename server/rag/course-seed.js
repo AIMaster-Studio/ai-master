@@ -97,6 +97,8 @@ function moduleDocuments(curriculum) {
 }
 
 function buildCourseDocuments(options = {}) {
+  // 只使用公开模块元数据（title/objective/summary/concepts/misconceptions），
+  // 因此读公开投影即可；答案键不参与灌库。
   const dataDir = options.dataDir || path.resolve(__dirname, '../../frontend/data');
   const curriculum = options.curriculum || JSON.parse(fs.readFileSync(path.join(dataDir, 'learning-curriculum.json'), 'utf8'));
   const documents = [];
