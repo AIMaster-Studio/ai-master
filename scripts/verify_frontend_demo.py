@@ -48,6 +48,7 @@ PAGES = [
 ASSETS = [
     "/assets/tokens.css",
     "/assets/frontend.css",
+    "/assets/landing.css",
     "/assets/frontend.js",
     "/assets/ai-review.css",
     "/assets/playground.css",

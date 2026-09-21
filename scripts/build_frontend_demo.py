@@ -2437,6 +2437,659 @@ def build_playground():
 </html>"""
 
 
+
+def landing_css():
+    return """/* Competition Landing Page - Dark Instrument System */
+.landing-page {
+  padding-bottom: var(--space-16);
+}
+
+/* Hero Section */
+.landing-hero {
+  border-bottom: 1px solid var(--line);
+  padding: var(--space-12) 0 var(--space-10) 0;
+  margin-bottom: var(--space-10);
+}
+
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--go);
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.hero-kicker::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--go);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  margin: 0 0 var(--space-5) 0;
+  max-width: 1000px;
+}
+
+.hero-title .highlight-brand {
+  color: var(--go);
+}
+
+.hero-desc {
+  max-width: 860px;
+  color: var(--ink-muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin: 0 0 var(--space-8) 0;
+}
+
+.hero-desc strong {
+  color: var(--ink);
+}
+
+/* Hero CTAs */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-10);
+}
+
+.btn-hero-primary {
+  background: var(--go);
+  color: #041019;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid var(--go);
+  border-radius: var(--radius);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-hero-primary:hover {
+  background: var(--go-hover);
+  border-color: var(--go-hover);
+  color: #041019;
+}
+
+.btn-hero-secondary {
+  background: var(--bg-card);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-hero-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--line-bright);
+}
+
+/* Scale & Tech Metrics Row */
+.metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-4) var(--space-6);
+}
+
+.metric-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.metric-num {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--go);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-sub {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+/* 3-Minute Demo Workflow */
+.demo-path-section {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-8);
+  margin-bottom: var(--space-12);
+}
+
+.section-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--go);
+  margin-bottom: var(--space-2);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 var(--space-3) 0;
+  letter-spacing: -0.02em;
+}
+
+.section-desc {
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 0 var(--space-6) 0;
+}
+
+.demo-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.demo-step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: border-color 0.15s ease, background 0.15s ease;
+  border-radius: var(--radius);
+}
+
+.demo-step-card:hover {
+  border-color: var(--line-bright);
+  background: var(--bg-card-hover);
+}
+
+.step-num-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--go);
+  background: var(--go-dim);
+  border: 1px solid var(--go-border);
+  padding: 2px 8px;
+  align-self: flex-start;
+  border-radius: var(--radius);
+}
+
+.step-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.step-desc {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.step-link-btn {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--go);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+}
+
+.step-link-btn:hover {
+  color: var(--go-hover);
+}
+
+/* 4 Pillars Section */
+.pillars-section {
+  margin-bottom: var(--space-12);
+}
+
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+}
+
+.pillar-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-radius: var(--radius);
+}
+
+.pillar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pillar-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--go);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pillar-num {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink-dim);
+}
+
+.pillar-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pillar-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+.pillar-bullets {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-2) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pillar-bullets li {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  line-height: 1.4;
+}
+
+.pillar-bullets li::before {
+  content: "■";
+  color: var(--go);
+  font-size: 0.6rem;
+  margin-top: 3px;
+}
+
+/* System Philosophy Banner */
+.philosophy-banner {
+  background: var(--bg-panel);
+  border-left: 3px solid var(--go);
+  border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: var(--space-6);
+  margin-bottom: var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.philosophy-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--go);
+  text-transform: uppercase;
+}
+
+.philosophy-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.philosophy-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  line-height: 1.6;
+  max-width: 900px;
+}
+
+/* Quick Navigation Directory */
+.directory-section {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-6);
+}
+
+.dir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.dir-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  transition: border-color 0.15s ease;
+  border-radius: var(--radius);
+}
+
+.dir-item:hover {
+  border-color: var(--line-bright);
+}
+
+.dir-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  justify-content: space-between;
+}
+
+.dir-desc {
+  font-size: 0.75rem;
+  color: var(--ink-dim);
+}
+"""
+
+
+def build_landing(courses, total_exercises=41):
+    source = "index.html"
+    navigation = nav(source)
+
+    total_chapters = len(courses)
+    total_nodes = sum(c.get("knowledge_count", 0) for c in courses)
+
+    dash_url = page_url("/dashboard/", source)
+    play_url = page_url("/playground/", source)
+    review_url = page_url("/ai-review/", source)
+    coach_url = page_url("/learning-center/", source)
+    handson_url = page_url("/hands-on/", source)
+    stars_url = page_url("/knowledge-stars/", source)
+    canvas_url = page_url("/canvas/", source)
+    beginner_url = page_url("/beginner/", source)
+
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI Master — 懂原理，更能写出工业级代码</title>
+  <link rel="stylesheet" href="assets/tokens.css">
+  <link rel="stylesheet" href="assets/frontend.css">
+  <link rel="stylesheet" href="assets/landing.css">
+</head>
+<body>
+  {navigation}
+  <main class="demo-page landing-page">
+    <section class="landing-hero">
+      <div class="hero-kicker">AI ENGINEERING MASTERY PLATFORM · 竞赛核心成果展台</div>
+      <h1 class="hero-title">
+        AI Master <span class="highlight-brand">—</span> 懂原理，更能写出工业级代码
+      </h1>
+      <p class="hero-desc">
+        构建新一代 AI 工程师硬核工程心智：从底层 <strong>BPE 子词切分、QKV 自注意力点积</strong>，到企业级 <strong>私有 RAG 向量检索与 ReAct 智能体协同</strong>。<br>
+        独创<strong>“费曼口语化讲解通关 + 源码级动手实验 + 双盲 AI 严苛复评”</strong>三位一体闭环体系，坚决拒绝浅层 API 拼装与死记硬背。
+      </p>
+
+      <div class="hero-actions">
+        <a href="{dash_url}" class="btn-hero-primary">进入课程总览 (Dashboard) ↗</a>
+        <a href="{play_url}" class="btn-hero-secondary">探索 AI 实验工坊 (Labs) ↗</a>
+        <a href="{review_url}" class="btn-hero-secondary">查看 AI 评测证据墙 (Evidence) ↗</a>
+      </div>
+
+      <div class="metrics-strip">
+        <div class="metric-cell">
+          <span class="metric-num">{total_chapters}</span>
+          <span class="metric-label">核心课程章节</span>
+          <span class="metric-sub">全栈工程师知识谱系</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-num">{total_exercises}</span>
+          <span class="metric-label">动手代码任务</span>
+          <span class="metric-sub">源码实战真实对齐</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-num">12</span>
+          <span class="metric-label">高可交互实验工坊</span>
+          <span class="metric-sub">算法与可视化仿真</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-num">7</span>
+          <span class="metric-label">口语讲解通关门禁</span>
+          <span class="metric-sub">费曼输出深度审查</span>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-num">90.5%</span>
+          <span class="metric-label">AI 评测基准准确率</span>
+          <span class="metric-sub">0 假阳性劣质概念拦截</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-path-section">
+      <div class="section-kicker">JUDGE REVIEW PATH · 3-MINUTE FLOW</div>
+      <h2 class="section-title">3 分钟竞赛评审推荐演示路径</h2>
+      <p class="section-desc">
+        专为评委设计的高密度动线，3 分钟即可深度检验本系统的三大核心工程壁垒与交互完成度：
+      </p>
+
+      <div class="demo-steps-grid">
+        <div class="demo-step-card">
+          <span class="step-num-badge">STEP 01 · 全景与契约</span>
+          <h3 class="step-name">课程总览与统一进度</h3>
+          <p class="step-desc">
+            查阅 10 大章节全景。体验断网/纯静态环境下诚实展示 0/7 真实进度与 41 任务对齐，杜绝虚假造假数据。
+          </p>
+          <a href="{dash_url}" class="step-link-btn">进入课程总览 ↗</a>
+        </div>
+
+        <div class="demo-step-card">
+          <span class="step-num-badge">STEP 02 · 算法工坊</span>
+          <h3 class="step-name">可交互算法实验</h3>
+          <p class="step-desc">
+            体验 BPE 分词动态合并、Transformer QKV 点积热力图与 RAG 向量检索，直击大模型核心原理底层。
+          </p>
+          <a href="{play_url}" class="step-link-btn">进入实验工坊 ↗</a>
+        </div>
+
+        <div class="demo-step-card">
+          <span class="step-num-badge">STEP 03 · 科学诚信</span>
+          <h3 class="step-name">AI 评测双盲证据墙</h3>
+          <p class="step-desc">
+            检阅 21 例真实学生口语讲解双盲复核数据、混淆矩阵（Precision 100%）与未采集指标（NOT CAPTURED）透明公示。
+          </p>
+          <a href="{review_url}" class="step-link-btn">查看证据墙 ↗</a>
+        </div>
+
+        <div class="demo-step-card">
+          <span class="step-num-badge">STEP 04 · 费曼通关</span>
+          <h3 class="step-name">讲解通关与实时反馈</h3>
+          <p class="step-desc">
+            亲历以教代学费曼通关舱，口述核心概念并触发 DeepSeek 事实性审查与本地降级容灾链路。
+          </p>
+          <a href="{coach_url}" class="step-link-btn">进入通关舱 ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="pillars-section">
+      <div class="section-kicker">CORE METHODOLOGY · FOUR PILLARS</div>
+      <h2 class="section-title">四维工程训练闭环机制</h2>
+
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <span class="pillar-tag">PILLAR 01</span>
+            <span class="pillar-num">01</span>
+          </div>
+          <h3 class="pillar-title">全景知识宇宙 (Knowledge Cosmos)</h3>
+          <p class="pillar-desc">
+            结构化拆解 57 个核心技术节点，从自回归概率采样到因果掩码、位置编码与多头注意力，建立完整 AI 工程师技术全貌。
+          </p>
+          <ul class="pillar-bullets">
+            <li>10 完整章节循序渐进演进体系</li>
+            <li>Three.js 57 知识星辰 3D 拓扑星海映射</li>
+            <li>理论概念与工程源码一一锚定关联</li>
+          </ul>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <span class="pillar-tag">PILLAR 02</span>
+            <span class="pillar-num">02</span>
+          </div>
+          <h3 class="pillar-title">源码级动手实战 (Hands-on Practice)</h3>
+          <p class="pillar-desc">
+            拒绝泛泛而谈的纸上谈兵。41 个源码级工程任务覆盖分词实现、向量相似度算子、提示词约束解析与智能体工具拦截。
+          </p>
+          <ul class="pillar-bullets">
+            <li>41 个独立任务代码契约与预期输出</li>
+            <li>直连真实工程挑战与代码实现细节</li>
+            <li>提供阶梯式完成引导与进阶提示</li>
+          </ul>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <span class="pillar-tag">PILLAR 03</span>
+            <span class="pillar-num">03</span>
+          </div>
+          <h3 class="pillar-title">口语讲解与费曼把关 (Feynman Oral Defense)</h3>
+          <p class="pillar-desc">
+            “如果你不能向一个外行解释清楚，说明你还没有真正掌握”。采用费曼学习法，要求学习者用自己的话讲透底层逻辑。
+          </p>
+          <ul class="pillar-bullets">
+            <li>7 核心模块严苛门禁复核机制</li>
+            <li>前置 8 项启发式规则快速筛查</li>
+            <li>DeepSeek 事实性核验与深度质询</li>
+          </ul>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-header">
+            <span class="pillar-tag">PILLAR 04</span>
+            <span class="pillar-num">04</span>
+          </div>
+          <h3 class="pillar-title">工业级严谨与科学诚信 (Engineering Honesty)</h3>
+          <p class="pillar-desc">
+            秉持实事求是的工程师底线。公开全部真实评测混淆矩阵，对未埋点运行参数坚决标记 NOT CAPTURED，杜绝数据伪造。
+          </p>
+          <ul class="pillar-bullets">
+            <li>21 真实样本双盲测试真值投影</li>
+            <li>Precision 100% 劣质回答零误放防线</li>
+            <li>推理延迟、Token、成本未采集透明公示</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="philosophy-banner">
+      <span class="philosophy-kicker">ENGINEERING PHILOSOPHY · RUTHLESS SUBTRACTION</span>
+      <h2 class="philosophy-title">暗色仪器仪表美学与无情精简原则</h2>
+      <p class="philosophy-desc">
+        我们坚决摒弃通用 AI 产品千篇一律的紫粉渐变、毛玻璃磨砂（Glassmorphism）与装饰性 3D 浮球。采用严谨的 <strong>暗色仪器仪表系统（Dark Instrument）</strong>，严格执行 4px 网格对齐、0 倒角硬件质感与单像素精密边框。让界面回归专业工程终端本色，以数据与代码说话。
+      </p>
+    </section>
+
+    <section class="directory-section">
+      <div class="section-kicker">SITE DIRECTORY · ALL MODULES</div>
+      <h2 class="section-title">系统快速入口导航</h2>
+      <div class="dir-grid">
+        <a href="{dash_url}" class="dir-item">
+          <span class="dir-name">课程总览 ↗</span>
+          <span class="dir-desc">10 章节全景知识仪表盘</span>
+        </a>
+        <a href="{coach_url}" class="dir-item">
+          <span class="dir-name">讲解通关舱 ↗</span>
+          <span class="dir-desc">7 核心模块费曼口语通关</span>
+        </a>
+        <a href="{play_url}" class="dir-item">
+          <span class="dir-name">实验工坊 ↗</span>
+          <span class="dir-desc">12 算法与工程交互实验</span>
+        </a>
+        <a href="{review_url}" class="dir-item">
+          <span class="dir-name">评测证据墙 ↗</span>
+          <span class="dir-desc">双盲真值投影与混淆矩阵</span>
+        </a>
+        <a href="{handson_url}" class="dir-item">
+          <span class="dir-name">动手实践 ↗</span>
+          <span class="dir-desc">41 源码任务工程实战</span>
+        </a>
+        <a href="{stars_url}" class="dir-item">
+          <span class="dir-name">知识星海 ↗</span>
+          <span class="dir-desc">Three.js 3D 拓扑星系</span>
+        </a>
+        <a href="{canvas_url}" class="dir-item">
+          <span class="dir-name">思维画布 ↗</span>
+          <span class="dir-desc">全景概念拓扑关联推演</span>
+        </a>
+        <a href="{beginner_url}" class="dir-item">
+          <span class="dir-name">新手入门 ↗</span>
+          <span class="dir-desc">环境配置与工具链指南</span>
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>"""
+
+
 def main():
     courses = load("courses_index.json")
     rubric_results_path = ROOT / "tests" / "ai-rubric-validation-results.json"
@@ -2448,7 +3101,8 @@ def main():
     write("assets/chapter-demo.css", chapter_css())
     write("assets/ai-review.css", ai_review_css())
     write("assets/frontend.js", runtime_js())
-    write("index.html", '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=learning-center/"><title>AI Master 讲解通关</title></head><body><p>正在进入 <a href="learning-center/">AI Master 讲解通关</a>...</p></body></html>')
+    write("assets/landing.css", landing_css())
+    write("index.html", build_landing(courses, total_exercises=41))
     write("dashboard/index.html", build_dashboard(courses))
     write("data/ai-rubric-validation-results.json", json.dumps(rubric_data, ensure_ascii=False, indent=2))
     write("ai-review/index.html", build_ai_review(rubric_data))
