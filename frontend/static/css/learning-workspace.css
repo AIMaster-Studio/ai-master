@@ -138,8 +138,7 @@ button.success {
   gap: var(--space-8);
   padding: 0 var(--space-6);
   border-bottom: 1px solid var(--line);
-  background: rgba(9, 13, 22, 0.96);
-  backdrop-filter: blur(12px);
+  background: var(--bg-panel);
 }
 
 .brand {
@@ -981,7 +980,6 @@ dialog {
 
 dialog::backdrop {
   background: rgba(4, 7, 15, 0.85);
-  backdrop-filter: blur(4px);
 }
 
 /* Toast */
@@ -1220,4 +1218,115 @@ dialog::backdrop {
 .empty-state h2,
 .empty-state h3 {
   color: var(--ink);
+}
+
+/* Responsive workspace: keep every surface reachable without forcing the
+   desktop three-rail grid into the mobile viewport. */
+@media (max-width: 900px) {
+  .app-header {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .top-nav {
+    order: 3;
+    width: 100%;
+    gap: var(--space-4);
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+    scrollbar-width: thin;
+  }
+
+  .top-nav a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .header-tools {
+    gap: var(--space-2);
+  }
+
+  .workspace-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "main"
+      "navigation"
+      "companion";
+    min-height: 0;
+  }
+
+  #main-content {
+    grid-area: main;
+    padding: var(--space-6) var(--space-4) var(--space-10);
+  }
+
+  .sidebar {
+    grid-area: navigation;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: var(--space-4);
+  }
+
+  .view-nav,
+  .route-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .view-nav {
+    margin-bottom: var(--space-4);
+  }
+
+  .sidebar-bottom {
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+  }
+
+  .companion-rail {
+    grid-area: companion;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: var(--space-4);
+  }
+
+  .companion-portrait {
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand {
+    min-width: 0;
+  }
+
+  .header-tools {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .header-tools > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .page-heading {
+    flex-direction: column;
+  }
+
+  .heading-actions {
+    width: 100%;
+  }
+
+  .heading-actions button,
+  .heading-actions .button-link {
+    flex: 1 1 auto;
+  }
+
+  .view-nav,
+  .route-list {
+    grid-template-columns: 1fr;
+  }
 }

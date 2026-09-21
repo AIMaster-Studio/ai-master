@@ -2655,16 +2655,56 @@ def landing_css():
   color: var(--go);
 }
 
+.hero-axiom {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--hold);
+  background: var(--bg-panel);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .hero-desc {
-  max-width: 860px;
+  max-width: 900px;
   color: var(--ink-muted);
   font-size: 1.05rem;
   line-height: 1.7;
-  margin: 0 0 var(--space-8) 0;
+  margin: 0 0 var(--space-5) 0;
 }
 
 .hero-desc strong {
   color: var(--ink);
+}
+
+.mechanism-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-8) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+}
+
+.mechanism-step {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.mechanism-arrow {
+  color: var(--go);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
 
 /* Hero CTAs */
@@ -3016,44 +3056,41 @@ def landing_css():
 }
 
 @media (max-width: 1024px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-8);
-  }
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-  .step-flow {
+  .demo-steps-grid,
+  .pillars-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .demo-tracks {
-    grid-template-columns: 1fr;
-  }
-  .meta-grid {
-    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
-  .hero-h1 {
-    font-size: 2.2rem;
+  .landing-hero {
+    padding-top: var(--space-8);
+  }
+  .hero-title {
+    font-size: clamp(2rem, 11vw, 2.6rem);
   }
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  .hero-actions .btn {
+  .hero-actions > a {
     width: 100%;
     justify-content: center;
+    text-align: center;
   }
-  .step-flow {
+  .mechanism-strip {
+    align-items: stretch;
+  }
+  .mechanism-step {
+    white-space: normal;
+  }
+  .demo-steps-grid,
+  .pillars-grid,
+  .dir-grid {
     grid-template-columns: 1fr;
   }
   .metrics-strip {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .hero-kpis {
-    grid-template-columns: 1fr 1fr;
   }
 }
 """
@@ -3080,7 +3117,7 @@ def build_landing(courses, total_exercises=41):
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AI Master — 懂原理，更能写出工业级代码</title>
+  <title>AI Master — AI 不替你学，AI 当你的考官</title>
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/frontend.css">
   <link rel="stylesheet" href="assets/landing.css">
@@ -3091,17 +3128,26 @@ def build_landing(courses, total_exercises=41):
     <section class="landing-hero">
       <div class="hero-kicker">AI ENGINEERING MASTERY PLATFORM · 竞赛核心成果展台</div>
       <h1 class="hero-title">
-        AI Master <span class="highlight-brand">—</span> 懂原理，更能写出工业级代码
+        AI 不替你学，<span class="highlight-brand">AI 当你的考官。</span>
       </h1>
+      <p class="hero-axiom">看懂 ≠ 会讲 ≠ 会用</p>
       <p class="hero-desc">
-        构建新一代 AI 工程师硬核工程心智：从底层 <strong>BPE 子词切分、QKV 自注意力点积</strong>，到企业级 <strong>私有 RAG 向量检索与 ReAct 智能体协同</strong>。<br>
-        独创<strong>“费曼口语化讲解通关 + 源码级动手实验 + 双盲 AI 严苛复评”</strong>三位一体闭环体系，坚决拒绝浅层 API 拼装与死记硬背。
+        不是把答案交给你，而是要求你<strong>讲清机制、拿出课程证据、通过复评并完成测验</strong>。每一次“学会”都必须留下可复核的通关证据。
       </p>
 
+      <div class="mechanism-strip" aria-label="AI Master 通关机制">
+        <span class="mechanism-step">规则筛查</span><span class="mechanism-arrow">→</span>
+        <span class="mechanism-step">课程证据</span><span class="mechanism-arrow">→</span>
+        <span class="mechanism-step">AI 复评</span><span class="mechanism-arrow">→</span>
+        <span class="mechanism-step">引用校验</span><span class="mechanism-arrow">→</span>
+        <span class="mechanism-step">测验</span><span class="mechanism-arrow">→</span>
+        <span class="mechanism-step">复习</span>
+      </div>
+
       <div class="hero-actions">
-        <a href="{dash_url}" class="btn-hero-primary">进入课程总览 (Dashboard) ↗</a>
-        <a href="{play_url}" class="btn-hero-secondary">探索 AI 实验工坊 (Labs) ↗</a>
-        <a href="{review_url}" class="btn-hero-secondary">查看 AI 评测证据墙 (Evidence) ↗</a>
+        <a href="{coach_url}" class="btn-hero-primary">开始 3 分钟体验 ↗</a>
+        <a href="{review_url}" class="btn-hero-secondary">查看 AI 评测证据 ↗</a>
+        <a href="{play_url}" class="btn-hero-secondary">进入 AI 实验室 ↗</a>
       </div>
 
       <div class="metrics-strip">

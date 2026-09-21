@@ -6,6 +6,7 @@ const path = require("node:path");
 const ROOT = path.resolve(__dirname, "..");
 const FRONTEND = path.join(ROOT, "frontend");
 const ASSETS = path.join(FRONTEND, "assets");
+const WORKSPACE_CSS = path.join(FRONTEND, "static", "css", "learning-workspace.css");
 
 test("ui-polish: tokens.css declares zero radius, 4px grid and signal tokens", () => {
   const tokensCss = fs.readFileSync(path.join(ASSETS, "tokens.css"), "utf-8");
@@ -47,6 +48,9 @@ test("ui-polish: strictly zero blur / glassmorphism across all core stylesheets"
     const content = fs.readFileSync(filePath, "utf-8");
     assert.doesNotMatch(content, /blur\(/, `Stylesheet ${sheet} must not contain blur()`);
   }
+
+  const workspaceCss = fs.readFileSync(WORKSPACE_CSS, "utf-8");
+  assert.doesNotMatch(workspaceCss, /blur\(/, "Learning workspace must not contain blur()");
 });
 
 test("ui-polish: strictly zero purple/pink AI gradients in core stylesheets and chapter pages", () => {
@@ -93,6 +97,10 @@ test("ui-polish: responsive media queries exist across layout sheets", () => {
     const content = fs.readFileSync(path.join(ASSETS, sheet), "utf-8");
     assert.match(content, /@media\s*\(/, `Stylesheet ${sheet} must declare responsive @media queries`);
   }
+
+  const workspaceCss = fs.readFileSync(WORKSPACE_CSS, "utf-8");
+  assert.match(workspaceCss, /@media\s*\(max-width:\s*900px\)/, "Learning workspace must collapse desktop rails on small screens");
+  assert.match(workspaceCss, /grid-template-areas:[\s\S]*?"main"[\s\S]*?"navigation"[\s\S]*?"companion"/, "Mobile learning workspace must keep main content first");
 });
 
 test("ui-polish: core sprint HTML pages have valid doctype and link tokens.css", () => {

@@ -45,16 +45,56 @@
   color: var(--go);
 }
 
+.hero-axiom {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--hold);
+  background: var(--bg-panel);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
 .hero-desc {
-  max-width: 860px;
+  max-width: 900px;
   color: var(--ink-muted);
   font-size: 1.05rem;
   line-height: 1.7;
-  margin: 0 0 var(--space-8) 0;
+  margin: 0 0 var(--space-5) 0;
 }
 
 .hero-desc strong {
   color: var(--ink);
+}
+
+.mechanism-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-8) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+}
+
+.mechanism-step {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.mechanism-arrow {
+  color: var(--go);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
 
 /* Hero CTAs */
@@ -406,43 +446,40 @@
 }
 
 @media (max-width: 1024px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-8);
-  }
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-  .step-flow {
+  .demo-steps-grid,
+  .pillars-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .demo-tracks {
-    grid-template-columns: 1fr;
-  }
-  .meta-grid {
-    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
-  .hero-h1 {
-    font-size: 2.2rem;
+  .landing-hero {
+    padding-top: var(--space-8);
+  }
+  .hero-title {
+    font-size: clamp(2rem, 11vw, 2.6rem);
   }
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  .hero-actions .btn {
+  .hero-actions > a {
     width: 100%;
     justify-content: center;
+    text-align: center;
   }
-  .step-flow {
+  .mechanism-strip {
+    align-items: stretch;
+  }
+  .mechanism-step {
+    white-space: normal;
+  }
+  .demo-steps-grid,
+  .pillars-grid,
+  .dir-grid {
     grid-template-columns: 1fr;
   }
   .metrics-strip {
     grid-template-columns: repeat(2, 1fr);
-  }
-  .hero-kpis {
-    grid-template-columns: 1fr 1fr;
   }
 }

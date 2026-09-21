@@ -15,16 +15,27 @@ test('competition landing page exists and is a full instrument page, not a meta 
 
   assert.doesNotMatch(html, /http-equiv="refresh"/, 'Landing page must NOT be a meta-refresh redirect');
   assert.match(html, /AI Master/, 'Must contain AI Master brand title');
-  assert.match(html, /懂原理，更能写出工业级代码/, 'Must contain core value proposition');
+  assert.match(html, /AI 不替你学，[\s\S]*?AI 当你的考官。/, 'Must contain competition core proposition');
+  assert.match(html, /看懂 ≠ 会讲 ≠ 会用/, 'Must state the learning distinction');
   assert.match(html, /AI ENGINEERING MASTERY PLATFORM/, 'Must contain hero kicker');
 });
 
-test('hero CTAs provide direct entry into dashboard, playground, and ai-review', () => {
+test('hero CTAs follow the competition entry contract', () => {
   const html = fs.readFileSync(indexPath, 'utf8');
 
-  assert.match(html, /href="dashboard\/"[^>]*>进入课程总览/, 'Primary CTA must lead to dashboard/');
-  assert.match(html, /href="playground\/"[^>]*>探索 AI 实验工坊/, 'Secondary CTA must lead to playground/');
-  assert.match(html, /href="ai-review\/"[^>]*>查看 AI 评测证据墙/, 'Tertiary CTA must lead to ai-review/');
+  assert.match(html, /href="learning-center\/"[^>]*>开始 3 分钟体验/, 'Primary CTA must lead to learning-center/');
+  assert.match(html, /href="ai-review\/"[^>]*>查看 AI 评测证据/, 'Evidence CTA must lead to ai-review/');
+  assert.match(html, /href="playground\/"[^>]*>进入 AI 实验室/, 'Lab CTA must lead to playground/');
+});
+
+test('hero exposes the complete evidence-first learning mechanism in order', () => {
+  const html = fs.readFileSync(indexPath, 'utf8');
+
+  assert.match(
+    html,
+    /规则筛查[\s\S]*?课程证据[\s\S]*?AI 复评[\s\S]*?引用校验[\s\S]*?测验[\s\S]*?复习/,
+    'Landing must show the full learning mechanism in order'
+  );
 });
 
 test('features 3-minute judge review recommended demo path', () => {
@@ -67,6 +78,9 @@ test('landing CSS follows dark instrument tokens with zero radius', () => {
   assert.match(css, /var\(--radius\)/, 'Landing CSS must use design token radius');
   assert.match(css, /tokens\.css|\-\-bg|\-\-go|\-\-line/, 'Landing CSS must use system tokens');
   assert.doesNotMatch(css, /border-radius:\s*(?:8|12|16|20)px/, 'No large rounded corners allowed');
+  assert.match(css, /\.hero-title\s*\{[\s\S]*?font-size:/, 'Responsive rules must target the real hero-title class');
+  assert.match(css, /\.hero-actions\s*>\s*a\s*\{[\s\S]*?width:\s*100%/, 'Mobile CTAs must expand to full width');
+  assert.doesNotMatch(css, /\.hero-h1\b/, 'Stale hero-h1 selector must not return');
 });
 
 test('mutation proof: empty or redirect landing page fails', () => {
