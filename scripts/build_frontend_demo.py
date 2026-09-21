@@ -79,7 +79,7 @@ def nav(source: str):
 
     return f"""<nav class="demo-nav">
   <div class="demo-nav-inner">
-    <a class="demo-brand" href="{dashboard}">
+    <a class="demo-brand" href="{page_url('/', source)}">
       <span class="brand-badge">AI</span>
       <span class="brand-name">AI MASTER <em class="brand-sub">/ CORE</em></span>
     </a>
@@ -222,6 +222,49 @@ a {
 }
 .footer a:hover {
   color: var(--go);
+}
+
+/* 3-Minute Competition Demo Tour Banner */
+.demo-tour-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--go-border);
+  border-left: 4px solid var(--go);
+  padding: var(--space-3) var(--space-5);
+  margin: var(--space-6) 0 var(--space-8);
+  border-radius: var(--radius);
+}
+.demo-tour-banner .tour-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.demo-tour-banner .tour-text {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+.demo-tour-banner .tour-text strong {
+  color: var(--ink);
+}
+.demo-tour-banner .tour-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+  .demo-tour-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .demo-tour-banner .tour-right {
+    justify-content: flex-end;
+  }
 }
 
 @media (max-width: 768px) {
@@ -645,9 +688,45 @@ def runtime_js():
     cards.forEach(c => observer.observe(c));
   }
 
+  function initDemoSeedControls() {
+    const seedBtn = document.querySelector("#btn-seed-demo");
+    const resetBtn = document.querySelector("#btn-reset-demo");
+    if (seedBtn) {
+      seedBtn.addEventListener("click", () => {
+        const demoState = {
+          version: "1.0.0",
+          progress: {
+            "llm-basics": { completed: true, score: 95, completedAt: Date.now() },
+            "transformer": { completed: true, score: 92, completedAt: Date.now() },
+            "prompt-design": { completed: true, score: 90, completedAt: Date.now() },
+            "agent-tools": { completed: true, score: 88, completedAt: Date.now() },
+            "rag-retrieval": { completed: true, score: 94, completedAt: Date.now() },
+            "rag-evaluation": { completed: true, score: 91, completedAt: Date.now() },
+            "agent-safety": { completed: true, score: 89, completedAt: Date.now() }
+          }
+        };
+        try {
+          localStorage.setItem("aimaster_learning_state", JSON.stringify(demoState));
+        } catch (_) {}
+        initDashboardProgress();
+        window.dispatchEvent(new CustomEvent("aimaster:progress-updated", { detail: demoState }));
+      });
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        try {
+          localStorage.removeItem("aimaster_learning_state");
+        } catch (_) {}
+        initDashboardProgress();
+        window.dispatchEvent(new CustomEvent("aimaster:progress-updated", { detail: { progress: {} } }));
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initDashboardProgress();
     initTocScrollSpy();
+    initDemoSeedControls();
   });
 })();
 """
@@ -744,6 +823,18 @@ def build_dashboard(courses):
       </div>
     </div>
   </section>
+
+  <div class="demo-tour-banner" role="region" aria-label="竞赛演示引导">
+    <div class="tour-left">
+      <span class="chip chip-go"><i></i>DEMO TOUR 1/4</span>
+      <span class="tour-text"><strong>第 1 站 · 课程总览仪表盘</strong>：查验 10 卷核心航线、57 节点与 7 大模块复评状态</span>
+    </div>
+    <div class="tour-right">
+      <button class="btn btn-sm" id="btn-seed-demo" title="一键加载满分演示数据">⚡ 加载演示数据</button>
+      <button class="btn btn-sm" id="btn-reset-demo" title="清空本地进度">↺ 重置</button>
+      <a href="{page_url('/playground/', source)}" class="btn btn-sm btn-go">下一步: 实验工坊 ↗</a>
+    </div>
+  </div>
 
   <section id="route" class="route-section">
     <div class="route-header">
@@ -861,6 +952,21 @@ def chapter_page(chapter, hands_on_mapping):
     ppt = chapter.get("ppt_url", "")
     ppt_link = f'<a class="btn" target="_blank" rel="noreferrer" href="{html.escape(ppt)}">查看本章档案 ↗</a>' if ppt else ""
 
+    tour_banner_section = ""
+    if cid == 1:
+        tour_banner_section = f"""<div class="demo-tour-banner" role="region" aria-label="竞赛演示引导">
+    <div class="tour-left">
+      <span class="chip chip-go"><i></i>DEMO TOUR 4/4</span>
+      <span class="tour-text"><strong>第 4 站 · 教学实战闭环</strong>：体验知识讲解卡片、BPE 分词游戏与动手实践任务</span>
+    </div>
+    <div class="tour-right">
+      <a href="{page_url('/ai-review/', source)}" class="btn btn-sm">← 上一步: 评测证据墙</a>
+      <a href="{page_url('/dashboard/', source)}" class="btn btn-sm btn-go">完成评审 · 返回仪表盘 ↗</a>
+    </div>
+  </div>
+
+  """
+
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -886,7 +992,7 @@ def chapter_page(chapter, hands_on_mapping):
     </div>
   </section>
 
-  <div class="chapter-layout">
+  {tour_banner_section}  <div class="chapter-layout">
     <aside class="chapter-toc">
       <div class="toc-label">本章节点目录</div>
       <nav class="toc-list">
@@ -1708,6 +1814,17 @@ def build_ai_review(results_data):
       </div>
     </header>
 
+    <div class="demo-tour-banner" role="region" aria-label="竞赛演示引导">
+      <div class="tour-left">
+        <span class="chip chip-go"><i></i>DEMO TOUR 3/4</span>
+        <span class="tour-text"><strong>第 3 站 · AI 评测证据墙</strong>：校验 90.5% 语义对齐评测准度与未捕获项诚实声明</span>
+      </div>
+      <div class="tour-right">
+        <a href="{page_url('/playground/', source)}" class="btn btn-sm">← 上一步: 实验工坊</a>
+        <a href="{page_url('/chapter/1/', source)}" class="btn btn-sm btn-go">下一步: 第 1 章实战 ↗</a>
+      </div>
+    </div>
+
     <section class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-label">准确率 · ACCURACY</div>
@@ -2426,6 +2543,17 @@ def build_playground():
         <div class="lab-meta-item"><span class="lab-meta-label">运行架构</span><span class="lab-meta-val highlight-go">● 纯前端静态离线可运行</span></div>
       </div>
     </header>
+
+    <div class="demo-tour-banner" role="region" aria-label="竞赛演示引导">
+      <div class="tour-left">
+        <span class="chip chip-go"><i></i>DEMO TOUR 2/4</span>
+        <span class="tour-text"><strong>第 2 站 · 技术实验工坊</strong>：探索 12 个交互式算法沙盒与全栈工程演示</span>
+      </div>
+      <div class="tour-right">
+        <a href="{page_url('/dashboard/', source)}" class="btn btn-sm">← 上一步: 仪表盘</a>
+        <a href="{page_url('/ai-review/', source)}" class="btn btn-sm btn-go">下一步: 评测证据墙 ↗</a>
+      </div>
+    </div>
 
     <section class="lab-toolbar">
       <div class="toolbar-top">
@@ -3165,6 +3293,10 @@ def build_landing(courses, total_exercises=41):
         <a href="{beginner_url}" class="dir-item">
           <span class="dir-name">新手入门 ↗</span>
           <span class="dir-desc">环境配置与工具链指南</span>
+        </a>
+        <a href="{page_url('/chapter/1/', source)}" class="dir-item">
+          <span class="dir-name">第 1 卷 · 大模型基础 ↗</span>
+          <span class="dir-desc">知识讲解、分词与实践第一站</span>
         </a>
       </div>
     </section>

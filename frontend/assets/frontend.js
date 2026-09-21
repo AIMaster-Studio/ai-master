@@ -110,8 +110,44 @@
     cards.forEach(c => observer.observe(c));
   }
 
+  function initDemoSeedControls() {
+    const seedBtn = document.querySelector("#btn-seed-demo");
+    const resetBtn = document.querySelector("#btn-reset-demo");
+    if (seedBtn) {
+      seedBtn.addEventListener("click", () => {
+        const demoState = {
+          version: "1.0.0",
+          progress: {
+            "llm-basics": { completed: true, score: 95, completedAt: Date.now() },
+            "transformer": { completed: true, score: 92, completedAt: Date.now() },
+            "prompt-design": { completed: true, score: 90, completedAt: Date.now() },
+            "agent-tools": { completed: true, score: 88, completedAt: Date.now() },
+            "rag-retrieval": { completed: true, score: 94, completedAt: Date.now() },
+            "rag-evaluation": { completed: true, score: 91, completedAt: Date.now() },
+            "agent-safety": { completed: true, score: 89, completedAt: Date.now() }
+          }
+        };
+        try {
+          localStorage.setItem("aimaster_learning_state", JSON.stringify(demoState));
+        } catch (_) {}
+        initDashboardProgress();
+        window.dispatchEvent(new CustomEvent("aimaster:progress-updated", { detail: demoState }));
+      });
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        try {
+          localStorage.removeItem("aimaster_learning_state");
+        } catch (_) {}
+        initDashboardProgress();
+        window.dispatchEvent(new CustomEvent("aimaster:progress-updated", { detail: { progress: {} } }));
+      });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initDashboardProgress();
     initTocScrollSpy();
+    initDemoSeedControls();
   });
 })();

@@ -125,6 +125,49 @@ a {
   color: var(--go);
 }
 
+/* 3-Minute Competition Demo Tour Banner */
+.demo-tour-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--go-border);
+  border-left: 4px solid var(--go);
+  padding: var(--space-3) var(--space-5);
+  margin: var(--space-6) 0 var(--space-8);
+  border-radius: var(--radius);
+}
+.demo-tour-banner .tour-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.demo-tour-banner .tour-text {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+.demo-tour-banner .tour-text strong {
+  color: var(--ink);
+}
+.demo-tour-banner .tour-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+  .demo-tour-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .demo-tour-banner .tour-right {
+    justify-content: flex-end;
+  }
+}
+
 @media (max-width: 768px) {
   .demo-nav-inner {
     padding: 0 var(--space-4);
