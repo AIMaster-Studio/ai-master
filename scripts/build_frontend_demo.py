@@ -1874,6 +1874,569 @@ def build_ai_review(results_data):
 </html>"""
 
 
+
+def playground_css():
+    return """/* AI Lab Workbench Index - Dark Instrument System */
+.playground-page {
+  padding-bottom: var(--space-16);
+}
+
+.playground-header {
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--space-6);
+}
+
+.playground-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--go);
+  margin-bottom: var(--space-2);
+}
+
+.playground-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 700;
+  margin: 0 0 var(--space-3) 0;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.playground-desc {
+  max-width: 900px;
+  color: var(--ink-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 var(--space-5) 0;
+}
+
+.playground-desc code {
+  font-family: var(--font-mono);
+  color: var(--go);
+  background: var(--bg-card);
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+}
+
+.lab-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-3) var(--space-4);
+}
+
+.lab-meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+.lab-meta-label {
+  color: var(--ink-dim);
+}
+
+.lab-meta-val {
+  color: var(--ink);
+}
+
+.lab-meta-val.highlight-go {
+  color: var(--go);
+  font-weight: 600;
+}
+
+/* Lab Controls Toolbar */
+.lab-toolbar {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.toolbar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.category-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all 0.15s ease;
+}
+
+.category-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--ink);
+  border-color: var(--line-bright);
+}
+
+.category-btn.active {
+  background: var(--go-dim);
+  color: var(--go);
+  border-color: var(--go);
+  font-weight: 700;
+}
+
+.search-box-wrap {
+  position: relative;
+  min-width: 240px;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.search-input:focus {
+  border-color: var(--go);
+}
+
+.search-input::placeholder {
+  color: var(--ink-dim);
+}
+
+.toolbar-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--line-dim);
+  padding-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.lab-counter {
+  color: var(--go);
+  background: var(--go-dim);
+  border: 1px solid var(--go-border);
+  padding: 2px 8px;
+}
+
+/* Lab Cards Grid */
+.labs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-12);
+}
+
+.lab-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  border-radius: var(--radius);
+}
+
+.lab-card:hover {
+  border-color: var(--line-bright);
+  background: var(--bg-card);
+}
+
+.lab-card-header {
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lab-code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--go);
+}
+
+.lab-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+}
+
+.lab-badge-algorithm { color: var(--go); border-color: var(--go-border); }
+.lab-badge-engineering { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+.lab-badge-simulation { color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); }
+.lab-badge-core { color: var(--hold); border-color: var(--hold-border); }
+
+.lab-card-body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.lab-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.lab-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  flex: 1;
+}
+
+.lab-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.lab-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line-dim);
+  color: var(--ink-dim);
+  padding: 2px 6px;
+}
+
+.lab-card-footer {
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-card);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lab-route-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+}
+
+/* Bridges & Hub Section */
+.bridges-section {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.bridges-title {
+  margin: 0 0 var(--space-4) 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.bridges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.bridge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color 0.15s ease;
+}
+
+.bridge-card:hover {
+  border-color: var(--line-bright);
+}
+
+.bridge-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bridge-desc {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+"""
+
+
+def build_playground():
+    source = "playground/index.html"
+    navigation = nav(source)
+
+    labs = [
+        {
+            "id": "bpe-lab",
+            "code": "LAB-01 · TOKENIZER",
+            "category": "algorithm",
+            "category_name": "算法交互",
+            "title": "BPE 分词实验室 (Byte Pair Encoding)",
+            "desc": "基于字节对编码算法实时统计字符共现频率，交互式体验子词词表构建、迭代合并规则与分词切分。",
+            "url": page_url("/static/bpe_game.html", source),
+            "tags": ["BPE算法", "子词切分", "词表构建", "合并频率"]
+        },
+        {
+            "id": "transformer-lab",
+            "code": "LAB-02 · ATTENTION",
+            "category": "algorithm",
+            "category_name": "算法交互",
+            "title": "Transformer 算法详解与注意力矩阵 (Transformer Lab)",
+            "desc": "交互式拆解 Scaled Dot-Product Attention、Multi-Head Attention 矩阵运算，实时查看 Query、Key、Value 点积与 Softmax 热力图。",
+            "url": page_url("/static/transformer_lab.html", source),
+            "tags": ["自注意力", "QKV点积", "多头注意力", "Softmax权重"]
+        },
+        {
+            "id": "llm-training-sim",
+            "code": "LAB-03 · TRAINING",
+            "category": "algorithm",
+            "category_name": "算法交互",
+            "title": "大模型训练与超参模拟器 (Training Simulator)",
+            "desc": "交互调节学习率 (LR)、Batch Size、权重衰减等超参数，实时观察梯度更新轨迹、Loss 损失收敛曲线与过拟合动态。",
+            "url": page_url("/static/llm_training_game.html", source),
+            "tags": ["超参调优", "损失曲线", "梯度下降", "泛化能力"]
+        },
+        {
+            "id": "rag-starlab",
+            "code": "LAB-04 · RAG ENGINE",
+            "category": "engineering",
+            "category_name": "工程工坊",
+            "title": "Private RAG 私有知识库检索工坊 (RAG Starlab)",
+            "desc": "端到端部署私有知识问答系统。体验文档分块切分 (Chunking)、向量嵌入 (Embedding)、余弦相似度检索与重排序。",
+            "url": page_url("/static/rag_starlab/index.html", source),
+            "tags": ["RAG架构", "向量检索", "文档切块", "语义相似度"]
+        },
+        {
+            "id": "prompt-starlab",
+            "code": "LAB-05 · PROMPT LAB",
+            "category": "engineering",
+            "category_name": "工程工坊",
+            "title": "提示词工程实验舱 (Prompt Engineering Lab)",
+            "desc": "结构化探索 System Prompt、Few-Shot 示例引导、CoT 思维链推导与约束格式输出，掌握生产级提示词设计方法论。",
+            "url": page_url("/static/prompt_cg_starlab/index.html", source),
+            "tags": ["提示词工程", "思维链CoT", "Few-Shot", "结构化输出"]
+        },
+        {
+            "id": "agentic-cg",
+            "code": "LAB-06 · AGENT REACt",
+            "category": "engineering",
+            "category_name": "工程工坊",
+            "title": "智能体架构与工具协同舱 (Agentic System)",
+            "desc": "剖析 ReAct 循环（Reasoning + Acting）、外部工具绑定 (Tool Calling)、执行观测与多智能体拓扑协同机理。",
+            "url": page_url("/static/agentic_cg/index.html", source),
+            "tags": ["AI Agent", "ReAct循环", "工具调用", "多智能体"]
+        },
+        {
+            "id": "claude-cg",
+            "code": "LAB-07 · CODE AGENT",
+            "category": "engineering",
+            "category_name": "工程工坊",
+            "title": "代码智能体与上下文工程 (Claude Code × Codex)",
+            "desc": "深入探究代码大模型的上下文理解、仓库级代码索引、自动化补全与指令执行工程实战范式。",
+            "url": page_url("/static/claude_cg/index.html", source),
+            "tags": ["代码大模型", "上下文工程", "自动化编程", "仓库索引"]
+        },
+        {
+            "id": "transformer-cg",
+            "code": "LAB-08 · ATTN 3D",
+            "category": "simulation",
+            "category_name": "视效仿真",
+            "title": "Transformer 动态视效流 (Transformer CG)",
+            "desc": "全景动画展现自回归解码过程、因果掩码 (Causal Mask) 机制以及高维嵌入向量在注意力头之间的流向与交互。",
+            "url": page_url("/static/transformer_cg.html", source),
+            "tags": ["3D视效", "因果掩码", "自回归解码", "注意力流向"]
+        },
+        {
+            "id": "rag-cg",
+            "code": "LAB-09 · RAG NARRATIVE",
+            "category": "simulation",
+            "category_name": "视效仿真",
+            "title": "RAG 检索技术科普全景 (RAG CG Narrative)",
+            "desc": "视效化演示学习者提问从分词、稠密向量映射、高维空间邻近检索到增强生成的完整端到端技术链条。",
+            "url": page_url("/static/rag_cg/index.html", source),
+            "tags": ["全景叙事", "密集向量检索", "检索召回", "知识注入"]
+        },
+        {
+            "id": "llm-intro",
+            "code": "LAB-10 · LLM 3D",
+            "category": "simulation",
+            "category_name": "视效仿真",
+            "title": "大模型全景导论视觉舱 (LLM Intro 3D)",
+            "desc": "直观探索大语言模型的基础架构、自监督预训练、涌现现象 (Emergence) 与 Scaling Law 标度律演变全景。",
+            "url": page_url("/static/llm_intro.html", source),
+            "tags": ["大模型导论", "标度律", "自回归机理", "涌现现象"]
+        },
+        {
+            "id": "ai-odyssey",
+            "code": "LAB-11 · ODYSSEY",
+            "category": "simulation",
+            "category_name": "视效仿真",
+            "title": "AI 知识宇宙远航 (AI Odyssey)",
+            "desc": "将核心技术概念投射为星际航标，通过全景漫游模式探索从感知机到通用人工智能的技术演进图景。",
+            "url": page_url("/static/ai_odyssey.html", source),
+            "tags": ["全景漫游", "技术演进", "概念拓扑", "知识漫游"]
+        },
+        {
+            "id": "interview-cg",
+            "code": "LAB-12 · REVIEW HUB",
+            "category": "core",
+            "category_name": "通关枢纽",
+            "title": "知识星辰互动与复核舱 (Knowledge Stars Review)",
+            "desc": "连接 57 个课程知识节点星海与 7 核心模块口语化讲解评测，提供全方位评测准备与实战通关演练。",
+            "url": page_url("/static/interview.html", source),
+            "tags": ["知识复核", "口语化讲解", "双盲评测", "通关演练"]
+        }
+    ]
+
+    cards_html = []
+    for lab in labs:
+        tags_str = "".join(f'<span class="lab-tag">{html.escape(t)}</span>' for t in lab["tags"])
+        cat_badge_class = f"lab-badge lab-badge-{lab['category']}"
+        cards_html.append(f"""<article class="lab-card" data-category="{lab['category']}" data-tags="{html.escape(' '.join(lab['tags']))}">
+  <header class="lab-card-header">
+    <span class="lab-code">{html.escape(lab['code'])}</span>
+    <span class="{cat_badge_class}">{html.escape(lab['category_name'])}</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">{html.escape(lab['title'])}</h3>
+    <p class="lab-desc">{html.escape(lab['desc'])}</p>
+    <div class="lab-tags">{tags_str}</div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="{lab['url']}" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>""")
+
+    cards_str = "\\n".join(cards_html)
+    canvas_url = page_url("/canvas/", source)
+    stars_url = page_url("/knowledge-stars/", source)
+    review_url = page_url("/ai-review/", source)
+    handson_url = page_url("/hands-on/", source)
+
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI 实验工坊技术索引 · AI MASTER</title>
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/frontend.css">
+  <link rel="stylesheet" href="../assets/playground.css">
+</head>
+<body>
+  {navigation}
+  <main class="demo-page playground-page">
+    <header class="playground-header">
+      <div class="playground-kicker">AI ENGINEERING WORKBENCH · INTERACTIVE LABS</div>
+      <h1 class="playground-title">AI 实验工坊技术索引</h1>
+      <p class="playground-desc">
+        从底层的 BPE Token 切分、自注意力点积计算、超参训练收敛，到私有 RAG 向量检索与智能体工具协同，汇聚全部可直接交互的 AI 算法实验与可视化原型。
+      </p>
+
+      <div class="lab-meta-bar">
+        <div class="lab-meta-item"><span class="lab-meta-label">已收录实验工坊</span><span class="lab-meta-val highlight-go">12 个高可交互舱室</span></div>
+        <div class="lab-meta-item"><span class="lab-meta-label">配套代码实践</span><span class="lab-meta-val">41 项动手实践任务</span></div>
+        <div class="lab-meta-item"><span class="lab-meta-label">核心通关门禁</span><span class="lab-meta-val">7 个口语讲解复核模块</span></div>
+        <div class="lab-meta-item"><span class="lab-meta-label">运行架构</span><span class="lab-meta-val highlight-go">● 纯前端静态离线可运行</span></div>
+      </div>
+    </header>
+
+    <section class="lab-toolbar">
+      <div class="toolbar-top">
+        <div class="category-filters" id="category-filters">
+          <button class="category-btn active" data-cat="ALL">全部实验 (12)</button>
+          <button class="category-btn" data-cat="algorithm">算法交互 (3)</button>
+          <button class="category-btn" data-cat="engineering">工程工坊 (4)</button>
+          <button class="category-btn" data-cat="simulation">视效仿真 (4)</button>
+          <button class="category-btn" data-cat="core">通关枢纽 (1)</button>
+        </div>
+        <div class="search-box-wrap">
+          <input type="text" id="lab-search-input" class="search-input" placeholder="按技术关键词即时过滤..." autocomplete="off">
+        </div>
+      </div>
+      <div class="toolbar-bottom">
+        <span class="lab-counter" id="lab-visible-counter">显示 12 / 12 个实验</span>
+        <span class="toolbar-hint">点击任意工坊卡片即可直接进入全屏交互环境</span>
+      </div>
+    </section>
+
+    <section class="labs-grid" id="labs-grid">
+      {cards_str}
+    </section>
+
+    <section class="bridges-section">
+      <h2 class="bridges-title">关联系统导航与核心枢纽 (System Bridges)</h2>
+      <div class="bridges-grid">
+        <a href="{canvas_url}" class="bridge-card">
+          <div class="bridge-name">思维画布 (Canvas) <span>↗</span></div>
+          <p class="bridge-desc">全景概念关系拓扑与思维推演图谱，连接各核心理论节点。</p>
+        </a>
+        <a href="{stars_url}" class="bridge-card">
+          <div class="bridge-name">知识星海 (Universe) <span>↗</span></div>
+          <p class="bridge-desc">Three.js 57 知识星辰 3D 拓扑星海，实时映射学习者本地进度。</p>
+        </a>
+        <a href="{review_url}" class="bridge-card">
+          <div class="bridge-name">AI 评测证据墙 (Evidence Wall) <span>↗</span></div>
+          <p class="bridge-desc">21 例双盲测试真值投影、混淆矩阵看板与严格未采集指标透明公示。</p>
+        </a>
+        <a href="{handson_url}" class="bridge-card">
+          <div class="bridge-name">动手实践任务 (Hands-on) <span>↗</span></div>
+          <p class="bridge-desc">10 个章节 41 项源码级工程实战任务与阶段性通关指引。</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script src="../static/js/playground.js"></script>
+</body>
+</html>"""
+
+
 def main():
     courses = load("courses_index.json")
     rubric_results_path = ROOT / "tests" / "ai-rubric-validation-results.json"
@@ -1899,7 +2462,8 @@ def main():
     atlas = re.sub(r'src="js/knowledge-progress\.js([^"]*)"', r'src="../static/js/knowledge-progress.js\1"', atlas)
     write("knowledge-stars/index.html", atlas)
     write("canvas/index.html", '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/tokens.css"><link rel="stylesheet" href="../assets/frontend.css"><title>AI Master - 思维画布</title></head><body>' + nav("canvas/index.html") + '<main class="demo-page"><section class="chapter-hero"><p class="kicker">KNOWLEDGE CANVAS</p><h1>思维画布</h1><p class="chapter-hero-desc">前端复现版保留知识导航与互动页面。完整的云端保存、AI 辅助生成与个人数据同步需要后端服务。</p><a class="btn btn-go" href="../dashboard/">返回总览 ↗</a></section></main></body></html>')
-    write("playground/index.html", '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/tokens.css"><link rel="stylesheet" href="../assets/frontend.css"><link rel="stylesheet" href="../assets/chapter-demo.css"><title>AI Master - 训练舱</title></head><body>' + nav("playground/index.html") + '<main class="demo-page"><section class="chapter-hero"><p class="kicker">PRACTICE BAY</p><h1>训练舱</h1><p class="chapter-hero-desc">选择任一章节进入知识节点和实验页面。所有课程导航、交互实验与高级页面均可直接打开。</p><a class="btn btn-go" href="../dashboard/#route">选择学习章节 ↗</a></section></main></body></html>')
+    write("assets/playground.css", playground_css())
+    write("playground/index.html", build_playground())
     write("transition/index.html", '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../dashboard/"><title>AI Master</title></head><body></body></html>')
     write("start-demo.bat", '@echo off\nsetlocal\ncd /d "%~dp0"\necho AI Master frontend demo: http://127.0.0.1:8080/dashboard/\nstart "" http://127.0.0.1:8080/dashboard/\npython -m http.server 8080\n')
     patch_static_assets()

@@ -1,0 +1,326 @@
+/* AI Lab Workbench Index - Dark Instrument System */
+.playground-page {
+  padding-bottom: var(--space-16);
+}
+
+.playground-header {
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: var(--space-6);
+}
+
+.playground-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--go);
+  margin-bottom: var(--space-2);
+}
+
+.playground-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 700;
+  margin: 0 0 var(--space-3) 0;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.playground-desc {
+  max-width: 900px;
+  color: var(--ink-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0 0 var(--space-5) 0;
+}
+
+.playground-desc code {
+  font-family: var(--font-mono);
+  color: var(--go);
+  background: var(--bg-card);
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+}
+
+.lab-meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-3) var(--space-4);
+}
+
+.lab-meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+.lab-meta-label {
+  color: var(--ink-dim);
+}
+
+.lab-meta-val {
+  color: var(--ink);
+}
+
+.lab-meta-val.highlight-go {
+  color: var(--go);
+  font-weight: 600;
+}
+
+/* Lab Controls Toolbar */
+.lab-toolbar {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.toolbar-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.category-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.category-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: all 0.15s ease;
+}
+
+.category-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--ink);
+  border-color: var(--line-bright);
+}
+
+.category-btn.active {
+  background: var(--go-dim);
+  color: var(--go);
+  border-color: var(--go);
+  font-weight: 700;
+}
+
+.search-box-wrap {
+  position: relative;
+  min-width: 240px;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.search-input:focus {
+  border-color: var(--go);
+}
+
+.search-input::placeholder {
+  color: var(--ink-dim);
+}
+
+.toolbar-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--line-dim);
+  padding-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.lab-counter {
+  color: var(--go);
+  background: var(--go-dim);
+  border: 1px solid var(--go-border);
+  padding: 2px 8px;
+}
+
+/* Lab Cards Grid */
+.labs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--space-5);
+  margin-bottom: var(--space-12);
+}
+
+.lab-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  border-radius: var(--radius);
+}
+
+.lab-card:hover {
+  border-color: var(--line-bright);
+  background: var(--bg-card);
+}
+
+.lab-card-header {
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lab-code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--go);
+}
+
+.lab-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+}
+
+.lab-badge-algorithm { color: var(--go); border-color: var(--go-border); }
+.lab-badge-engineering { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+.lab-badge-simulation { color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); }
+.lab-badge-core { color: var(--hold); border-color: var(--hold-border); }
+
+.lab-card-body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.lab-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.lab-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  flex: 1;
+}
+
+.lab-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.lab-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line-dim);
+  color: var(--ink-dim);
+  padding: 2px 6px;
+}
+
+.lab-card-footer {
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-card);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lab-route-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+}
+
+/* Bridges & Hub Section */
+.bridges-section {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.bridges-title {
+  margin: 0 0 var(--space-4) 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.bridges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.bridge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color 0.15s ease;
+}
+
+.bridge-card:hover {
+  border-color: var(--line-bright);
+}
+
+.bridge-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bridge-desc {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  margin: 0;
+}
