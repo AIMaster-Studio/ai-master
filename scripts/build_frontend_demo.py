@@ -496,52 +496,85 @@ def runtime_js():
     return r"""(() => {
   "use strict";
 
-  // 1. Read real localStorage learning progress
-  function getCompletionStats() {
-    let completedPoints = {};
+  // 1. Read unified learning progress
+  async function resolveDashboardProgress() {
+    if (typeof AIMasterProgress !== "undefined" && AIMasterProgress.resolveProgress) {
+      return await AIMasterProgress.resolveProgress();
+    }
+    let raw = {};
     try {
-      completedPoints = JSON.parse(localStorage.getItem("aimaster_completed") || "{}");
+      raw = JSON.parse(localStorage.getItem("aimaster_learning_state") || "{}");
     } catch (_) {}
-
-    let localWorkspace = {};
-    try {
-      localWorkspace = JSON.parse(localStorage.getItem("aimaster_local_workspace_v1") || "{}");
-    } catch (_) {}
-
-    return { completedPoints, localWorkspace };
+    const prog = raw.progress || {};
+    let count = 0;
+    const progress = {};
+    const modules = [
+      { id: "llm-basics", chapter: 1 },
+      { id: "prompt-design", chapter: 3 },
+      { id: "transformer", chapter: 2 },
+      { id: "rag-retrieval", chapter: 6 },
+      { id: "rag-evaluation", chapter: 6 },
+      { id: "agent-tools", chapter: 4 },
+      { id: "agent-safety", chapter: 8 }
+    ];
+    modules.forEach(m => {
+      const entry = prog[m.id] || (m.id === "prompt-design" ? prog.prompt : m.id === "rag-retrieval" ? prog.rag : null);
+      const done = entry && (entry.completed === true || entry.completedAt || (entry.quiz && entry.quiz.passed));
+      if (done) count++;
+      progress[m.id] = { completed: !!done };
+    });
+    return { completedCount: count, totalModules: 7, progress };
   }
 
   // 2. Initialize Dashboard Chapter Progress Meters
-  function initDashboardProgress() {
+  async function initDashboardProgress() {
     const table = document.querySelector("#chapter-table");
     if (!table) return;
 
-    const { completedPoints } = getCompletionStats();
-    const completedCount = Object.keys(completedPoints).length;
+    const resolved = await resolveDashboardProgress();
+    const completedCount = resolved.completedCount || 0;
 
     // Update Top KPI
     const kpiPassed = document.querySelector("#kpi-passed-count");
     if (kpiPassed) {
-      kpiPassed.textContent = completedCount;
+      kpiPassed.textContent = `${completedCount} / 7`;
     }
+
+    const CHAPTER_MODULE_MAP = {
+      1: ["llm-basics"],
+      2: ["transformer"],
+      3: ["prompt-design"],
+      4: ["agent-tools"],
+      5: [],
+      6: ["rag-retrieval", "rag-evaluation"],
+      7: [],
+      8: ["agent-safety"],
+      9: [],
+      10: []
+    };
 
     // Update each row
     const rows = table.querySelectorAll("tr[data-chapter-id]");
     rows.forEach(row => {
-      const cid = row.getAttribute("data-chapter-id");
-      const totalNodes = parseInt(row.getAttribute("data-total-nodes") || "0", 10);
-      const nodeTitles = (row.getAttribute("data-node-titles") || "").split("||");
-      
-      let passInChapter = 0;
-      nodeTitles.forEach(t => {
-        if (t && completedPoints[t]) passInChapter++;
-      });
-
-      const pct = totalNodes > 0 ? Math.round((passInChapter / totalNodes) * 100) : 0;
+      const cid = parseInt(row.getAttribute("data-chapter-id") || "0", 10);
+      const mods = CHAPTER_MODULE_MAP[cid] || [];
       const meterFill = row.querySelector(".meter-fill");
       const pctLabel = row.querySelector(".progress-pct");
-      if (meterFill) meterFill.style.width = `${pct}%`;
-      if (pctLabel) pctLabel.textContent = `${pct}% (${passInChapter}/${totalNodes})`;
+
+      if (mods.length === 0) {
+        if (meterFill) meterFill.style.width = "0%";
+        if (pctLabel) pctLabel.textContent = "未配置评测映射";
+      } else {
+        let passed = 0;
+        mods.forEach(mid => {
+          if (resolved.progress && resolved.progress[mid]?.completed) passed++;
+        });
+        const pct = Math.round((passed / mods.length) * 100);
+        if (meterFill) meterFill.style.width = `${pct}%`;
+        if (pctLabel) {
+          pctLabel.textContent = pct > 0 ? `${pct}% (${passed}/${mods.length})` : `未开始 (0/${mods.length})`;
+        }
+      }
     });
   }
 
@@ -662,12 +695,12 @@ def build_dashboard(courses):
         <span class="kpi-value">{total_knowledge}</span>
       </div>
       <div class="kpi">
-        <span class="kpi-label"><i></i>动手实验</span>
+        <span class="kpi-label"><i></i>动手任务</span>
         <span class="kpi-value">{total_exercises}</span>
       </div>
       <div class="kpi">
-        <span class="kpi-label"><i></i>已通过节点</span>
-        <span class="kpi-value" id="kpi-passed-count">0</span>
+        <span class="kpi-label"><i></i>已通关模块</span>
+        <span class="kpi-value" id="kpi-passed-count">0 / 7</span>
       </div>
     </div>
   </section>
@@ -705,6 +738,7 @@ def build_dashboard(courses):
     <a href="{page_url('/learning-center/', source)}">进入学习工作台 ↗</a>
   </footer>
 </main>
+<script src="{page_url('/static/js/learning-progress.js', source)}"></script>
 <script src="{page_url('/assets/frontend.js', source)}"></script>
 </body>
 </html>"""

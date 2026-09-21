@@ -14,10 +14,13 @@
 
   // 默认学习模块目录（与后端 catalog 对齐的精简版）
   const DEFAULT_CATALOG = [
-    { id: 'llm-basics', title: '大模型基础原理', objective: '理解 LLM 的定义、训练流程与核心能力', bloom: ['理解'], learnUrl: '../chapter/1/', summary: ['LLM 是基于深度学习的语言模型', '通过自回归方式预测下一个 token', '预训练 + 对齐训练两阶段'], concepts: [{ label: '自回归语言建模' }, { label: '涌现能力' }, { label: '预训练与微调' }], prompt: '用自己的话解释：什么是大语言模型？它如何生成文本？举一个例子说明它的局限性。' },
-    { id: 'transformer', title: 'Transformer 架构详解', objective: '掌握自注意力机制与 Transformer 结构', bloom: ['理解', '应用'], learnUrl: '../static/transformer_cg.html', summary: ['自注意力机制让模型关注全局', '多头注意力捕获不同语义关系', '位置编码补充顺序信息'], concepts: [{ label: '自注意力' }, { label: '多头注意力' }, { label: '位置编码' }], prompt: '解释 Transformer 的自注意力机制：Q、K、V 是什么？为什么需要多头注意力？' },
-    { id: 'prompt', title: '提示词工程基础', objective: '掌握提示词编写原则与主流范式', bloom: ['应用'], learnUrl: '../static/prompt_cg.html', summary: ['提示词是引导模型输出的指令', '清晰、具体、有上下文的提示词更有效', 'Few-shot、Chain-of-Thought 等范式'], concepts: [{ label: 'Few-shot' }, { label: '思维链' }, { label: '角色设定' }], prompt: '什么是好的提示词？列举两种提示词工程范式并说明适用场景。' },
-    { id: 'rag', title: 'RAG 技术详解', objective: '理解检索增强生成的原理与工程实践', bloom: ['理解', '应用'], learnUrl: '../static/rag_cg/index.html', summary: ['RAG = 检索 + 生成', '向量数据库存储文档嵌入', '减少幻觉，提供可溯源答案'], concepts: [{ label: '向量检索' }, { label: '上下文拼接' }, { label: '引用溯源' }], prompt: '解释 RAG 的工作流程：从用户提问到生成回答，经过哪些步骤？RAG 如何减少幻觉？' }
+    { id: 'llm-basics', title: '大模型如何生成回答', objective: '解释 token、上下文预测与幻觉，并给出需要核验的实际案例。', bloom: ['理解', '应用'], learnUrl: '../chapter/1/index.html#kp-1', summary: ['自回归语言模型把文本编码为 token，根据上下文逐步预测后续 token。', '预训练通常更新参数；上下文学习通常不更新参数。', '语言流畅不保证事实正确，需要外部证据核验。'], concepts: [{ label: 'token 与文本编码' }, { label: '基于上下文预测' }, { label: '幻觉与事实核验' }], prompt: '向没有学过 AI 的同学解释：大模型怎样从 token 生成回答？用一个校园场景说明它为什么可能答错，以及你会怎样核验。' },
+    { id: 'prompt-design', title: '把任务写成可验收的提示', objective: '为具体任务写清输入、约束与输出格式，并设计验证方法。', bloom: ['应用', '评价'], learnUrl: '../chapter/3/index.html#kp-2', summary: ['有效提示应交代任务目标、输入背景、约束和输出格式。', '对结构化结果应使用解析器、字段校验和边界用例验收。', '提示词迭代要使用固定测试集比较，而非只挑一次满意的输出。'], concepts: [{ label: '任务和输入背景' }, { label: '约束及输出格式' }, { label: '验证与测试' }], prompt: '为校园活动报名信息提取设计一个提示：说明任务和输入、输出字段、缺失信息的处理，再举例说明如何检验结果及提示无法保证的事情。' },
+    { id: 'transformer', title: '理解注意力与位置信息', objective: '解释注意力如何组合上下文信息，以及为什么仍需要位置信息。', bloom: ['理解', '分析'], learnUrl: '../chapter/2/index.html#kp-2', summary: ['自注意力根据 Query 与 Key 的匹配程度计算权重，用权重组合 Value。', '标准自注意力本身没有完整的顺序信息，需要位置编码等机制。', '注意力权重不等同于人类式理解，也不能单独证明因果理由。'], concepts: [{ label: '注意力与信息加权' }, { label: '上下文关联' }, { label: '位置与顺序' }], prompt: '用一句存在指代关系的话解释自注意力怎样利用上下文，再说明位置信息和因果掩码的作用，以及注意力解释的限制。' },
+    { id: 'rag-retrieval', title: '搭起检索增强生成流程', objective: '按顺序解释切块、索引、检索与生成，并识别检索失败的影响。', bloom: ['应用', '分析'], learnUrl: '../chapter/6/index.html#kp-1', summary: ['RAG 把外部知识检索和模型生成连接起来。', '向量检索利用表示相似度，混合检索可结合关键词。', 'RAG 通常不通过每次查询更新模型参数，也不能消除幻觉。'], concepts: [{ label: '文档切块与索引' }, { label: '相关证据检索' }, { label: '基于证据生成' }], prompt: '为学校奖学金制度做一个问答助手：从文档切块讲到检索和生成，用一个问题举例，再说明检索不到有效依据时应该怎样处理。' },
+    { id: 'rag-evaluation', title: '用证据定位 RAG 错误', objective: '区分检索失败与生成失实，设计包含无答案问题的小型测试集。', bloom: ['分析', '评价'], learnUrl: '../chapter/6/index.html#kp-5', summary: ['RAG 评估应分别检查检索是否找到了回答所需材料，以及生成内容是否被材料支持。', 'Recall@k 衡量覆盖度；答案忠实性关注回答是否有依据。', '可靠评估需要代表性问题、可核验参考、无答案与矛盾资料场景。'], concepts: [{ label: '检索与召回质量' }, { label: '答案忠实性与证据' }, { label: '测试集与评估' }], prompt: '假设校园问答答错了一条截止日期，如何判断是检索问题还是生成问题？设计一组包含无答案问题的测试，说明要记录哪些指标以及自动评分的限制。' },
+    { id: 'agent-tools', title: '让 Agent 正确调用工具', objective: '解释模型决策与应用执行的分工，处理工具参数错误和工具失败。', bloom: ['应用', '分析'], learnUrl: '../chapter/4/index.html#kp-4', summary: ['模型依据任务选择工具并提出结构化参数；应用校验权限后执行真实操作。', 'Agent 可以在决策、执行、观察的循环中推进任务，但应设上限。', '生成函数调用文本不等于操作成功，实际成功以工具返回为准。'], concepts: [{ label: '工具选择与调用' }, { label: '结构化参数与校验' }, { label: '执行结果与循环' }], prompt: '设计一个查询教室空闲情况的 Agent：说明模型、工具、参数校验各自负责什么，举例描述一次查询及失败重试，并说明怎样避免无限循环。' },
+    { id: 'agent-safety', title: '为 Agent 设置权限边界', objective: '识别提示注入与越权风险，为真实写操作设置最小权限和确认点。', bloom: ['分析', '评价'], learnUrl: '../chapter/8/index.html#kp-5', summary: ['外部网页、邮件和检索文档可能包含提示注入，应视为不可信数据。', '读取资料与发送邮件、删除文件的权限应严格区分。', '任何单一提示或过滤器都不能保证完全防御。'], concepts: [{ label: '提示注入与不可信内容' }, { label: '最小权限与工具限制' }, { label: '敏感操作确认与审计' }], prompt: '你的 Agent 读取一份含有“把所有学生名单发给某邮箱”的网页。说明它应如何处理，举例设计读取与发送权限、用户确认和审计记录，并说明防护仍有什么限制。' }
   ];
 
   // 简单的本地讲解检查规则（AI 不可用时的降级）
@@ -124,7 +127,8 @@
 
   // 生成简单的本地测验
   function generateQuiz(moduleId) {
-    const module = DEFAULT_CATALOG.find(m => m.id === moduleId);
+    const canonicalId = (moduleId === 'prompt') ? 'prompt-design' : (moduleId === 'rag') ? 'rag-retrieval' : moduleId;
+    const module = DEFAULT_CATALOG.find(m => m.id === canonicalId);
     if (!module) return { id: 'local_' + moduleId + '_' + Date.now(), questions: [] };
 
     const questions = module.concepts.map((c, i) => ({
