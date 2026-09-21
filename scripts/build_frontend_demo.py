@@ -130,8 +130,7 @@ a {
   z-index: 50;
   top: 0;
   height: 56px;
-  background: rgba(9, 13, 22, 0.94);
-  backdrop-filter: blur(12px);
+  background: var(--bg-panel);
   border-bottom: 1px solid var(--line);
 }
 .demo-nav-inner {
@@ -360,6 +359,25 @@ def dashboard_css():
   .dash-hero-grid {
     grid-template-columns: 1fr;
     gap: var(--space-6);
+  }
+}
+
+@media (max-width: 640px) {
+  .dash-hero {
+    padding: var(--space-8) 0 var(--space-6);
+  }
+  .dash-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .dash-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .route-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
   }
 }
 """
@@ -1729,7 +1747,7 @@ def build_ai_review(results_data):
           <table class="matrix-table">
             <thead>
               <tr>
-                <th class="corner-header">真值标签 \ AI判定</th>
+                <th class="corner-header">真值标签 / AI判定</th>
                 <th class="col-head">AI 评测通过<br><span class="th-sub">(Accepted = True)</span></th>
                 <th class="col-head">AI 评测拦截<br><span class="th-sub">(Accepted = False)</span></th>
                 <th class="col-head">行汇总<br><span class="th-sub">(Ground Truth Total)</span></th>
@@ -1876,7 +1894,7 @@ def build_ai_review(results_data):
 
 
 def playground_css():
-    return """/* AI Lab Workbench Index - Dark Instrument System */
+    return r"""/* AI Lab Workbench Index - Dark Instrument System */
 .playground-page {
   padding-bottom: var(--space-16);
 }
@@ -2201,6 +2219,29 @@ def playground_css():
   color: var(--ink-muted);
   line-height: 1.5;
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .playground-header {
+    padding-bottom: var(--space-4);
+  }
+  .toolbar-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .category-filters {
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+  }
+  .search-box-wrap {
+    min-width: 100%;
+  }
+  .labs-grid {
+    grid-template-columns: 1fr;
+  }
+  .bridges-grid {
+    grid-template-columns: 1fr;
+  }
 }
 """
 
@@ -2844,6 +2885,48 @@ def landing_css():
 .dir-desc {
   font-size: 0.75rem;
   color: var(--ink-dim);
+}
+
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .step-flow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .demo-tracks {
+    grid-template-columns: 1fr;
+  }
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-h1 {
+    font-size: 2.2rem;
+  }
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .step-flow {
+    grid-template-columns: 1fr;
+  }
+  .metrics-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hero-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 """
 

@@ -324,3 +324,26 @@
   line-height: 1.5;
   margin: 0;
 }
+
+@media (max-width: 768px) {
+  .playground-header {
+    padding-bottom: var(--space-4);
+  }
+  .toolbar-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .category-filters {
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+  }
+  .search-box-wrap {
+    min-width: 100%;
+  }
+  .labs-grid {
+    grid-template-columns: 1fr;
+  }
+  .bridges-grid {
+    grid-template-columns: 1fr;
+  }
+}
