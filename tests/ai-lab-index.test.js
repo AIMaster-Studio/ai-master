@@ -33,6 +33,7 @@ test('playground route index.html exists and is generated properly', () => {
   assert.match(html, /AI 实验工坊技术索引/, 'Title must be AI 实验工坊技术索引');
   assert.match(html, /AI ENGINEERING WORKBENCH/, 'Kicker must be present');
   assert.match(html, /12 个高可交互舱室/, 'Must state 12 labs');
+  assert.ok(!html.includes('</article>\\n<article'), 'Lab cards must be separated by real whitespace, not a literal \\n grid item');
 });
 
 test('every lab in index links to an existing, non-empty interactive file on disk', () => {

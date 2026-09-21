@@ -557,7 +557,7 @@
   background: var(--line-dim);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 700px) {
   .case-content-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -617,3 +617,40 @@
 .f-label { color: var(--ink-dim); }
 .f-val { color: var(--ink-muted); }
 .text-na { color: var(--hold); }
+
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .kpi-card {
+    border: 0;
+    padding: var(--space-3);
+  }
+  .kpi-readout {
+    font-size: 1.75rem;
+  }
+  .matrix-card,
+  .transparency-card,
+  .cases-toolbar {
+    padding: var(--space-3);
+  }
+  .case-cards-list {
+    gap: var(--space-3);
+  }
+  .case-card-header,
+  .case-block {
+    padding: var(--space-3);
+  }
+  .case-status-bar,
+  .case-card-footer {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+  .block-body {
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+}

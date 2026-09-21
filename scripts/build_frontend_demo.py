@@ -146,6 +146,7 @@ a {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex: 0 0 auto;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   font-weight: 700;
@@ -168,13 +169,27 @@ a {
 .demo-nav-links {
   display: flex;
   gap: var(--space-6);
+  align-items: stretch;
+  min-width: 0;
   font-family: var(--font-mono);
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   color: var(--ink-muted);
 }
+.demo-nav-links a {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 56px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
 .demo-nav-links a:hover {
   color: var(--go);
+}
+.demo-nav-links a.active {
+  color: var(--ink);
+  border-bottom-color: var(--go);
 }
 .demo-nav-links .nav-highlight {
   color: var(--go);
@@ -270,10 +285,22 @@ a {
 @media (max-width: 768px) {
   .demo-nav-inner {
     padding: 0 var(--space-4);
+    gap: var(--space-3);
+    overflow: hidden;
   }
   .demo-nav-links {
-    gap: var(--space-3);
+    flex: 1 1 auto;
+    gap: var(--space-4);
     font-size: 0.72rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+  .demo-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .brand-sub {
+    display: none;
   }
   .demo-page {
     width: calc(100% - var(--space-6));
@@ -1620,7 +1647,7 @@ def ai_review_css():
   background: var(--line-dim);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 700px) {
   .case-content-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -1680,6 +1707,43 @@ def ai_review_css():
 .f-label { color: var(--ink-dim); }
 .f-val { color: var(--ink-muted); }
 .text-na { color: var(--hold); }
+
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .kpi-card {
+    border: 0;
+    padding: var(--space-3);
+  }
+  .kpi-readout {
+    font-size: 1.75rem;
+  }
+  .matrix-card,
+  .transparency-card,
+  .cases-toolbar {
+    padding: var(--space-3);
+  }
+  .case-cards-list {
+    gap: var(--space-3);
+  }
+  .case-card-header,
+  .case-block {
+    padding: var(--space-3);
+  }
+  .case-status-bar,
+  .case-card-footer {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+  .block-body {
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+}
 """
 
 
@@ -2183,7 +2247,7 @@ def playground_css():
 /* Lab Cards Grid */
 .labs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--space-5);
   margin-bottom: var(--space-12);
 }
@@ -2229,7 +2293,7 @@ def playground_css():
 
 .lab-badge-algorithm { color: var(--go); border-color: var(--go-border); }
 .lab-badge-engineering { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
-.lab-badge-simulation { color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); }
+.lab-badge-simulation { color: var(--hold); border-color: var(--hold-border); }
 .lab-badge-core { color: var(--hold); border-color: var(--hold-border); }
 
 .lab-card-body {
@@ -2353,10 +2417,13 @@ def playground_css():
   .search-box-wrap {
     min-width: 100%;
   }
-  .labs-grid {
+  .bridges-grid {
     grid-template-columns: 1fr;
   }
-  .bridges-grid {
+}
+
+@media (max-width: 640px) {
+  .labs-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -2510,7 +2577,7 @@ def build_playground():
   </footer>
 </article>""")
 
-    cards_str = "\\n".join(cards_html)
+    cards_str = "\n".join(cards_html)
     canvas_url = page_url("/canvas/", source)
     stars_url = page_url("/knowledge-stars/", source)
     review_url = page_url("/ai-review/", source)

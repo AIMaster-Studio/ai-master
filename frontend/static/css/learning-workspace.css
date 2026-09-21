@@ -1303,13 +1303,17 @@ dialog::backdrop {
   }
 
   .header-tools {
-    width: 100%;
-    margin-left: 0;
+    width: auto;
+    margin-left: auto;
+    gap: var(--space-1);
   }
 
   .header-tools > * {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 0 0 auto;
+    min-width: auto;
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+    font-size: 0.72rem;
   }
 
   .page-heading {

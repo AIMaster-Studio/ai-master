@@ -170,7 +170,7 @@
 /* Lab Cards Grid */
 .labs-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--space-5);
   margin-bottom: var(--space-12);
 }
@@ -216,7 +216,7 @@
 
 .lab-badge-algorithm { color: var(--go); border-color: var(--go-border); }
 .lab-badge-engineering { color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
-.lab-badge-simulation { color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); }
+.lab-badge-simulation { color: var(--hold); border-color: var(--hold-border); }
 .lab-badge-core { color: var(--hold); border-color: var(--hold-border); }
 
 .lab-card-body {
@@ -340,10 +340,13 @@
   .search-box-wrap {
     min-width: 100%;
   }
-  .labs-grid {
+  .bridges-grid {
     grid-template-columns: 1fr;
   }
-  .bridges-grid {
+}
+
+@media (max-width: 640px) {
+  .labs-grid {
     grid-template-columns: 1fr;
   }
 }
