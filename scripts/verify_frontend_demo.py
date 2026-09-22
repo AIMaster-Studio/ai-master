@@ -52,6 +52,8 @@ ASSETS = [
     "/assets/frontend.js",
     "/assets/ai-review.css",
     "/assets/playground.css",
+    "/assets/atmosphere.css",
+    "/assets/atmosphere.js",
     "/static/js/playground.js",
     "/data/ai-rubric-validation-results.json",
     "/static/js/ai-review.js",

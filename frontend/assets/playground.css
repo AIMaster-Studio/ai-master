@@ -113,7 +113,7 @@
   padding: var(--space-2) var(--space-3);
   cursor: pointer;
   border-radius: var(--radius);
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .category-btn:hover {
@@ -122,12 +122,17 @@
   border-color: var(--line-bright);
 }
 
-.category-btn.active {
+.category-btn.active,
+.category-btn[aria-pressed="true"] {
   background: var(--go-dim);
   color: var(--go);
   font-weight: 700;
-  outline: 1px solid var(--go);
-  outline-offset: -1px;
+  box-shadow: inset 0 -2px 0 var(--go);
+}
+
+.category-btn:focus-visible {
+  outline: 2px solid var(--go);
+  outline-offset: 2px;
 }
 
 .search-box-wrap {

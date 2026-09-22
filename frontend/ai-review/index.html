@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-atmosphere="review">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="../assets/tokens.css">
   <link rel="stylesheet" href="../assets/frontend.css">
   <link rel="stylesheet" href="../assets/ai-review.css">
+  <link rel="stylesheet" href="../assets/atmosphere.css">
+  <script src="../assets/atmosphere.js" defer></script>
 </head>
 <body>
   <nav class="demo-nav">
@@ -101,14 +103,14 @@
             <tbody>
               <tr>
                 <th class="row-head">真实达标<br><span class="th-sub">(GT = True)</span></th>
-                <td class="cell-matrix cell-tp" data-filter-verdict="TP" title="点击过滤 TP 样本">
+                <td class="cell-matrix cell-tp" data-filter-verdict="TP" role="button" tabindex="0" aria-label="筛选 TP 真正例，8 个样本" title="点击过滤 TP 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">TP 真正例</span>
                     <span class="cell-count">8</span>
                     <span class="cell-desc">真实合格 × 准确通过</span>
                   </div>
                 </td>
-                <td class="cell-matrix cell-fn" data-filter-verdict="FN" title="点击过滤 FN 样本">
+                <td class="cell-matrix cell-fn" data-filter-verdict="FN" role="button" tabindex="0" aria-label="筛选 FN 假负例，2 个样本" title="点击过滤 FN 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">FN 假负例</span>
                     <span class="cell-count">2</span>
@@ -119,14 +121,14 @@
               </tr>
               <tr>
                 <th class="row-head">真实不合格<br><span class="th-sub">(GT = False)</span></th>
-                <td class="cell-matrix cell-fp" data-filter-verdict="FP" title="点击过滤 FP 样本">
+                <td class="cell-matrix cell-fp" data-filter-verdict="FP" role="button" tabindex="0" aria-label="筛选 FP 假正例，0 个样本" title="点击过滤 FP 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">FP 假正例</span>
                     <span class="cell-count">0</span>
                     <span class="cell-desc">真实劣质 × 误判通过 (零冒充)</span>
                   </div>
                 </td>
-                <td class="cell-matrix cell-tn" data-filter-verdict="TN" title="点击过滤 TN 样本">
+                <td class="cell-matrix cell-tn" data-filter-verdict="TN" role="button" tabindex="0" aria-label="筛选 TN 真负例，11 个样本" title="点击过滤 TN 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">TN 真负例</span>
                     <span class="cell-count">11</span>
@@ -205,23 +207,23 @@
       <div class="cases-toolbar">
         <div class="toolbar-title-wrap">
           <h2 class="card-title">评测验证案例明细 (21 例)</h2>
-          <span class="cases-count-badge" id="cases-visible-count">显示 21 / 21 例</span>
+          <span class="cases-count-badge" id="cases-visible-count" role="status" aria-live="polite" aria-atomic="true">显示 21 / 21 例</span>
         </div>
         <div class="filter-groups">
-          <div class="filter-group" id="filter-verdict-group">
+          <div class="filter-group" id="filter-verdict-group" role="group" aria-label="判定分类筛选">
             <span class="filter-label">判定分类:</span>
-            <button class="filter-btn active" data-filter="verdict" data-val="ALL">全部 (21)</button>
-            <button class="filter-btn" data-filter="verdict" data-val="TP">TP 真正例 (8)</button>
-            <button class="filter-btn" data-filter="verdict" data-val="TN">TN 真负例 (11)</button>
-            <button class="filter-btn" data-filter="verdict" data-val="FN">FN 假负例 (2)</button>
-            <button class="filter-btn" data-filter="verdict" data-val="FP">FP 假正例 (0)</button>
+            <button type="button" class="filter-btn active" aria-pressed="true" data-filter="verdict" data-val="ALL">全部 (21)</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="TP">TP 真正例 (8)</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="TN">TN 真负例 (11)</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="FN">FN 假负例 (2)</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="FP">FP 假正例 (0)</button>
           </div>
-          <div class="filter-group" id="filter-module-group">
+          <div class="filter-group" id="filter-module-group" role="group" aria-label="所属模块筛选">
             <span class="filter-label">所属模块:</span>
-            <button class="filter-btn active" data-filter="module" data-val="ALL">全部模块</button>
-            <button class="filter-btn" data-filter="module" data-val="llm-basics">大模型基础</button>
-            <button class="filter-btn" data-filter="module" data-val="transformer">Transformer</button>
-            <button class="filter-btn" data-filter="module" data-val="rag-retrieval">RAG检索</button>
+            <button type="button" class="filter-btn active" aria-pressed="true" data-filter="module" data-val="ALL">全部模块</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="module" data-val="llm-basics">大模型基础</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="module" data-val="transformer">Transformer</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="module" data-val="rag-retrieval">RAG检索</button>
           </div>
         </div>
       </div>

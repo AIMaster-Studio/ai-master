@@ -13,6 +13,14 @@
     let currentVerdict = "ALL";
     let currentModule = "ALL";
 
+    function syncPressed(buttons, activeButton) {
+      buttons.forEach((button) => {
+        const active = button === activeButton;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+
     function animateVisibleCards() {
       if (reduceMotion || !Element.prototype.animate) return;
       Array.from(cards).filter((card) => card.style.display !== "none").slice(0, 8).forEach((card) => {
@@ -48,8 +56,7 @@
 
     filterVerdictBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        filterVerdictBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
+        syncPressed(filterVerdictBtns, btn);
         currentVerdict = btn.getAttribute("data-val") || "ALL";
         updateFilters(true);
       });
@@ -57,31 +64,32 @@
 
     filterModuleBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        filterModuleBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
+        syncPressed(filterModuleBtns, btn);
         currentModule = btn.getAttribute("data-val") || "ALL";
         updateFilters(true);
       });
     });
 
     matrixCells.forEach((cell) => {
-      cell.addEventListener("click", () => {
+      function activateCell() {
         const targetVerdict = cell.getAttribute("data-filter-verdict");
         if (!targetVerdict) return;
 
-        filterVerdictBtns.forEach((b) => {
-          if (b.getAttribute("data-val") === targetVerdict) {
-            b.classList.add("active");
-          } else {
-            b.classList.remove("active");
-          }
-        });
+        const activeButton = Array.from(filterVerdictBtns).find((button) => button.getAttribute("data-val") === targetVerdict);
+        if (activeButton) syncPressed(filterVerdictBtns, activeButton);
         currentVerdict = targetVerdict;
         updateFilters(true);
 
         if (casesContainer) {
-          casesContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+          casesContainer.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
         }
+      }
+
+      cell.addEventListener("click", activateCell);
+      cell.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        activateCell();
       });
     });
 

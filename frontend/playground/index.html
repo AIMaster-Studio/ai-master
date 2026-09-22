@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-atmosphere="lab">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="../assets/tokens.css">
   <link rel="stylesheet" href="../assets/frontend.css">
   <link rel="stylesheet" href="../assets/playground.css">
+  <link rel="stylesheet" href="../assets/atmosphere.css">
+  <script src="../assets/atmosphere.js" defer></script>
 </head>
 <body>
   <nav class="demo-nav">
@@ -55,19 +57,19 @@
 
     <section class="lab-toolbar">
       <div class="toolbar-top">
-        <div class="category-filters" id="category-filters">
-          <button class="category-btn active" data-cat="ALL">全部实验 (12)</button>
-          <button class="category-btn" data-cat="algorithm">算法交互 (3)</button>
-          <button class="category-btn" data-cat="engineering">工程工坊 (4)</button>
-          <button class="category-btn" data-cat="simulation">视效仿真 (4)</button>
-          <button class="category-btn" data-cat="core">通关枢纽 (1)</button>
+        <div class="category-filters" id="category-filters" role="group" aria-label="实验分类筛选">
+          <button type="button" class="category-btn active" aria-pressed="true" data-cat="ALL">全部实验 (12)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="algorithm">算法交互 (3)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="engineering">工程工坊 (4)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="simulation">视效仿真 (4)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="core">通关枢纽 (1)</button>
         </div>
         <div class="search-box-wrap">
-          <input type="text" id="lab-search-input" class="search-input" placeholder="按技术关键词即时过滤..." autocomplete="off">
+          <input type="text" id="lab-search-input" class="search-input" aria-label="按技术关键词过滤实验" placeholder="按技术关键词即时过滤..." autocomplete="off">
         </div>
       </div>
       <div class="toolbar-bottom">
-        <span class="lab-counter" id="lab-visible-counter">显示 12 / 12 个实验</span>
+        <span class="lab-counter" id="lab-visible-counter" role="status" aria-live="polite" aria-atomic="true">显示 12 / 12 个实验</span>
         <span class="toolbar-hint">点击任意工坊卡片即可直接进入全屏交互环境</span>
       </div>
     </section>

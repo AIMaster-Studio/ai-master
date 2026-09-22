@@ -39,6 +39,53 @@ def write(relative: str, content: str):
     path.write_text(content.strip() + "\n", encoding="utf-8")
 
 
+# ---------------------------------------------------------------------------
+# Page atmosphere wiring.
+#
+# The chambers themselves live in ``frontend/assets/atmosphere.css`` as a single
+# design system. A page only ever opts into one chamber by name; it never owns
+# gradient values of its own. Wiring is centralised here so generated routes are
+# never hand-edited and so the step stays idempotent across repeated builds.
+# ---------------------------------------------------------------------------
+ATMOSPHERE_CHAMBERS = {
+    "index.html": "landing",
+    "dashboard/index.html": "dashboard",
+    "ai-review/index.html": "review",
+    "playground/index.html": "lab",
+    "knowledge-stars/index.html": "stars",
+    "canvas/index.html": "dashboard",
+}
+# Chapter routes are read-then-quiz routes: they belong to the examiner chamber.
+ATMOSPHERE_DEFAULT_CHAMBER = "learning"
+
+
+def apply_atmosphere(relative: str):
+    """Opt one generated page into its chamber. Safe to run on every build."""
+    path = FRONTEND / relative
+    if not path.exists():
+        return
+    text = path.read_text(encoding="utf-8")
+    if "data-atmosphere" in text:
+        return
+    chamber = ATMOSPHERE_CHAMBERS.get(relative, ATMOSPHERE_DEFAULT_CHAMBER)
+    sheet = page_url("/assets/atmosphere.css", relative)
+    script = page_url("/assets/atmosphere.js", relative)
+    text = text.replace(
+        '<html lang="zh-CN">',
+        f'<html lang="zh-CN" data-atmosphere="{chamber}">',
+        1,
+    )
+    text = text.replace(
+        "</head>",
+        f'  <link rel="stylesheet" href="{sheet}">\n'
+        f'  <script src="{script}" defer></script>\n'
+        "</head>",
+        1,
+    )
+    path.write_text(text, encoding="utf-8")
+
+
+
 def target_for(chapter_id: int) -> str:
     special = {
         1: "/static/llm_intro.html",
@@ -1295,6 +1342,12 @@ def ai_review_css():
   filter: brightness(1.15);
 }
 
+.cell-matrix:focus-visible {
+  outline: 2px solid var(--matrix-signal, var(--go));
+  outline-offset: -3px;
+  filter: brightness(1.08);
+}
+
 .matrix-cell-content {
   display: flex;
   flex-direction: column;
@@ -1326,6 +1379,7 @@ def ai_review_css():
 }
 
 .cell-tp {
+  --matrix-signal: var(--go);
   background: rgba(45, 212, 191, 0.08);
   border: 1px solid rgba(45, 212, 191, 0.3) !important;
 }
@@ -1333,6 +1387,7 @@ def ai_review_css():
 .cell-tp .cell-count { color: var(--go); }
 
 .cell-fn {
+  --matrix-signal: var(--hold);
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.3) !important;
 }
@@ -1340,6 +1395,7 @@ def ai_review_css():
 .cell-fn .cell-count { color: var(--hold); }
 
 .cell-fp {
+  --matrix-signal: var(--stop);
   background: rgba(244, 63, 94, 0.08);
   border: 1px solid rgba(244, 63, 94, 0.3) !important;
 }
@@ -1347,6 +1403,7 @@ def ai_review_css():
 .cell-fp .cell-count { color: var(--stop); }
 
 .cell-tn {
+  --matrix-signal: var(--ink-muted);
   background: rgba(34, 50, 79, 0.2);
 }
 .cell-tn .cell-tag { background: var(--bg-card); color: var(--ink-muted); }
@@ -1519,7 +1576,7 @@ def ai_review_css():
   padding: var(--space-1) var(--space-3);
   cursor: pointer;
   border-radius: var(--radius);
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .filter-btn:hover {
@@ -1528,11 +1585,18 @@ def ai_review_css():
   border-color: var(--line-bright);
 }
 
-.filter-btn.active {
+.filter-btn.active,
+.filter-btn[aria-pressed="true"] {
   background: var(--go-dim);
   color: var(--go);
-  border-color: var(--go);
+  border-color: var(--line);
   font-weight: 700;
+  box-shadow: inset 0 -2px 0 var(--go);
+}
+
+.filter-btn:focus-visible {
+  outline: 2px solid var(--go);
+  outline-offset: 2px;
 }
 
 /* Case Cards List */
@@ -1944,14 +2008,14 @@ def build_ai_review(results_data):
             <tbody>
               <tr>
                 <th class="row-head">真实达标<br><span class="th-sub">(GT = True)</span></th>
-                <td class="cell-matrix cell-tp" data-filter-verdict="TP" title="点击过滤 TP 样本">
+                <td class="cell-matrix cell-tp" data-filter-verdict="TP" role="button" tabindex="0" aria-label="筛选 TP 真正例，{tp} 个样本" title="点击过滤 TP 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">TP 真正例</span>
                     <span class="cell-count">{tp}</span>
                     <span class="cell-desc">真实合格 × 准确通过</span>
                   </div>
                 </td>
-                <td class="cell-matrix cell-fn" data-filter-verdict="FN" title="点击过滤 FN 样本">
+                <td class="cell-matrix cell-fn" data-filter-verdict="FN" role="button" tabindex="0" aria-label="筛选 FN 假负例，{fn} 个样本" title="点击过滤 FN 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">FN 假负例</span>
                     <span class="cell-count">{fn}</span>
@@ -1962,14 +2026,14 @@ def build_ai_review(results_data):
               </tr>
               <tr>
                 <th class="row-head">真实不合格<br><span class="th-sub">(GT = False)</span></th>
-                <td class="cell-matrix cell-fp" data-filter-verdict="FP" title="点击过滤 FP 样本">
+                <td class="cell-matrix cell-fp" data-filter-verdict="FP" role="button" tabindex="0" aria-label="筛选 FP 假正例，{fp} 个样本" title="点击过滤 FP 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">FP 假正例</span>
                     <span class="cell-count">{fp}</span>
                     <span class="cell-desc">真实劣质 × 误判通过 (零冒充)</span>
                   </div>
                 </td>
-                <td class="cell-matrix cell-tn" data-filter-verdict="TN" title="点击过滤 TN 样本">
+                <td class="cell-matrix cell-tn" data-filter-verdict="TN" role="button" tabindex="0" aria-label="筛选 TN 真负例，{tn} 个样本" title="点击过滤 TN 样本">
                   <div class="matrix-cell-content">
                     <span class="cell-tag">TN 真负例</span>
                     <span class="cell-count">{tn}</span>
@@ -2048,23 +2112,23 @@ def build_ai_review(results_data):
       <div class="cases-toolbar">
         <div class="toolbar-title-wrap">
           <h2 class="card-title">评测验证案例明细 ({total_cases} 例)</h2>
-          <span class="cases-count-badge" id="cases-visible-count">显示 {total_cases} / {total_cases} 例</span>
+          <span class="cases-count-badge" id="cases-visible-count" role="status" aria-live="polite" aria-atomic="true">显示 {total_cases} / {total_cases} 例</span>
         </div>
         <div class="filter-groups">
-          <div class="filter-group" id="filter-verdict-group">
+          <div class="filter-group" id="filter-verdict-group" role="group" aria-label="判定分类筛选">
             <span class="filter-label">判定分类:</span>
-            <button class="filter-btn active" data-filter="verdict" data-val="ALL">全部 (21)</button>
-            <button class="filter-btn" data-filter="verdict" data-val="TP">TP 真正例 ({tp})</button>
-            <button class="filter-btn" data-filter="verdict" data-val="TN">TN 真负例 ({tn})</button>
-            <button class="filter-btn" data-filter="verdict" data-val="FN">FN 假负例 ({fn})</button>
-            <button class="filter-btn" data-filter="verdict" data-val="FP">FP 假正例 ({fp})</button>
+            <button type="button" class="filter-btn active" aria-pressed="true" data-filter="verdict" data-val="ALL">全部 (21)</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="TP">TP 真正例 ({tp})</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="TN">TN 真负例 ({tn})</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="FN">FN 假负例 ({fn})</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="verdict" data-val="FP">FP 假正例 ({fp})</button>
           </div>
-          <div class="filter-group" id="filter-module-group">
+          <div class="filter-group" id="filter-module-group" role="group" aria-label="所属模块筛选">
             <span class="filter-label">所属模块:</span>
-            <button class="filter-btn active" data-filter="module" data-val="ALL">全部模块</button>
-            <button class="filter-btn" data-filter="module" data-val="llm-basics">大模型基础</button>
-            <button class="filter-btn" data-filter="module" data-val="transformer">Transformer</button>
-            <button class="filter-btn" data-filter="module" data-val="rag-retrieval">RAG检索</button>
+            <button type="button" class="filter-btn active" aria-pressed="true" data-filter="module" data-val="ALL">全部模块</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="module" data-val="llm-basics">大模型基础</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="module" data-val="transformer">Transformer</button>
+            <button type="button" class="filter-btn" aria-pressed="false" data-filter="module" data-val="rag-retrieval">RAG检索</button>
           </div>
         </div>
       </div>
@@ -2197,7 +2261,7 @@ def playground_css():
   padding: var(--space-2) var(--space-3);
   cursor: pointer;
   border-radius: var(--radius);
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .category-btn:hover {
@@ -2206,12 +2270,17 @@ def playground_css():
   border-color: var(--line-bright);
 }
 
-.category-btn.active {
+.category-btn.active,
+.category-btn[aria-pressed="true"] {
   background: var(--go-dim);
   color: var(--go);
   font-weight: 700;
-  outline: 1px solid var(--go);
-  outline-offset: -1px;
+  box-shadow: inset 0 -2px 0 var(--go);
+}
+
+.category-btn:focus-visible {
+  outline: 2px solid var(--go);
+  outline-offset: 2px;
 }
 
 .search-box-wrap {
@@ -2641,19 +2710,19 @@ def build_playground():
 
     <section class="lab-toolbar">
       <div class="toolbar-top">
-        <div class="category-filters" id="category-filters">
-          <button class="category-btn active" data-cat="ALL">全部实验 (12)</button>
-          <button class="category-btn" data-cat="algorithm">算法交互 (3)</button>
-          <button class="category-btn" data-cat="engineering">工程工坊 (4)</button>
-          <button class="category-btn" data-cat="simulation">视效仿真 (4)</button>
-          <button class="category-btn" data-cat="core">通关枢纽 (1)</button>
+        <div class="category-filters" id="category-filters" role="group" aria-label="实验分类筛选">
+          <button type="button" class="category-btn active" aria-pressed="true" data-cat="ALL">全部实验 (12)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="algorithm">算法交互 (3)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="engineering">工程工坊 (4)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="simulation">视效仿真 (4)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="core">通关枢纽 (1)</button>
         </div>
         <div class="search-box-wrap">
-          <input type="text" id="lab-search-input" class="search-input" placeholder="按技术关键词即时过滤..." autocomplete="off">
+          <input type="text" id="lab-search-input" class="search-input" aria-label="按技术关键词过滤实验" placeholder="按技术关键词即时过滤..." autocomplete="off">
         </div>
       </div>
       <div class="toolbar-bottom">
-        <span class="lab-counter" id="lab-visible-counter">显示 12 / 12 个实验</span>
+        <span class="lab-counter" id="lab-visible-counter" role="status" aria-live="polite" aria-atomic="true">显示 12 / 12 个实验</span>
         <span class="toolbar-hint">点击任意工坊卡片即可直接进入全屏交互环境</span>
       </div>
     </section>
@@ -3556,6 +3625,8 @@ def main():
     write("playground/index.html", build_playground())
     write("transition/index.html", '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../dashboard/"><title>AI Master</title></head><body></body></html>')
     write("start-demo.bat", '@echo off\nsetlocal\ncd /d "%~dp0"\necho AI Master frontend demo: http://127.0.0.1:8080/dashboard/\nstart "" http://127.0.0.1:8080/dashboard/\npython -m http.server 8080\n')
+    for page in [*ATMOSPHERE_CHAMBERS, *(f"chapter/{cid}/index.html" for cid in chapters)]:
+        apply_atmosphere(page)
     patch_static_assets()
     rewrite_project_urls()
     print("Generated static frontend routes and data successfully.")

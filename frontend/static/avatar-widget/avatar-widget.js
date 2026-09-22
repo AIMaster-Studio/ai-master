@@ -542,7 +542,8 @@
   var animVideo = root.querySelector('#aw-anim-video');
   var focusBadge = root.querySelector('#aw-focus-badge');
   var PET_ANIM_ROOT = PROJECT_ROOT + 'third_party/dsh-pet/dsh-pet/assets/webm/';
-  var petAnimNames = (window.DSH_PET_ANIMATIONS || PET_ANIM_NAMES || []).slice();
+  var hasPublishedPetAnimations = Array.isArray(window.DSH_PET_ANIMATIONS) && window.DSH_PET_ANIMATIONS.length > 0;
+  var petAnimNames = hasPublishedPetAnimations ? window.DSH_PET_ANIMATIONS.slice() : [];
 
   /* ---------- 形象渲染 ---------- */
   function avatarSrc(id) {
@@ -551,7 +552,12 @@
     return PRESET_AVATARS[0].src;
   }
   function supportsAnimation() {
-    return settings.avatar === 'whale1' || settings.avatar === 'whale2';
+    return hasPublishedPetAnimations && (settings.avatar === 'whale1' || settings.avatar === 'whale2');
+  }
+  function animationUnavailableMessage() {
+    return hasPublishedPetAnimations
+      ? '⚠️ 当前形象不支持动画，切回鲸鱼娘形象吧'
+      : 'ℹ️ 当前部署未包含桌宠动画资源，已使用静态形象';
   }
   function renderAvatar() {
     whaleImg.src = avatarSrc(settings.avatar);
@@ -1341,13 +1347,15 @@
       var on = n === currentAnimName ? ' aw-on' : '';
       html += '<span class="aw-anim-chip' + on + '" data-anim="' + n + '">' + n + '</span>';
     }
-    list.innerHTML = html || '<span style="font-size:11px;color:#8d9cbd;">没有匹配的动画~</span>';
+    list.innerHTML = html || '<span style="font-size:11px;color:#8d9cbd;">' +
+      (hasPublishedPetAnimations ? '没有匹配的动画~' : '当前部署未包含动画资源，使用静态形象。') +
+      '</span>';
     var chips = list.querySelectorAll('.aw-anim-chip');
     for (var j = 0; j < chips.length; j++) {
       chips[j].addEventListener('click', function () {
         var name = this.getAttribute('data-anim');
         if (!supportsAnimation()) {
-          showBubble('⚠️ 当前形象不支持动画，切回鲸鱼娘形象吧', true);
+          showBubble(animationUnavailableMessage(), true);
           return;
         }
         playPetAnimation(name, false);
@@ -1380,7 +1388,9 @@
       '<h4>🎬 动画剧场</h4>' +
       '<div class="aw-sec">' +
         '<input type="text" id="aw-anim-search" class="aw-anim-search" placeholder="🔍 搜索动画，如：吃 / 舞 / 点头..." />' +
-        '<div class="aw-anim-current" id="aw-anim-current">待机 · 待机呼吸休闲</div>' +
+        '<div class="aw-anim-current" id="aw-anim-current">' +
+          (hasPublishedPetAnimations ? '待机 · 待机呼吸休闲' : '当前部署 · 静态形象') +
+        '</div>' +
         '<div class="aw-anim-list" id="aw-anim-list"></div>' +
         '<div style="display:flex;gap:6px;">' +
           '<button class="aw-btn" id="aw-anim-random" style="flex:1;">🎲 随机播一个</button>' +
@@ -1575,7 +1585,7 @@
     }
     var animRandom = menuEl.querySelector('#aw-anim-random');
     if (animRandom) animRandom.addEventListener('click', function () {
-      if (!supportsAnimation()) { showBubble('⚠️ 当前形象不支持动画，切回鲸鱼娘形象吧', true); return; }
+      if (!supportsAnimation()) { showBubble(animationUnavailableMessage(), true); return; }
       var n = petAnimNames[Math.floor(Math.random() * petAnimNames.length)];
       playPetAnimation(n, false);
       currentAnimName = n;

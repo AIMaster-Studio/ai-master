@@ -11,6 +11,14 @@
     let currentCategory = "ALL";
     let searchQuery = "";
 
+    function syncPressed(activeButton) {
+      categoryBtns.forEach((button) => {
+        const active = button === activeButton;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+
     function animateVisibleCards() {
       if (reduceMotion || !Element.prototype.animate) return;
       Array.from(cards).filter((card) => card.style.display !== "none").slice(0, 8).forEach((card) => {
@@ -50,8 +58,7 @@
 
     categoryBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        categoryBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
+        syncPressed(btn);
         currentCategory = btn.getAttribute("data-cat") || "ALL";
         filterCards(true);
       });

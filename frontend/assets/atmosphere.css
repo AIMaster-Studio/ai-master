@@ -1,0 +1,327 @@
+/* ==========================================================================
+   AI MASTER — PAGE ATMOSPHERE
+   Same universe, different chambers. One coordinate system, eight vantage
+   points. Three depth planes only, painted with low-frequency gradients:
+
+     DEEP  (html::before)  far field  — 2–3 enormous, soft, asymmetric masses
+     MID   (html::after)   the source — a drawn-out bloom + mid-field occlusion
+     NEAR  (body::before)  enclosure  — viewport edge falloff and overhead light
+
+   Constraints this file obeys on purpose:
+     · no blur(), no filters, no backdrop-filter, no box-shadow glow
+     · no grid / scanline / circuit / node / HUD / orb / starfield imagery
+     · no second visual system competing with Knowledge Stars (WebGL)
+     · no colour outside the Dark Instrument palette (go / hold / neutrals)
+   A chamber is expressed with scale, distance, brightness and negative space —
+   never with more elements.
+   ========================================================================== */
+
+html[data-atmosphere] {
+  --atm-void: #070b14;
+  --atm-deep: none;
+  --atm-mid: none;
+  --atm-near: none;
+  --atm-o-deep: 1;
+  --atm-o-mid: 1;
+  --atm-o-near: 1;
+  --atm-live: 1;
+
+  /* Written by atmosphere.js — zero until a real pointer/scroll arrives. */
+  --atm-x-a: 0px;
+  --atm-y-a: 0px;
+  --atm-x-b: 0px;
+  --atm-y-b: 0px;
+  --atm-s-a: 0px;
+  --atm-s-b: 0px;
+
+  min-height: 100%;
+  background-color: var(--atm-void);
+  color-scheme: dark;
+  overflow-x: clip;
+  isolation: isolate;
+}
+
+/* --- DEEP: the far field. Largest scale, lowest frequency, most motion. --- */
+html[data-atmosphere]::before,
+html[data-atmosphere]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+}
+
+html[data-atmosphere]::before {
+  background-image: var(--atm-deep);
+  opacity: calc(var(--atm-o-deep) * var(--atm-live));
+}
+
+/* --- MID: a shorter-legged structure, so the deep field has something in front. --- */
+html[data-atmosphere]::after {
+  background-image: var(--atm-mid);
+  opacity: calc(var(--atm-o-mid) * var(--atm-live));
+}
+
+/* The foreground UI is the front plane: fully opaque, fully interactive, and it
+   never learns that there is a space behind it. */
+html[data-atmosphere] body {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  background-color: transparent !important;
+}
+
+/* --- NEAR: the chamber boundary. Walls do not move. --- */
+html[data-atmosphere] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--atm-near);
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: calc(var(--atm-o-near) * var(--atm-live));
+}
+
+@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+  html[data-atmosphere]::before,
+  html[data-atmosphere]::after {
+    will-change: transform;
+    transition: transform 520ms cubic-bezier(0.22, 0.7, 0.2, 1), opacity 400ms linear;
+  }
+  html[data-atmosphere]::after {
+    transition-duration: 380ms;
+  }
+  html[data-atmosphere]::before {
+    transform: translate3d(var(--atm-x-a), calc(var(--atm-y-a) + var(--atm-s-a)), 0) scale(1.08);
+  }
+  html[data-atmosphere]::after {
+    transform: translate3d(var(--atm-x-b), calc(var(--atm-y-b) + var(--atm-s-b)), 0) scale(1.05);
+  }
+}
+
+/* ==========================================================================
+   A. LANDING — THE GATEWAY
+   The entry into the system. Widest scale on the site and the strongest
+   separation between planes; the hero sits in the deepest part of the space
+   and the volume quiets as the page is read downward.
+   ========================================================================== */
+html[data-atmosphere="landing"] {
+  --atm-void: #04070f;
+  --atm-o-deep: 1;
+  --atm-o-mid: 0.94;
+  --atm-o-near: 1;
+  /* Two distant masses and a floor — nothing else. An earlier revision also
+     carried a cold mass in the top-right corner and a soft bloom in the upper
+     centre; both were cut after an A/B capture, because the page read deeper and
+     more mature without them. */
+  --atm-deep:
+    radial-gradient(ellipse 78% 62% at 4% -6%, rgba(45, 212, 191, 0.14) 0%, rgba(24, 88, 88, 0.058) 30%, rgba(10, 34, 40, 0.016) 58%, transparent 78%),
+    radial-gradient(ellipse 70% 58% at 42% 116%, rgba(30, 58, 94, 0.155) 0%, rgba(16, 30, 54, 0.06) 36%, transparent 76%),
+    linear-gradient(178deg, #04070f 0%, #05080f 42%, #070a12 74%, #080c15 100%);
+  --atm-mid:
+    radial-gradient(ellipse 92% 78% at 46% 44%, transparent 26%, rgba(1, 4, 10, 0.19) 66%, rgba(1, 3, 8, 0.5) 100%);
+  --atm-near:
+    radial-gradient(ellipse 118% 94% at 50% 46%, transparent 62%, rgba(1, 3, 9, 0.28) 100%),
+    linear-gradient(180deg, rgba(3, 6, 13, 0.32) 0%, transparent 15%);
+}
+
+/* ==========================================================================
+   B. LEARNING CENTER — AI EXAMINER CHAMBER
+   Enclosed. A single work light is drawn down onto the reading column, the
+   walls close in, and almost nothing moves. The chamber is legible only
+   because the reading surface is a shade translucent — the instrument
+   chassis around it stays solid.
+   ========================================================================== */
+html[data-atmosphere="learning"] {
+  --atm-void: #050810;
+  --atm-o-deep: 1;
+  --atm-o-mid: 0.95;
+  --atm-o-near: 1;
+  --atm-deep:
+    radial-gradient(ellipse 62% 74% at 50% 34%, rgba(52, 74, 112, 0.215) 0%, rgba(22, 36, 62, 0.098) 38%, transparent 76%),
+    radial-gradient(ellipse 40% 34% at 3% 2%, rgba(45, 212, 191, 0.06) 0%, rgba(16, 58, 64, 0.024) 44%, transparent 76%),
+    linear-gradient(180deg, #050810 0%, #060a13 100%);
+  --atm-mid:
+    radial-gradient(ellipse 44% 22% at 52% 0%, rgba(150, 172, 205, 0.036) 0%, transparent 74%),
+    radial-gradient(ellipse 84% 82% at 50% 44%, transparent 25%, rgba(2, 5, 12, 0.31) 62%, rgba(1, 3, 8, 0.68) 100%);
+  --atm-near:
+    radial-gradient(ellipse 118% 96% at 50% 48%, transparent 66%, rgba(1, 3, 8, 0.24) 100%),
+    linear-gradient(180deg, rgba(120, 150, 190, 0.032) 0%, transparent 13%);
+}
+
+/* The reading surface is the one foreground element the chamber is allowed to
+   touch: at 0.8 alpha the work light registers behind the text while body copy
+   keeps roughly 17:1 contrast and muted copy stays above 7:1. */
+html[data-atmosphere="learning"] #main-content {
+  background-color: rgba(9, 13, 22, 0.8);
+}
+
+/* ==========================================================================
+   C. AI REVIEW — EVIDENCE CHAMBER
+   The coldest and most stable room on the site. Cold mass held to the upper
+   right, a trace of signal at the far left, and a deep central occlusion that
+   reads as an analysis bay rather than a backdrop.
+   ========================================================================== */
+html[data-atmosphere="review"] {
+  --atm-void: #04070f;
+  --atm-o-deep: 0.7;
+  --atm-o-mid: 0.95;
+  --atm-o-near: 1;
+  --atm-deep:
+    radial-gradient(ellipse 70% 60% at 92% 2%, rgba(60, 80, 124, 0.155) 0%, rgba(26, 36, 66, 0.06) 40%, transparent 78%),
+    radial-gradient(ellipse 46% 48% at 0% 40%, rgba(45, 212, 191, 0.036) 0%, rgba(16, 48, 56, 0.014) 42%, transparent 74%),
+    linear-gradient(180deg, #04070f 0%, #050912 100%);
+  --atm-mid:
+    radial-gradient(ellipse 86% 86% at 50% 44%, transparent 26%, rgba(1, 4, 10, 0.29) 64%, rgba(1, 3, 8, 0.6) 100%);
+  --atm-near:
+    radial-gradient(ellipse 124% 100% at 50% 48%, transparent 68%, rgba(1, 3, 8, 0.26) 100%),
+    linear-gradient(180deg, rgba(96, 126, 168, 0.026) 0%, transparent 12%);
+}
+
+/* ==========================================================================
+   D. PLAYGROUND — EXPERIMENT SPACE
+   The most permissive volume in the system, and still inside the motion
+   budget. The field is wider and less enclosed than the examiner chamber, and
+   the only page besides Landing that is worth a scroll parallax.
+   ========================================================================== */
+html[data-atmosphere="lab"] {
+  --atm-void: #040811;
+  --atm-o-deep: 0.94;
+  --atm-o-mid: 0.78;
+  --atm-o-near: 1;
+  --atm-deep:
+    radial-gradient(ellipse 66% 62% at 2% 16%, rgba(45, 212, 191, 0.098) 0%, rgba(20, 68, 74, 0.04) 40%, transparent 76%),
+    radial-gradient(ellipse 76% 60% at 98% 0%, rgba(70, 94, 146, 0.17) 0%, rgba(30, 42, 80, 0.07) 42%, transparent 78%),
+    radial-gradient(ellipse 48% 38% at 76% 104%, rgba(245, 158, 11, 0.028) 0%, rgba(64, 45, 20, 0.011) 42%, transparent 72%),
+    linear-gradient(180deg, #040811 0%, #050912 100%);
+  --atm-mid:
+    radial-gradient(ellipse 34% 26% at 40% 8%, rgba(188, 206, 232, 0.042) 0%, transparent 74%),
+    radial-gradient(ellipse 92% 84% at 50% 48%, transparent 32%, rgba(1, 4, 10, 0.15) 68%, rgba(1, 3, 8, 0.42) 100%);
+  --atm-near:
+    radial-gradient(ellipse 122% 98% at 50% 48%, transparent 64%, rgba(1, 3, 8, 0.22) 100%),
+    linear-gradient(180deg, rgba(3, 6, 13, 0.28) 0%, transparent 14%);
+}
+
+/* ==========================================================================
+   E. KNOWLEDGE STARS — THE VISUAL CLIMAX
+   The starfield owns this page. The only atmospheric job left is to match the
+   outer black and hand the chrome over to it — no second universe, no second
+   particle field, no glow behind the WebGL canvas.
+   ========================================================================== */
+html[data-atmosphere="stars"] {
+  --atm-void: #030510;
+  --atm-o-deep: 0.5;
+  --atm-o-mid: 0;
+  --atm-o-near: 0;
+  --atm-deep:
+    radial-gradient(ellipse 78% 40% at 50% -8%, rgba(45, 212, 191, 0.028) 0%, transparent 76%),
+    linear-gradient(180deg, #030510 0%, #030510 100%);
+}
+
+/* ==========================================================================
+   F. DASHBOARD — MISSION CONTROL
+   Overview and command, not immersion. Low intensity, almost no motion.
+   ========================================================================== */
+html[data-atmosphere="dashboard"] {
+  --atm-void: #060a13;
+  --atm-o-deep: 0.58;
+  --atm-o-mid: 0.66;
+  --atm-o-near: 1;
+  --atm-deep:
+    radial-gradient(ellipse 66% 54% at 92% 0%, rgba(66, 86, 130, 0.115) 0%, rgba(28, 40, 70, 0.04) 46%, transparent 80%),
+    radial-gradient(ellipse 52% 48% at 2% 12%, rgba(45, 212, 191, 0.044) 0%, transparent 72%),
+    linear-gradient(180deg, #060a13 0%, #070b14 100%);
+  --atm-mid:
+    radial-gradient(ellipse 90% 88% at 50% 46%, transparent 34%, rgba(2, 5, 11, 0.3) 100%);
+  --atm-near:
+    radial-gradient(ellipse 124% 100% at 50% 50%, transparent 70%, rgba(1, 3, 8, 0.18) 100%),
+    linear-gradient(180deg, rgba(4, 8, 16, 0.24) 0%, transparent 13%);
+}
+
+/* ==========================================================================
+   G. HANDS-ON — TRAINING BAY
+   Functional first. The weakest atmosphere on the site: enough to prove the
+   page belongs to the same world, not enough to compete with a task list.
+   ========================================================================== */
+html[data-atmosphere="training"] {
+  --atm-void: #070b14;
+  --atm-o-deep: 0.62;
+  --atm-o-mid: 0.64;
+  --atm-o-near: 1;
+  --atm-deep:
+    radial-gradient(ellipse 58% 46% at 4% 0%, rgba(45, 212, 191, 0.062) 0%, transparent 74%),
+    radial-gradient(ellipse 54% 42% at 96% 14%, rgba(245, 158, 11, 0.026) 0%, transparent 76%),
+    linear-gradient(180deg, #070b14 0%, #080c15 100%);
+  --atm-mid:
+    radial-gradient(ellipse 92% 90% at 50% 50%, transparent 40%, rgba(2, 5, 11, 0.3) 100%);
+  --atm-near:
+    radial-gradient(ellipse 126% 100% at 50% 50%, transparent 72%, rgba(1, 3, 8, 0.16) 100%),
+    linear-gradient(180deg, rgba(4, 8, 16, 0.2) 0%, transparent 12%);
+}
+
+/* ==========================================================================
+   H. BEGINNER — ENTRY ZONE
+   The first layer of the system: a slightly softer volume, a little more air
+   at the top left where the page opens its argument. Still Dark Instrument —
+   not softer in the sense of friendly, softer in the sense of lower contrast.
+   ========================================================================== */
+html[data-atmosphere="entry"] {
+  --atm-void: #070b14;
+  --atm-o-deep: 0.66;
+  --atm-o-mid: 0.52;
+  --atm-o-near: 1;
+  --atm-deep:
+    radial-gradient(ellipse 68% 62% at 0% -4%, rgba(45, 212, 191, 0.068) 0%, rgba(18, 60, 66, 0.026) 44%, transparent 76%),
+    radial-gradient(ellipse 62% 50% at 98% 16%, rgba(84, 100, 134, 0.095) 0%, transparent 78%),
+    radial-gradient(ellipse 46% 34% at 70% 102%, rgba(245, 158, 11, 0.02) 0%, transparent 72%),
+    linear-gradient(180deg, #070b14 0%, #080c15 100%);
+  --atm-mid:
+    radial-gradient(ellipse 94% 92% at 50% 46%, transparent 42%, rgba(2, 5, 11, 0.24) 100%);
+  --atm-near:
+    radial-gradient(ellipse 126% 100% at 50% 48%, transparent 72%, rgba(1, 3, 8, 0.14) 100%),
+    linear-gradient(180deg, rgba(4, 8, 16, 0.18) 0%, transparent 12%);
+}
+
+/* ==========================================================================
+   MOBILE — readability, battery and content win. The chamber stays, the
+   choreography goes.
+   ========================================================================== */
+@media (max-width: 768px) {
+  html[data-atmosphere] {
+    --atm-live: 0.92;
+  }
+
+  html[data-atmosphere]::before,
+  html[data-atmosphere]::after {
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+}
+
+/* ==========================================================================
+   REDUCED MOTION — the space survives, the movement does not.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html[data-atmosphere]::before,
+  html[data-atmosphere]::after {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
+  }
+}
+
+@media print {
+  html[data-atmosphere]::before,
+  html[data-atmosphere]::after,
+  html[data-atmosphere] body::before {
+    display: none;
+  }
+}

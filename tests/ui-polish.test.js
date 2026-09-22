@@ -150,6 +150,28 @@ test("ui-polish: state motion is brief, optional and implemented without a new f
   assert.match(workspaceJs, /data-stage=/, "Learning workspace must expose the active stage as state, not decoration");
 });
 
+test("ui-polish: evidence and lab controls expose quiet state, keyboard access and live feedback", () => {
+  const reviewHtml = fs.readFileSync(path.join(FRONTEND, "ai-review", "index.html"), "utf-8");
+  const playgroundHtml = fs.readFileSync(path.join(FRONTEND, "playground", "index.html"), "utf-8");
+  const reviewCss = fs.readFileSync(path.join(ASSETS, "ai-review.css"), "utf-8");
+  const playgroundCss = fs.readFileSync(path.join(ASSETS, "playground.css"), "utf-8");
+  const reviewJs = fs.readFileSync(path.join(FRONTEND, "static", "js", "ai-review.js"), "utf-8");
+  const playgroundJs = fs.readFileSync(path.join(FRONTEND, "static", "js", "playground.js"), "utf-8");
+
+  assert.match(reviewHtml, /cell-matrix cell-tp[^>]*role="button"[^>]*tabindex="0"/, "Confusion-matrix filters must be keyboard focusable controls");
+  assert.match(reviewHtml, /cases-visible-count[^>]*aria-live="polite"/, "Evidence filter result count must announce changes");
+  assert.match(reviewHtml, /filter-btn active" aria-pressed="true"/, "Evidence filters must expose selected state");
+  assert.match(reviewJs, /addEventListener\("keydown"/, "Evidence matrix must support keyboard activation");
+  assert.match(reviewJs, /reduceMotion \? "auto" : "smooth"/, "Evidence navigation must not force smooth scrolling for reduced-motion users");
+  assert.match(reviewCss, /\.filter-btn\[aria-pressed="true"\][\s\S]*?box-shadow:\s*inset 0 -2px 0 var\(--go\)/, "Evidence filters must use a restrained active hairline");
+
+  assert.match(playgroundHtml, /category-filters[^>]*role="group"[^>]*aria-label="实验分类筛选"/, "Lab segmented control must expose a group label");
+  assert.match(playgroundHtml, /lab-search-input[^>]*aria-label="按技术关键词过滤实验"/, "Lab search must have an accessible name");
+  assert.match(playgroundHtml, /lab-visible-counter[^>]*aria-live="polite"/, "Lab result count must announce changes");
+  assert.match(playgroundJs, /setAttribute\("aria-pressed", String\(active\)\)/, "Lab filters must synchronize visual and semantic state");
+  assert.match(playgroundCss, /\.category-btn\[aria-pressed="true"\][\s\S]*?box-shadow:\s*inset 0 -2px 0 var\(--go\)/, "Lab filters must use the same restrained active hairline");
+});
+
 test("ui-polish: hands-on and beginner pages use the shared instrument system", () => {
   const forbidden = /blur\(|backdrop-filter\s*:|(?:linear|radial)-gradient\(|#aaa0ff|#bfb4ff|#a78bfa|border-radius:\s*(?:20|24|999)px/i;
   for (const relPage of STATIC_UTILITY_PAGES) {
@@ -178,4 +200,27 @@ test("ui-polish: core sprint HTML pages have valid doctype and link tokens.css",
     assert.match(html, /tokens\.css/, `Page ${relPage} must import tokens.css`);
     assert.match(html, /viewport/, `Page ${relPage} must have viewport meta tag`);
   }
+});
+
+test("ui-polish: published avatar widget does not request repository-only pet animations", () => {
+  const avatarJs = fs.readFileSync(
+    path.join(FRONTEND, "static", "avatar-widget", "avatar-widget.js"),
+    "utf-8"
+  );
+
+  assert.match(
+    avatarJs,
+    /hasPublishedPetAnimations\s*=\s*Array\.isArray\(window\.DSH_PET_ANIMATIONS\)/,
+    "HTTP/static builds must require an explicit published animation manifest"
+  );
+  assert.match(
+    avatarJs,
+    /hasPublishedPetAnimations\s*\?\s*window\.DSH_PET_ANIMATIONS\.slice\(\)\s*:\s*\[\]/,
+    "Missing animation assets must degrade to the static avatar instead of repository-only WebM paths"
+  );
+  assert.doesNotMatch(
+    avatarJs,
+    /window\.DSH_PET_ANIMATIONS\s*\|\|\s*PET_ANIM_NAMES/,
+    "Repository-only animation names must not be treated as published browser assets"
+  );
 });
