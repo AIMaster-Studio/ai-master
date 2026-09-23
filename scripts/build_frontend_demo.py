@@ -2878,7 +2878,7 @@ def landing_css():
   padding: var(--space-3) var(--space-6);
   border: 1px solid var(--go);
   border-radius: var(--radius);
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -2888,11 +2888,6 @@ def landing_css():
   background: var(--go-hover);
   border-color: var(--go-hover);
   color: #041019;
-  transform: translateY(-1px);
-}
-
-.btn-hero-primary:active {
-  transform: translateY(0);
 }
 
 .btn-hero-secondary {
@@ -2905,7 +2900,7 @@ def landing_css():
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
