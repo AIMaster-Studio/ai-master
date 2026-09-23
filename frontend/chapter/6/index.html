@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-atmosphere="learning">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,20 +7,24 @@
   <link rel="stylesheet" href="../../assets/tokens.css">
   <link rel="stylesheet" href="../../assets/frontend.css">
   <link rel="stylesheet" href="../../assets/chapter-demo.css">
+  <link rel="stylesheet" href="../../assets/atmosphere.css">
+  <script src="../../assets/atmosphere.js" defer></script>
 </head>
 <body>
 <nav class="demo-nav">
   <div class="demo-nav-inner">
-    <a class="demo-brand" href="../../dashboard/">
+    <a class="demo-brand" href="./">
       <span class="brand-badge">AI</span>
       <span class="brand-name">AI MASTER <em class="brand-sub">/ CORE</em></span>
     </a>
     <div class="demo-nav-links">
       <a href="../../dashboard/">课程总览</a>
       <a href="../../learning-center/" class="nav-highlight">讲解通关 ↗</a>
+      <a href="../../ai-review/">评测证据墙</a>
       <a href="../../hands-on/">动手实践</a>
-      <a href="../../beginner/">新手入门</a>
+      <a href="../../playground/">实验工坊</a>
       <a href="../../knowledge-stars/">知识星海</a>
+      <a href="../../beginner/">新手入门</a>
     </div>
   </div>
 </nav>
@@ -37,7 +41,7 @@
     </div>
   </section>
 
-  <div class="chapter-layout">
+    <div class="chapter-layout">
     <aside class="chapter-toc">
       <div class="toc-label">本章节点目录</div>
       <nav class="toc-list">
@@ -70,7 +74,7 @@
     <h2 class="knowledge-title">RAG 架构设计与核心流程</h2>
   </header>
   <div class="knowledge-body">
-    <h3>为什么需要 RAG？</h3><p>大语言模型虽然知识渊博，但存在两个致命缺陷：<strong>知识截止</strong>（训练数据有截止日期，无法感知新知识）和<strong>幻觉</strong>（可能编造看似合理但事实错误的内容）。RAG（Retrieval-Augmented Generation）通过<strong>检索外部知识库</strong>来增强生成能力，像一个学者在回答问题前先去查资料。</p><pre><code># RAG 核心三阶段<br># 1. 索引（Indexing）：将文档切片、向量化，构建可检索的知识库<br># 2. 检索（Retrieval）：根据用户问题召回最相关的文档片段<br># 3. 生成（Generation）：基于检索结果 + 原始问题，生成可信回答<br><br>def rag_pipeline(question, knowledge_base):<br>    # 阶段一：检索<br>    query_embedding = embed(question)           # 将问题向量化<br>    relevant_docs = search(query_embedding,     # 在向量库中语义检索<br>                         knowledge_base, top_k=5)<br>    <br>    # 阶段二：生成<br>    context = "\n\n".join(relevant_docs)       # 拼接检索到的上下文<br>    prompt = f"基于以下资料：\n{context}\n\n回答：{question}"<br>    answer = llm.generate(prompt)               # 让 LLM 基于上下文回答<br>    return answer</code></pre><h3>RAG 的哲学意义</h3><p>RAG 的核心理念是：<strong>真正的智能不在于记住一切，而在于知道在哪里找到答案</strong>。就像一位博学之士，不在于脑中存了多少本书，而在于知道遇到问题时该翻开哪本书。RAG 将 LLM 从「背诵者」转变为「研究者」——不是依赖训练时学到的知识，而是在回答的当下主动查阅资料。这种「检索→思考→回答」的范式，比纯粹的参数化记忆更接近人类智能的本质。</p><h3>完整 RAG 系统架构</h3><pre><code>用户提问<br>    ↓<br>1. 查询理解（Query Understanding）<br>   ├── 查询改写（Query Rewriting）："transformer 注意力机制" → "transformer 的注意力机制是什么？有哪些类型？"<br>   ├── 查询扩展（Query Expansion）：用 LLM 生成同义问题，多角度检索<br>   └── 查询分解（Query Decomposition）：复杂问题拆解为子问题<br>    ↓<br>2. 检索（Retrieval）<br>   ├── 稠密检索（Dense Retrieval）：语义嵌入相似度搜索<br>   ├── 稀疏检索（Sparse Retrieval）：BM25 关键词匹配<br>   └── 混合检索（Hybrid Search）：加权融合两种检索结果<br>    ↓<br>3. 重排序（Reranking）<br>   └── Cross-encoder 精排：对召回结果逐对打分，过滤不相关信息<br>    ↓<br>4. 上下文构建（Context Construction）<br>   ├── 窗口扩展：以检索到的 chunk 为中心，展开其上下文<br>   ├── 去重融合：合并信息重叠的文档片段<br>   └── 压缩精简：只保留与问题最相关的句子<br>    ↓<br>5. 生成（Generation）<br>   ├── 引用标注：在生成内容中标注信息来源<br>   ├── 幻觉检测：LLM 自我评估回答的可信度<br>   └── 溯源验证：确保每个陈述都有资料支撑<br>    ↓<br>用户收到回答 + 引用来源</code></pre><div style="margin:16px 0;display:flex;gap:10px;flex-wrap:wrap;"><a href="../../static/rag_starlab/index.html#lab" target="_blank" class="btn-interactive" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#ec4899,#8b5cf6);color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;text-decoration:none;">🔬 RAG 交互实验室</a></div>
+    <h3>为什么需要 RAG？</h3><p>大语言模型虽然知识渊博，但存在两个致命缺陷：<strong>知识截止</strong>（训练数据有截止日期，无法感知新知识）和<strong>幻觉</strong>（可能编造看似合理但事实错误的内容）。RAG（Retrieval-Augmented Generation）通过<strong>检索外部知识库</strong>来增强生成能力，像一个学者在回答问题前先去查资料。</p><pre><code># RAG 核心三阶段<br># 1. 索引（Indexing）：将文档切片、向量化，构建可检索的知识库<br># 2. 检索（Retrieval）：根据用户问题召回最相关的文档片段<br># 3. 生成（Generation）：基于检索结果 + 原始问题，生成可信回答<br><br>def rag_pipeline(question, knowledge_base):<br>    # 阶段一：检索<br>    query_embedding = embed(question)           # 将问题向量化<br>    relevant_docs = search(query_embedding,     # 在向量库中语义检索<br>                         knowledge_base, top_k=5)<br>    <br>    # 阶段二：生成<br>    context = "\n\n".join(relevant_docs)       # 拼接检索到的上下文<br>    prompt = f"基于以下资料：\n{context}\n\n回答：{question}"<br>    answer = llm.generate(prompt)               # 让 LLM 基于上下文回答<br>    return answer</code></pre><h3>RAG 的哲学意义</h3><p>RAG 的核心理念是：<strong>真正的智能不在于记住一切，而在于知道在哪里找到答案</strong>。就像一位博学之士，不在于脑中存了多少本书，而在于知道遇到问题时该翻开哪本书。RAG 将 LLM 从「背诵者」转变为「研究者」——不是依赖训练时学到的知识，而是在回答的当下主动查阅资料。这种「检索→思考→回答」的范式，比纯粹的参数化记忆更接近人类智能的本质。</p><h3>完整 RAG 系统架构</h3><pre><code>用户提问<br>    ↓<br>1. 查询理解（Query Understanding）<br>   ├── 查询改写（Query Rewriting）："transformer 注意力机制" → "transformer 的注意力机制是什么？有哪些类型？"<br>   ├── 查询扩展（Query Expansion）：用 LLM 生成同义问题，多角度检索<br>   └── 查询分解（Query Decomposition）：复杂问题拆解为子问题<br>    ↓<br>2. 检索（Retrieval）<br>   ├── 稠密检索（Dense Retrieval）：语义嵌入相似度搜索<br>   ├── 稀疏检索（Sparse Retrieval）：BM25 关键词匹配<br>   └── 混合检索（Hybrid Search）：加权融合两种检索结果<br>    ↓<br>3. 重排序（Reranking）<br>   └── Cross-encoder 精排：对召回结果逐对打分，过滤不相关信息<br>    ↓<br>4. 上下文构建（Context Construction）<br>   ├── 窗口扩展：以检索到的 chunk 为中心，展开其上下文<br>   ├── 去重融合：合并信息重叠的文档片段<br>   └── 压缩精简：只保留与问题最相关的句子<br>    ↓<br>5. 生成（Generation）<br>   ├── 引用标注：在生成内容中标注信息来源<br>   ├── 幻觉检测：LLM 自我评估回答的可信度<br>   └── 溯源验证：确保每个陈述都有资料支撑<br>    ↓<br>用户收到回答 + 引用来源</code></pre><div style="margin:16px 0;display:flex;gap:10px;flex-wrap:wrap;"><a href="../../static/rag_starlab/index.html#lab" target="_blank" class="btn-interactive" style="display:inline-flex;align-items:center;gap:8px;display:inline-flex;align-items:center;gap:8px;">🔬 RAG 交互实验室</a></div>
     <div class="knowledge-actions">
       <a class="btn btn-sm" href="../../hands-on/#ch6-t1">去做实践 ↗</a>
     </div>

@@ -14,7 +14,7 @@
     if (window.lucide) window.lucide.createIcons({attrs:{'stroke-width':1.8}});
   };
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},busy:false,authMode:'login',memory:null,memoryError:'',rag:null,ragError:'',ragQuery:'',ragResults:null,ragKbId:'',research:null,researchResult:null,researchError:''};
+  const app = {state:{},user:{},catalog:[],status:{},view:'learn',moduleId:null,stage:'study',quiz:null,quizResult:null,diagnosticQuiz:null,diagnosticResult:null,reviews:[],reviewResults:{},reviewPhase:null,reviewPhaseModule:null,busy:false,authMode:'login',memory:null,memoryError:'',rag:null,ragError:'',ragQuery:'',ragResults:null,ragKbId:'',research:null,researchResult:null,researchError:''};
   const main = $('#main-content');
   const dialog = $('#workspace-dialog');
   let toastTimer;
@@ -82,6 +82,26 @@
   const current = () => moduleById(app.moduleId);
   const date = value => value ? new Date(value).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '—';
   const modeLabel = mode => mode === 'ai' ? 'AI 复评' : mode === 'fallback-local' || mode === 'fallback' ? '本地反馈 · AI 暂不可用' : '本地练习';
+  function reviewStatus(result) {
+    const phase = app.reviewPhaseModule === app.moduleId ? app.reviewPhase : null;
+    if (phase === 'running') return {state:'running',label:'AI 复评处理中，请等待结果'};
+    if (phase === 'failed') return {state:'failed',label:'请求未完成，讲解已保留，可重试'};
+    if (result && (result.mode === 'fallback-local' || result.mode === 'fallback')) return {state:'failed',label:'AI 复评未完成，当前为本地反馈'};
+    if (result && result.mode === 'ai') return {state:'done',label:'AI 复评已返回，请查看具体反馈'};
+    if (!(app.status.ai || {}).configured || result && result.mode === 'local') return {state:'local',label:'本地练习，未调用 AI 复评'};
+    return {state:'pending',label:'等待提交讲解后进行 AI 复评'};
+  }
+  function reviewStatusMarkup(result) {
+    const status = reviewStatus(result);
+    return '<div class="review-status" role="status" aria-live="polite"><span class="review-status-mark" data-state="' + status.state + '" aria-hidden="true"></span><span class="review-status-label">' + status.label + '</span></div>';
+  }
+  function showReviewPhase(phase) {
+    app.reviewPhase = phase;
+    const status = reviewStatus(null);
+    const mark = $('.review-status-mark');
+    const label = $('.review-status-label');
+    if (mark && label) { mark.dataset.state = status.state; label.textContent = status.label; }
+  }
   const draftKey = id => 'aimaster-learning-draft:' + (app.user.id || 'guest') + ':' + id;
   function readDraft(id) { try { return localStorage.getItem(draftKey(id)) || ''; } catch (_) { return ''; } }
   function saveDraft(id,value) { try { localStorage.setItem(draftKey(id),value); } catch (_) {} }
@@ -137,7 +157,7 @@
     const item = current(); if (!item) return renderSetup();
     const p = progress(item.id);
     const lessonLabel = modules().includes(item.id) ? '今日学习 / ' + String(modules().indexOf(item.id)+1).padStart(2,'0') + ' · ' + String(modules().length).padStart(2,'0') : '历史课程复习';
-    main.innerHTML = '<header class="page-heading"><div><p class="eyebrow">' + lessonLabel + '</p><h1>' + esc(item.title) + '</h1><p>' + esc(app.state.plan.title || '我的学习航线') + ' · 每天 ' + esc(app.state.plan.dailyMinutes) + ' 分钟</p></div><div class="heading-actions"><button type="button" data-action="plan" title="调整学习计划">调整计划</button><button type="button" data-action="diagnostic">基础诊断</button></div></header><div class="module-meta"><span class="badge">' + esc(Array.isArray(item.bloom) ? item.bloom.join(' · ') : item.bloom || '理解与应用') + '</span>' + (p.completedAt ? '<span class="badge green">已通关</span>' : '<span class="badge amber">学习中</span>') + '</div><p class="objective">' + esc(item.objective) + '</p><div class="stage-tabs" role="tablist" aria-label="学习步骤">' + [['study','阅读学习'],['explain','自己讲解'],['quiz','测验通关']].map(([id,label],n) => '<button type="button" role="tab" aria-selected="' + (app.stage === id) + '" class="' + (app.stage === id ? 'selected' : '') + '" data-stage="' + id + '"><span class="step-circle">' + (id === 'explain' && p.explanation && p.explanation.accepted || id === 'quiz' && p.quiz && p.quiz.passed ? '✓' : n+1) + '</span>' + label + '</button>').join('') + '</div><section class="stage-panel" id="stage-panel" role="tabpanel">' + (app.stage === 'study' ? studyPanel(item) : app.stage === 'explain' ? explainPanel(item,p) : quizPanel(item,p)) + '</section>';
+    main.innerHTML = '<header class="page-heading"><div><p class="eyebrow">' + lessonLabel + '</p><h1>' + esc(item.title) + '</h1><p>' + esc(app.state.plan.title || '我的学习航线') + ' · 每天 ' + esc(app.state.plan.dailyMinutes) + ' 分钟</p></div><div class="heading-actions"><button type="button" data-action="plan" title="调整学习计划">调整计划</button><button type="button" data-action="diagnostic">基础诊断</button></div></header><div class="module-meta"><span class="badge">' + esc(Array.isArray(item.bloom) ? item.bloom.join(' · ') : item.bloom || '理解与应用') + '</span>' + (p.completedAt ? '<span class="badge green">已通关</span>' : '<span class="badge amber">学习中</span>') + '</div><p class="objective">' + esc(item.objective) + '</p><div class="stage-tabs" role="tablist" aria-label="学习步骤">' + [['study','阅读学习'],['explain','自己讲解'],['quiz','测验通关']].map(([id,label],n) => '<button type="button" role="tab" aria-selected="' + (app.stage === id) + '" class="' + (app.stage === id ? 'selected' : '') + '" data-stage="' + id + '"><span class="step-circle">' + (id === 'explain' && p.explanation && p.explanation.accepted || id === 'quiz' && p.quiz && p.quiz.passed ? '✓' : n+1) + '</span>' + label + '</button>').join('') + '</div><section class="stage-panel" id="stage-panel" role="tabpanel" data-stage="' + esc(app.stage) + '">' + (app.stage === 'study' ? studyPanel(item) : app.stage === 'explain' ? explainPanel(item,p) : quizPanel(item,p)) + '</section>';
   }
   function planSummary(item) {
     const plan = app.state.plan || {};
@@ -150,7 +170,7 @@
   }
   function explainPanel(item,p) {
     const saved = readDraft(item.id) || (p.explanation && p.explanation.text) || '';
-    return '<h2>换成自己的话，说清楚</h2><p class="explanation-prompt">' + esc(item.prompt) + '</p><form id="explanation-form"><label class="field" for="explanation-text">我的讲解<textarea id="explanation-text" name="text" required minlength="20" maxlength="6000" placeholder="从概念开始，说明它为什么这样工作，再给出一个具体例子和它的局限。">' + esc(saved) + '</textarea></label><div class="form-footer"><span class="muted" id="draft-status">' + saved.length + ' / 6000 字 · 草稿保存在此浏览器</span><button type="submit" class="primary">提交讲解</button></div></form>' + (!(app.status.ai || {}).configured ? '<p class="notice">当前为本地练习，检查表达覆盖与基础规则，不代表模型已理解你的讲解。通关还需通过客观测验。</p>' : '') + (p.quiz ? '<p class="small muted" style="margin-top:12px">重新提交讲解后，需要重新测验。</p>' : '') + (p.explanation ? feedbackPanel(p.explanation) : '');
+    return '<h2>换成自己的话，说清楚</h2><p class="explanation-prompt">' + esc(item.prompt) + '</p>' + reviewStatusMarkup(p.explanation) + '<form id="explanation-form"><label class="field" for="explanation-text">我的讲解<textarea id="explanation-text" name="text" required minlength="20" maxlength="6000" placeholder="从概念开始，说明它为什么这样工作，再给出一个具体例子和它的局限。">' + esc(saved) + '</textarea></label><div class="form-footer"><span class="muted" id="draft-status">' + saved.length + ' / 6000 字 · 草稿保存在此浏览器</span><button type="submit" class="primary">提交讲解</button></div></form>' + (!(app.status.ai || {}).configured ? '<p class="notice">当前为本地练习，检查表达覆盖与基础规则，不代表模型已理解你的讲解。通关还需通过客观测验。</p>' : '') + (p.quiz ? '<p class="small muted" style="margin-top:12px">重新提交讲解后，需要重新测验。</p>' : '') + (p.explanation ? feedbackPanel(p.explanation) : '');
   }
   // 把「这次评审依据了哪些课程原文」显式展示出来 —— 这是证据驱动复评唯一对学习者可见的产出。
   // 刻意区分三种状态（无证据 / 引用复核失败 / 有证据），避免把「没证据」显示得像「有证据」。
@@ -525,7 +545,12 @@
       }
       if (form.id === 'explanation-form') {
         const id = app.moduleId; const text = String(values.get('text')).trim(); saveDraft(id,text); pet('thinking','我在看你的讲解，稍等一下。');
-        const data = await api('explanation',{moduleId:id,text}); applyState(data); resetQuiz();
+        app.reviewPhaseModule = id; showReviewPhase('running');
+        let data;
+        try { data = await api('explanation',{moduleId:id,text}); }
+        catch (error) { showReviewPhase('failed'); throw error; }
+        app.reviewPhase = null;
+        applyState(data); resetQuiz();
         if (data.result && !progress(id).explanation) { app.state.progress = app.state.progress || {}; app.state.progress[id] = {...progress(id),explanation:data.result}; }
         pet(data.result.accepted ? 'correct' : 'wrong',data.result.accepted ? '讲解已通过，再用测验检验一次。' : '看一看反馈，再补上缺少的部分。'); render();
       }

@@ -711,9 +711,12 @@
     document.querySelector("#panelCode").textContent = `CHAPTER ${String(star.chapter).padStart(2, "0")} / STAR ${String(star.index + 1).padStart(2, "0")}`;
     document.querySelector("#panelTitle").textContent = star.title;
     document.querySelector("#panelDesc").textContent = new DOMParser().parseFromString(star.desc || "这颗星球正在等待你的探索。", "text/html").body.textContent;
+    const hasLinked = Array.isArray(star.linkedModules) && star.linkedModules.length > 0;
     document.querySelector("#panelProgress").textContent = star.completedModules?.length
       ? `已通过关联练习：${star.completedModules.map((module) => module.title).join("、")}`
-      : mapData.progressSource === "local-profile" ? "尚无关联通关记录" : "学习记录未连接";
+      : hasLinked
+        ? (mapData.progressSource === "local-profile" ? "尚无关联通关记录" : "学习记录未连接")
+        : "未配置课程评测映射（Unmapped）";
     planetPreview.style.setProperty("--planet-color", `#${new THREE.Color(state.color).getHexString()}`);
     planetPreview.style.background = `radial-gradient(circle at 35% 30%,#fff,#${new THREE.Color(state.color).getHexString()} 12%,#353478 48%,#10142f 73%)`;
     const relation = relatedPlanets(hit).slice(0, 4);
@@ -903,46 +906,93 @@
     syncingProgress = true;
     const currentMap = mapData;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 3000);
+    let profileState = null;
+    let catalog = null;
+    let isApi = false;
+
     try {
       const options = { cache: "no-store", credentials: "same-origin", signal: controller.signal };
-      // The first request establishes the visitor cookie before requesting the catalog.
       const stateResponse = await fetch("/api/state", options);
-      if (!stateResponse.ok) throw new Error("学习档案不可用");
-      const profile = await stateResponse.json();
-      const catalogResponse = await fetch("/api/catalog", options);
-      if (!catalogResponse.ok) throw new Error("练习目录不可用");
-      const catalog = await catalogResponse.json();
-      if (!profile.ok || !profile.state || !catalog.ok || !Array.isArray(catalog.modules)) throw new Error("学习记录格式无效");
-      if (currentMap !== mapData) return;
-      const merged = window.AIMasterKnowledgeProgress.mergeProgress(currentMap, catalog, profile.state);
-      // Preserve scene references and the current camera while refreshing progress.
-      currentMap.galaxies.forEach((galaxy, index) => {
-        galaxy.progress = merged.galaxies[index].progress;
-        galaxy.stars.forEach((star, starIndex) => Object.assign(star, merged.galaxies[index].stars[starIndex]));
-      });
-      currentMap.summary = merged.summary;
-      currentMap.progressSource = merged.progressSource;
-      document.querySelector("#completedCount").textContent = merged.summary.completed;
-      document.querySelector("#progressSignal").textContent = "本机学习档案已同步";
-      if (activeGalaxy) {
-        document.querySelector("#galaxyTitle span").textContent = `关联进度 ${activeGalaxy.progress}%`;
-        planets.forEach((planet) => {
-          const data = planet.userData;
-          data.state = STATUS[data.star.status] || STATUS.locked;
-          data.atmosphere.material.uniforms.glow.value.setHex(data.state.color);
-          data.orbit.material.color.setHex(data.state.color);
-        });
-        if (selectedPlanet) setPanel(selectedPlanet);
-        updateFocus();
+      if (stateResponse.ok) {
+        const profile = await stateResponse.json();
+        if (profile.ok && profile.state) {
+          profileState = profile.state;
+          isApi = true;
+        }
       }
-    } catch {
-      document.querySelector("#progressSignal").textContent = currentMap.progressSource === "local-profile"
-        ? "学习档案暂未同步" : "静态课程浏览";
-    } finally {
+      const catalogResponse = await fetch("/api/catalog", options);
+      if (catalogResponse.ok) {
+        const cat = await catalogResponse.json();
+        if (cat.ok && Array.isArray(cat.modules)) catalog = cat;
+      }
+    } catch (_) {}
+    finally {
       clearTimeout(timeout);
-      syncingProgress = false;
     }
+
+    if (!profileState) {
+      try {
+        const raw = localStorage.getItem("aimaster_learning_state");
+        if (raw) profileState = JSON.parse(raw);
+      } catch (_) {}
+    }
+
+    if (!catalog) {
+      try {
+        const catResp = await fetch("../data/learning-curriculum.json", { cache: "no-store" });
+        if (catResp.ok) catalog = await catResp.json();
+      } catch (_) {}
+    }
+    if (!catalog && window.LearningLocalAPI) {
+      try {
+        const catLocal = window.LearningLocalAPI.handle("catalog");
+        if (catLocal && catLocal.modules) catalog = catLocal;
+      } catch (_) {}
+    }
+
+    if (!catalog || !Array.isArray(catalog.modules)) {
+      syncingProgress = false;
+      document.querySelector("#progressSignal").textContent = "静态课程浏览";
+      return;
+    }
+
+    if (!profileState) profileState = { progress: {} };
+
+    if (profileState.progress) {
+      if (profileState.progress.prompt && !profileState.progress["prompt-design"]) {
+        profileState.progress["prompt-design"] = profileState.progress.prompt;
+      }
+      if (profileState.progress.rag && !profileState.progress["rag-retrieval"]) {
+        profileState.progress["rag-retrieval"] = profileState.progress.rag;
+      }
+    }
+
+    if (currentMap !== mapData) { syncingProgress = false; return; }
+    const merged = window.AIMasterKnowledgeProgress.mergeProgress(currentMap, catalog, profileState);
+    currentMap.galaxies.forEach((galaxy, index) => {
+      galaxy.progress = merged.galaxies[index].progress;
+      galaxy.stars.forEach((star, starIndex) => Object.assign(star, merged.galaxies[index].stars[starIndex]));
+    });
+    currentMap.summary = merged.summary;
+    currentMap.progressSource = isApi ? "local-profile" : (profileState.progress && Object.keys(profileState.progress).length > 0 ? "local-profile" : "empty");
+
+    document.querySelector("#completedCount").textContent = merged.summary.completed;
+    const hasRealProgress = merged.summary.completed > 0 || (profileState.progress && Object.keys(profileState.progress).length > 0);
+    document.querySelector("#progressSignal").textContent = hasRealProgress || isApi ? "本机学习档案已同步" : "静态课程浏览";
+
+    if (activeGalaxy) {
+      document.querySelector("#galaxyTitle span").textContent = `关联进度 ${activeGalaxy.progress}%`;
+      planets.forEach((planet) => {
+        const data = planet.userData;
+        data.state = STATUS[data.star.status] || STATUS.locked;
+        data.atmosphere.material.uniforms.glow.value.setHex(data.state.color);
+        data.orbit.material.color.setHex(data.state.color);
+      });
+      if (selectedPlanet) setPanel(selectedPlanet);
+      updateFocus();
+    }
+    syncingProgress = false;
   }
 
   function initControls() {

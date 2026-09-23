@@ -31,8 +31,7 @@ a {
   z-index: 50;
   top: 0;
   height: 56px;
-  background: rgba(9, 13, 22, 0.94);
-  backdrop-filter: blur(12px);
+  background: var(--bg-panel);
   border-bottom: 1px solid var(--line);
 }
 .demo-nav-inner {
@@ -48,6 +47,7 @@ a {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex: 0 0 auto;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   font-weight: 700;
@@ -70,13 +70,27 @@ a {
 .demo-nav-links {
   display: flex;
   gap: var(--space-6);
+  align-items: stretch;
+  min-width: 0;
   font-family: var(--font-mono);
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   color: var(--ink-muted);
 }
+.demo-nav-links a {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 56px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
 .demo-nav-links a:hover {
   color: var(--go);
+}
+.demo-nav-links a.active {
+  color: var(--ink);
+  border-bottom-color: var(--go);
 }
 .demo-nav-links .nav-highlight {
   color: var(--go);
@@ -126,13 +140,68 @@ a {
   color: var(--go);
 }
 
+/* 3-Minute Competition Demo Tour Banner */
+.demo-tour-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--go-border);
+  border-left: 4px solid var(--go);
+  padding: var(--space-3) var(--space-5);
+  margin: var(--space-6) 0 var(--space-8);
+  border-radius: var(--radius);
+}
+.demo-tour-banner .tour-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.demo-tour-banner .tour-text {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+.demo-tour-banner .tour-text strong {
+  color: var(--ink);
+}
+.demo-tour-banner .tour-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+  .demo-tour-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .demo-tour-banner .tour-right {
+    justify-content: flex-end;
+  }
+}
+
 @media (max-width: 768px) {
   .demo-nav-inner {
     padding: 0 var(--space-4);
+    gap: var(--space-3);
+    overflow: hidden;
   }
   .demo-nav-links {
-    gap: var(--space-3);
+    flex: 1 1 auto;
+    gap: var(--space-4);
     font-size: 0.72rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+  .demo-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .brand-sub {
+    display: none;
   }
   .demo-page {
     width: calc(100% - var(--space-6));

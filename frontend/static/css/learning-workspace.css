@@ -138,8 +138,7 @@ button.success {
   gap: var(--space-8);
   padding: 0 var(--space-6);
   border-bottom: 1px solid var(--line);
-  background: rgba(9, 13, 22, 0.96);
-  backdrop-filter: blur(12px);
+  background: var(--bg-panel);
 }
 
 .brand {
@@ -567,9 +566,10 @@ p {
 .stage-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  background: var(--line);
   margin: 24px 0 0;
-  gap: 8px;
+  gap: 1px;
 }
 
 .stage-tabs button {
@@ -578,9 +578,8 @@ p {
   justify-content: center;
   gap: 8px;
   border: 0;
-  border-bottom: 2px solid transparent;
   border-radius: var(--radius);
-  background: transparent;
+  background: var(--bg-panel);
   padding: 12px 6px;
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -593,9 +592,10 @@ p {
 }
 
 .stage-tabs button.selected {
-  border-bottom-color: var(--go);
   color: var(--go);
   font-weight: 600;
+  background: var(--go-dim);
+  box-shadow: inset 0 -2px 0 var(--go);
 }
 
 .stage-tabs .step-circle {
@@ -610,7 +610,68 @@ p {
 }
 
 .stage-panel {
-  padding-top: 24px;
+  position: relative;
+  padding: 32px 0 0 16px;
+  border-left: 1px solid var(--line);
+}
+
+.stage-panel::before {
+  content: "EVALUATION CHANNEL / " attr(data-stage);
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.plan-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1px;
+  margin: 0 0 var(--space-4);
+  padding: 1px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+
+.plan-summary > span {
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-panel);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-summary .reinforcement {
+  color: var(--hold);
+}
+
+.plan-reason {
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line-dim);
+  padding-bottom: var(--space-3);
+}
+
+.plan-reason summary {
+  cursor: pointer;
+  color: var(--go);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage-panel {
+    animation: stage-state-in 160ms ease-out;
+  }
+}
+
+@keyframes stage-state-in {
+  from { opacity: 0.72; transform: translateX(2px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .explanation-prompt {
@@ -701,6 +762,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Evaluation Feedback Strip */
+.review-status { display: flex; align-items: center; gap: 10px; margin: 18px 0; padding: 11px 13px; border: 1px solid var(--line); background: var(--bg-panel); color: var(--ink-muted); font-size: .78rem; line-height: 1.4; }
+.review-status-mark { width: 18px; height: 18px; flex: 0 0 18px; display: grid; place-items: center; border: 1px solid var(--hold); color: var(--hold); font: 700 12px var(--font-mono); }
+.review-status-mark::after { content: '·'; }
+.review-status-mark[data-state="running"] { border-top-color: transparent; animation: review-status-turn .8s linear infinite; }
+.review-status-mark[data-state="running"]::after { content: ''; }
+.review-status-mark[data-state="done"] { border-color: var(--go); color: var(--go); }
+.review-status-mark[data-state="done"]::after { content: '✓'; }
+.review-status-mark[data-state="failed"] { border-color: var(--stop); color: var(--stop); }
+.review-status-mark[data-state="failed"]::after { content: '!'; }
+.review-status-mark[data-state="local"] { border-color: var(--ink-dim); color: var(--ink-dim); }
+.review-status-mark[data-state="local"]::after { content: '–'; }
+@keyframes review-status-turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .review-status-mark[data-state="running"] { animation: none; border-top-color: var(--hold); } }
 .feedback {
   margin-top: 24px;
   padding-top: 20px;
@@ -981,7 +1055,6 @@ dialog {
 
 dialog::backdrop {
   background: rgba(4, 7, 15, 0.85);
-  backdrop-filter: blur(4px);
 }
 
 /* Toast */
@@ -1220,4 +1293,119 @@ dialog::backdrop {
 .empty-state h2,
 .empty-state h3 {
   color: var(--ink);
+}
+
+/* Responsive workspace: keep every surface reachable without forcing the
+   desktop three-rail grid into the mobile viewport. */
+@media (max-width: 900px) {
+  .app-header {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .top-nav {
+    order: 3;
+    width: 100%;
+    gap: var(--space-4);
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+    scrollbar-width: thin;
+  }
+
+  .top-nav a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .header-tools {
+    gap: var(--space-2);
+  }
+
+  .workspace-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "main"
+      "navigation"
+      "companion";
+    min-height: 0;
+  }
+
+  #main-content {
+    grid-area: main;
+    padding: var(--space-6) var(--space-4) var(--space-10);
+  }
+
+  .sidebar {
+    grid-area: navigation;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: var(--space-4);
+  }
+
+  .view-nav,
+  .route-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .view-nav {
+    margin-bottom: var(--space-4);
+  }
+
+  .sidebar-bottom {
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+  }
+
+  .companion-rail {
+    grid-area: companion;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: var(--space-4);
+  }
+
+  .companion-portrait {
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand {
+    min-width: 0;
+  }
+
+  .header-tools {
+    width: auto;
+    margin-left: auto;
+    gap: var(--space-1);
+  }
+
+  .header-tools > * {
+    flex: 0 0 auto;
+    min-width: auto;
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+    font-size: 0.72rem;
+  }
+
+  .page-heading {
+    flex-direction: column;
+  }
+
+  .heading-actions {
+    width: 100%;
+  }
+
+  .heading-actions button,
+  .heading-actions .button-link {
+    flex: 1 1 auto;
+  }
+
+  .view-nav,
+  .route-list {
+    grid-template-columns: 1fr;
+  }
 }

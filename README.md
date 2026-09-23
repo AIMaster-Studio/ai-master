@@ -1,14 +1,25 @@
+<div align="center">
+
 # AI Master
 
-面向大学生的 AI 通识与 RAG 入门学习原型。核心主张是**「讲解通关」**：学习者先用自己的话把概念讲一遍，再完成一次独立客观测验，两者都通过才记通关，尝试、错题与复习记录留在本机。
+### 从“看过 AI”到“能讲清、会动手”
 
-> **当前定位**：可运行、可演示的原型。**没有**真实用户留存数据、教育效果提升数据或商业验证结论 —— 能力边界逐条写在 [docs/ican/facts-and-limits.md](docs/ican/facts-and-limits.md)。
+面向大学生的 AI 通识与 RAG 学习原型。沿着课程探索、动手实践、讲解反馈与客观测验，形成可以回顾的学习记录。
+
+[在线体验](https://ai-master-aw5.pages.dev/) · [开始学习](https://ai-master-aw5.pages.dev/learning-center/) · [查看实践任务](https://ai-master-aw5.pages.dev/hands-on/)
+
+</div>
+
+> **核心机制 · 讲解通关**：学习者先用自己的话解释概念，再完成独立客观测验；两项均通过才记录通关。尝试、错题与复习记录保存在本机。
+>
+> **项目阶段**：可运行、可演示的原型。尚无真实用户留存、教育效果提升或商业验证结论；详见 [事实与能力边界](docs/ican/facts-and-limits.md)。
 
 ---
 
 ## 目录
 
 - [它做什么](#它做什么)
+- [创作者](#创作者)
 - [快速开始](#快速开始)
 - [部署](#部署cloudflare-pages--_workerjs-代理)
 - [🔐 密钥红线](#-密钥红线必读)
@@ -30,11 +41,21 @@
 | 本机记录 | 尝试、错题、复习安排存在本机 SQLite（后端模式）或 localStorage（静态模式），不声称云同步 |
 | 已有交互资产 | 星际课程、知识星海（10 章 57 节点）、鲸鱼娘陪伴等原有交互全部保留 |
 
+### 一条完整的学习路径
+
+**选定概念** → **完成学习与实践** → **用自己的话讲解** → **查看反馈依据** → **通过客观测验** → **复习薄弱点**
+
 **讲解检查的 7 项**（`frontend/static/js/learning-core.js`，与"字数/关键词/举例"三项的老描述不同）：
 
 `有效内容` · `非重复表达` · `关键概念` · `机制与因果` · `具体应用` · `适用边界` · `常见误区`
 
 > 规则层是**完整性筛查**，不是语义理解。对抗性审计（`naiveBot 0/140` 全被拦、`grammarBot 140/140` 可被文法背穿）说明**语义闸门必须放在服务端 AI 复评**，见 [对抗性审计数据](docs/ican/evidence/rule-abuse-bench-results.json)。
+
+---
+
+## 创作者
+
+AI Master 由四位协作者共同完成：[@433525](https://github.com/433525) · [@L2464](https://github.com/L2464) · [@An9020](https://github.com/An9020) · [@lbw61](https://github.com/lbw61)。
 
 ---
 
@@ -90,7 +111,7 @@ npm run pack         # Windows x64 打包
 | :--- | :--- | :--- |
 | **`_worker.js`（Advanced mode）** | **`frontend/`**（资产根，**必须随发布产物上传**） | ✅ **真正生效的就是它** |
 | `_routes.json` | `frontend/`（资产根） | 控制哪些路径触发 worker |
-| `.dev.vars` | **仓库根**（cwd 侧，**已 gitignore**） | 仅本地把 `TUNNEL_ORIGIN` 注入 worker |
+| `.dev.vars` | **仓库根**（cwd 侧，**已 gitignore**） | 本地注入 `API_ORIGIN`，旧配置可用 `TUNNEL_ORIGIN` |
 | `functions/` | 仓库根 | ❌ **Direct Upload 推不上去；且存在 `_worker.js` 时整片被忽略** |
 
 **为什么必须写清楚**：`_worker.js` 在 Advanced mode 下接管**全部**请求，所以它**必须**自己把静态资源兜住 ——
@@ -105,7 +126,7 @@ if (!url.pathname.startsWith('/api/')) {
 > ⚠️ **但它不会报错**（本站有 SPA 兜底，没代理时 `/api/*` 照样返回 200，只是体是兜底 HTML）—— 所以只验状态码会得到"看起来正常、其实没代理"的部署。
 
 线上资产根是 **`frontend/`**，不是仓库根 —— 所以线上是 `/learning-center/`，不是 `/frontend/learning-center/`。
-判据：`wrangler pages dev ./frontend` 应打印 `Parsed 1 valid redirect rule.` 与 `Parsed N valid header rules.`，那说明它读到了 `frontend/_redirects` 与 `frontend/_headers`。
+根路径 `/` 显示落地页；`/learning-center/` 是学习入口。`wrangler pages dev ./frontend` 应读取 `frontend/_redirects` 与 `frontend/_headers`。
 
 ### 凭据
 
@@ -125,7 +146,7 @@ npx wrangler pages deploy ./frontend --project-name=ai-master --branch=main --co
 ```
 
 - 项目名是 **`ai-master`**；`ai-master-aw5.pages.dev` 是它被分配到的**子域**，不是项目名。
-- **单文件上限 25 MiB**，超了 wrangler 直接拒绝。当前 `frontend/` 共 **21.0 MiB（22,020,749 字节）/ 120 个文件**，最大的是 `static/bgm.mp3`（**13.80 MiB**）—— **距单文件上限还有约 11.2 MiB 余量，往里塞素材会先炸在这里**。
+- **单文件上限 25 MiB**，超了 wrangler 直接拒绝。发布前检查 `frontend/` 中最大文件；当前最大素材为 `static/bgm.mp3`，约 13.8 MiB。
 
 ### 部署后必须验的四条
 
@@ -133,7 +154,7 @@ npx wrangler pages deploy ./frontend --project-name=ai-master --branch=main --co
 
 ```bash
 curl.exe -4 -s https://ai-master-aw5.pages.dev/api/status
-#   ① 期望：能解析出 JSON，且 ai.model == "deepseek-flash"
+#   ① 期望：能解析出 JSON，且 ok == true；模型名以当前后端配置为准
 curl.exe -4 -s https://ai-master-aw5.pages.dev/static/js/learning-workspace.js | findstr API_TIMEOUT_MS
 #   ② 期望：命中（且不应命中 abort(),8000）
 curl.exe -4 -s https://ai-master-aw5.pages.dev/static/js/ai-config.js | findstr "sk-"
@@ -159,7 +180,7 @@ $local  = (Get-Content frontend/static/js/learning-workspace.js -Raw) -replace "
 
 （若嫌麻烦，**只留上面第 ④ 条的 `x-aimaster-proxied-by` 响应头也行** —— 它已经能回答"本次部署的代理层在不在跑"，而且没有行尾陷阱。）
 
-> `/api/*` 由 **`frontend/_worker.js`**（Advanced mode）**代理到本机隧道**，所以**它依赖本机后端在线**。上游不通时它返回**明确的 502 与中文说明，不会伪装成"降级仍可用"**。
+> `/api/*` 由 **`frontend/_worker.js`**（Advanced mode）代理到 Node 后端。生产环境优先读取 `API_ORIGIN`，旧环境可回退 `TUNNEL_ORIGIN`。当前生产上游是独立 Vercel 后端。上游不通时代理返回明确的 502；健康检查通过也不代表 AI 复评已成功，需单独实测。
 
 ---
 

@@ -1,15 +1,285 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/tokens.css"><link rel="stylesheet" href="../assets/frontend.css"><link rel="stylesheet" href="../assets/chapter-demo.css"><title>AI Master - 训练舱</title></head><body><nav class="demo-nav">
+<!doctype html>
+<html lang="zh-CN" data-atmosphere="lab">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI 实验工坊技术索引 · AI MASTER</title>
+  <link rel="stylesheet" href="../assets/tokens.css">
+  <link rel="stylesheet" href="../assets/frontend.css">
+  <link rel="stylesheet" href="../assets/playground.css">
+  <link rel="stylesheet" href="../assets/atmosphere.css">
+  <script src="../assets/atmosphere.js" defer></script>
+</head>
+<body>
+  <nav class="demo-nav">
   <div class="demo-nav-inner">
-    <a class="demo-brand" href="../dashboard/">
+    <a class="demo-brand" href="./">
       <span class="brand-badge">AI</span>
       <span class="brand-name">AI MASTER <em class="brand-sub">/ CORE</em></span>
     </a>
     <div class="demo-nav-links">
       <a href="../dashboard/">课程总览</a>
       <a href="../learning-center/" class="nav-highlight">讲解通关 ↗</a>
+      <a href="../ai-review/">评测证据墙</a>
       <a href="../hands-on/">动手实践</a>
-      <a href="../beginner/">新手入门</a>
+      <a href="./" class="active">实验工坊</a>
       <a href="../knowledge-stars/">知识星海</a>
+      <a href="../beginner/">新手入门</a>
     </div>
   </div>
-</nav><main class="demo-page"><section class="chapter-hero"><p class="kicker">PRACTICE BAY</p><h1>训练舱</h1><p class="chapter-hero-desc">选择任一章节进入知识节点和实验页面。所有课程导航、交互实验与高级页面均可直接打开。</p><a class="btn btn-go" href="../dashboard/#route">选择学习章节 ↗</a></section></main></body></html>
+</nav>
+  <main class="demo-page playground-page">
+    <header class="playground-header">
+      <div class="playground-kicker">AI ENGINEERING WORKBENCH · INTERACTIVE LABS</div>
+      <h1 class="playground-title">AI 实验工坊技术索引</h1>
+      <p class="playground-desc">
+        从底层的 BPE Token 切分、自注意力点积计算、超参训练收敛，到私有 RAG 向量检索与智能体工具协同，汇聚全部可直接交互的 AI 算法实验与可视化原型。
+      </p>
+
+      <div class="lab-meta-bar">
+        <div class="lab-meta-item"><span class="lab-meta-label">已收录实验工坊</span><span class="lab-meta-val highlight-go">12 个高可交互舱室</span></div>
+        <div class="lab-meta-item"><span class="lab-meta-label">配套代码实践</span><span class="lab-meta-val">41 项动手实践任务</span></div>
+        <div class="lab-meta-item"><span class="lab-meta-label">核心通关门禁</span><span class="lab-meta-val">7 个口语讲解复核模块</span></div>
+        <div class="lab-meta-item"><span class="lab-meta-label">运行架构</span><span class="lab-meta-val highlight-go">● 纯前端静态离线可运行</span></div>
+      </div>
+    </header>
+
+    <div class="demo-tour-banner" role="region" aria-label="竞赛演示引导">
+      <div class="tour-left">
+        <span class="chip chip-go"><i></i>DEMO TOUR 2/4</span>
+        <span class="tour-text"><strong>第 2 站 · 技术实验工坊</strong>：探索 12 个交互式算法沙盒与全栈工程演示</span>
+      </div>
+      <div class="tour-right">
+        <a href="../dashboard/" class="btn btn-sm">← 上一步: 仪表盘</a>
+        <a href="../ai-review/" class="btn btn-sm btn-go">下一步: 评测证据墙 ↗</a>
+      </div>
+    </div>
+
+    <section class="lab-toolbar">
+      <div class="toolbar-top">
+        <div class="category-filters" id="category-filters" role="group" aria-label="实验分类筛选">
+          <button type="button" class="category-btn active" aria-pressed="true" data-cat="ALL">全部实验 (12)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="algorithm">算法交互 (3)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="engineering">工程工坊 (4)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="simulation">视效仿真 (4)</button>
+          <button type="button" class="category-btn" aria-pressed="false" data-cat="core">通关枢纽 (1)</button>
+        </div>
+        <div class="search-box-wrap">
+          <input type="text" id="lab-search-input" class="search-input" aria-label="按技术关键词过滤实验" placeholder="按技术关键词即时过滤..." autocomplete="off">
+        </div>
+      </div>
+      <div class="toolbar-bottom">
+        <span class="lab-counter" id="lab-visible-counter" role="status" aria-live="polite" aria-atomic="true">显示 12 / 12 个实验</span>
+        <span class="toolbar-hint">点击任意工坊卡片即可直接进入全屏交互环境</span>
+      </div>
+    </section>
+
+    <section class="labs-grid" id="labs-grid">
+      <article class="lab-card" data-category="algorithm" data-tags="BPE算法 子词切分 词表构建 合并频率">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-01 · TOKENIZER</span>
+    <span class="lab-badge lab-badge-algorithm">算法交互</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">BPE 分词实验室 (Byte Pair Encoding)</h3>
+    <p class="lab-desc">基于字节对编码算法实时统计字符共现频率，交互式体验子词词表构建、迭代合并规则与分词切分。</p>
+    <div class="lab-tags"><span class="lab-tag">BPE算法</span><span class="lab-tag">子词切分</span><span class="lab-tag">词表构建</span><span class="lab-tag">合并频率</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/bpe_game.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="algorithm" data-tags="自注意力 QKV点积 多头注意力 Softmax权重">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-02 · ATTENTION</span>
+    <span class="lab-badge lab-badge-algorithm">算法交互</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">Transformer 算法详解与注意力矩阵 (Transformer Lab)</h3>
+    <p class="lab-desc">交互式拆解 Scaled Dot-Product Attention、Multi-Head Attention 矩阵运算，实时查看 Query、Key、Value 点积与 Softmax 热力图。</p>
+    <div class="lab-tags"><span class="lab-tag">自注意力</span><span class="lab-tag">QKV点积</span><span class="lab-tag">多头注意力</span><span class="lab-tag">Softmax权重</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/transformer_lab.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="algorithm" data-tags="超参调优 损失曲线 梯度下降 泛化能力">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-03 · TRAINING</span>
+    <span class="lab-badge lab-badge-algorithm">算法交互</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">大模型训练与超参模拟器 (Training Simulator)</h3>
+    <p class="lab-desc">交互调节学习率 (LR)、Batch Size、权重衰减等超参数，实时观察梯度更新轨迹、Loss 损失收敛曲线与过拟合动态。</p>
+    <div class="lab-tags"><span class="lab-tag">超参调优</span><span class="lab-tag">损失曲线</span><span class="lab-tag">梯度下降</span><span class="lab-tag">泛化能力</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/llm_training_game.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="engineering" data-tags="RAG架构 向量检索 文档切块 语义相似度">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-04 · RAG ENGINE</span>
+    <span class="lab-badge lab-badge-engineering">工程工坊</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">Private RAG 私有知识库检索工坊 (RAG Starlab)</h3>
+    <p class="lab-desc">端到端部署私有知识问答系统。体验文档分块切分 (Chunking)、向量嵌入 (Embedding)、余弦相似度检索与重排序。</p>
+    <div class="lab-tags"><span class="lab-tag">RAG架构</span><span class="lab-tag">向量检索</span><span class="lab-tag">文档切块</span><span class="lab-tag">语义相似度</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/rag_starlab/index.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="engineering" data-tags="提示词工程 思维链CoT Few-Shot 结构化输出">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-05 · PROMPT LAB</span>
+    <span class="lab-badge lab-badge-engineering">工程工坊</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">提示词工程实验舱 (Prompt Engineering Lab)</h3>
+    <p class="lab-desc">结构化探索 System Prompt、Few-Shot 示例引导、CoT 思维链推导与约束格式输出，掌握生产级提示词设计方法论。</p>
+    <div class="lab-tags"><span class="lab-tag">提示词工程</span><span class="lab-tag">思维链CoT</span><span class="lab-tag">Few-Shot</span><span class="lab-tag">结构化输出</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/prompt_cg_starlab/index.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="engineering" data-tags="AI Agent ReAct循环 工具调用 多智能体">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-06 · AGENT REACt</span>
+    <span class="lab-badge lab-badge-engineering">工程工坊</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">智能体架构与工具协同舱 (Agentic System)</h3>
+    <p class="lab-desc">剖析 ReAct 循环（Reasoning + Acting）、外部工具绑定 (Tool Calling)、执行观测与多智能体拓扑协同机理。</p>
+    <div class="lab-tags"><span class="lab-tag">AI Agent</span><span class="lab-tag">ReAct循环</span><span class="lab-tag">工具调用</span><span class="lab-tag">多智能体</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/agentic_cg/index.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="engineering" data-tags="代码大模型 上下文工程 自动化编程 仓库索引">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-07 · CODE AGENT</span>
+    <span class="lab-badge lab-badge-engineering">工程工坊</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">代码智能体与上下文工程 (Claude Code × Codex)</h3>
+    <p class="lab-desc">深入探究代码大模型的上下文理解、仓库级代码索引、自动化补全与指令执行工程实战范式。</p>
+    <div class="lab-tags"><span class="lab-tag">代码大模型</span><span class="lab-tag">上下文工程</span><span class="lab-tag">自动化编程</span><span class="lab-tag">仓库索引</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/claude_cg/index.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="simulation" data-tags="3D视效 因果掩码 自回归解码 注意力流向">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-08 · ATTN 3D</span>
+    <span class="lab-badge lab-badge-simulation">视效仿真</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">Transformer 动态视效流 (Transformer CG)</h3>
+    <p class="lab-desc">全景动画展现自回归解码过程、因果掩码 (Causal Mask) 机制以及高维嵌入向量在注意力头之间的流向与交互。</p>
+    <div class="lab-tags"><span class="lab-tag">3D视效</span><span class="lab-tag">因果掩码</span><span class="lab-tag">自回归解码</span><span class="lab-tag">注意力流向</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/transformer_cg.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="simulation" data-tags="全景叙事 密集向量检索 检索召回 知识注入">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-09 · RAG NARRATIVE</span>
+    <span class="lab-badge lab-badge-simulation">视效仿真</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">RAG 检索技术科普全景 (RAG CG Narrative)</h3>
+    <p class="lab-desc">视效化演示学习者提问从分词、稠密向量映射、高维空间邻近检索到增强生成的完整端到端技术链条。</p>
+    <div class="lab-tags"><span class="lab-tag">全景叙事</span><span class="lab-tag">密集向量检索</span><span class="lab-tag">检索召回</span><span class="lab-tag">知识注入</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/rag_cg/index.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="simulation" data-tags="大模型导论 标度律 自回归机理 涌现现象">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-10 · LLM 3D</span>
+    <span class="lab-badge lab-badge-simulation">视效仿真</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">大模型全景导论视觉舱 (LLM Intro 3D)</h3>
+    <p class="lab-desc">直观探索大语言模型的基础架构、自监督预训练、涌现现象 (Emergence) 与 Scaling Law 标度律演变全景。</p>
+    <div class="lab-tags"><span class="lab-tag">大模型导论</span><span class="lab-tag">标度律</span><span class="lab-tag">自回归机理</span><span class="lab-tag">涌现现象</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/llm_intro.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="simulation" data-tags="全景漫游 技术演进 概念拓扑 知识漫游">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-11 · ODYSSEY</span>
+    <span class="lab-badge lab-badge-simulation">视效仿真</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">AI 知识宇宙远航 (AI Odyssey)</h3>
+    <p class="lab-desc">将核心技术概念投射为星际航标，通过全景漫游模式探索从感知机到通用人工智能的技术演进图景。</p>
+    <div class="lab-tags"><span class="lab-tag">全景漫游</span><span class="lab-tag">技术演进</span><span class="lab-tag">概念拓扑</span><span class="lab-tag">知识漫游</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/ai_odyssey.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+<article class="lab-card" data-category="core" data-tags="知识复核 口语化讲解 双盲评测 通关演练">
+  <header class="lab-card-header">
+    <span class="lab-code">LAB-12 · REVIEW HUB</span>
+    <span class="lab-badge lab-badge-core">通关枢纽</span>
+  </header>
+  <div class="lab-card-body">
+    <h3 class="lab-title">知识星辰互动与复核舱 (Knowledge Stars Review)</h3>
+    <p class="lab-desc">连接 57 个课程知识节点星海与 7 核心模块口语化讲解评测，提供全方位评测准备与实战通关演练。</p>
+    <div class="lab-tags"><span class="lab-tag">知识复核</span><span class="lab-tag">口语化讲解</span><span class="lab-tag">双盲评测</span><span class="lab-tag">通关演练</span></div>
+  </div>
+  <footer class="lab-card-footer">
+    <span class="lab-route-hint">纯前端离线交互</span>
+    <a href="../static/interview.html" class="btn btn-sm btn-go">进入实验 ↗</a>
+  </footer>
+</article>
+    </section>
+
+    <section class="bridges-section">
+      <h2 class="bridges-title">关联系统导航与核心枢纽 (System Bridges)</h2>
+      <div class="bridges-grid">
+        <a href="../canvas/" class="bridge-card">
+          <div class="bridge-name">思维画布 (Canvas) <span>↗</span></div>
+          <p class="bridge-desc">全景概念关系拓扑与思维推演图谱，连接各核心理论节点。</p>
+        </a>
+        <a href="../knowledge-stars/" class="bridge-card">
+          <div class="bridge-name">知识星海 (Universe) <span>↗</span></div>
+          <p class="bridge-desc">Three.js 57 知识星辰 3D 拓扑星海，实时映射学习者本地进度。</p>
+        </a>
+        <a href="../ai-review/" class="bridge-card">
+          <div class="bridge-name">AI 评测证据墙 (Evidence Wall) <span>↗</span></div>
+          <p class="bridge-desc">21 例双盲测试真值投影、混淆矩阵看板与严格未采集指标透明公示。</p>
+        </a>
+        <a href="../hands-on/" class="bridge-card">
+          <div class="bridge-name">动手实践任务 (Hands-on) <span>↗</span></div>
+          <p class="bridge-desc">10 个章节 41 项源码级工程实战任务与阶段性通关指引。</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script src="../static/js/playground.js"></script>
+</body>
+</html>
