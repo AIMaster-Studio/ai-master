@@ -281,7 +281,7 @@ body::before,.nav,.chapter-nav,.skip{display:none}
   }
 
   function linkify(value) {
-    var pattern = /https?:\/\/[^\s（）。，；、]+|frontend\/[A-Za-z0-9_./-]+/g;
+    var pattern = /https?:\/\/[^\s（）。，；、]+|frontend\/[A-Za-z0-9_./-]+(?:#[A-Za-z0-9_-]+)?/g;
     var result = '', start = 0;
     String(value).replace(pattern, function(raw, offset) {
       result += esc(value.slice(start, offset));
