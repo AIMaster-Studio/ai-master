@@ -259,7 +259,7 @@ test('learning workspace has exactly one token dependency and resolves every tok
   for (const tag of html.matchAll(/<link\b[^>]*>/gi)) {
     const rel = (tag[0].match(/\brel=["']([^"']*)["']/i) || [])[1] || '';
     const href = (tag[0].match(/\bhref=["']([^"']*)["']/i) || [])[1] || '';
-    if (href && rel.split(/\s+/).includes('stylesheet')) stylesheets.push(href);
+    if (href && rel.split(/\s+/).includes('stylesheet')) stylesheets.push(href.replace(/[?#].*$/, ''));
   }
 
   // ① 依赖存在：页面必须显式加载 tokens.css。
