@@ -8,6 +8,8 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const indexPath = path.join(ROOT, 'frontend/index.html');
 const cssPath = path.join(ROOT, 'frontend/assets/landing.css');
+const scriptPath = path.join(ROOT, 'frontend/assets/landing.js');
+const redirectsPath = path.join(ROOT, 'frontend/_redirects');
 
 test('competition landing page exists and is a full instrument page, not a meta refresh', () => {
   assert.ok(fs.existsSync(indexPath), 'frontend/index.html must exist');
@@ -15,17 +17,19 @@ test('competition landing page exists and is a full instrument page, not a meta 
 
   assert.doesNotMatch(html, /http-equiv="refresh"/, 'Landing page must NOT be a meta-refresh redirect');
   assert.match(html, /AI Master/, 'Must contain AI Master brand title');
-  assert.match(html, /AI 不替你学，[\s\S]*?AI 当你的考官。/, 'Must contain competition core proposition');
+  assert.match(html, /学会 AI，[\s\S]*?要能亲自讲清楚。/, 'Must contain the new learner-facing proposition');
   assert.match(html, /看懂 ≠ 会讲 ≠ 会用/, 'Must state the learning distinction');
-  assert.match(html, /AI ENGINEERING MASTERY PLATFORM/, 'Must contain hero kicker');
+  assert.match(html, /AI MASTER \/ LEARN · EXPLAIN · VERIFY/, 'Must contain hero kicker');
+  assert.match(html, /流程示意[\s\S]*?此处不展示模拟评审结果/, 'Product preview must be clearly identified as a preview');
+  assert.doesNotMatch(fs.readFileSync(redirectsPath, 'utf8'), /^\/\s+\/learning-center\/\s+30[12]/m, 'Root must serve the landing page');
 });
 
 test('hero CTAs follow the competition entry contract', () => {
   const html = fs.readFileSync(indexPath, 'utf8');
 
-  assert.match(html, /href="learning-center\/"[^>]*>开始 3 分钟体验/, 'Primary CTA must lead to learning-center/');
-  assert.match(html, /href="ai-review\/"[^>]*>查看 AI 评测证据/, 'Evidence CTA must lead to ai-review/');
-  assert.match(html, /href="playground\/"[^>]*>进入 AI 实验室/, 'Lab CTA must lead to playground/');
+  assert.match(html, /href="learning-center\/"[^>]*class="btn-hero-primary"[^>]*>[\s\S]*?开始 3 分钟体验/, 'Primary CTA must lead to learning-center/');
+  assert.match(html, /href="ai-review\/"[^>]*class="btn-hero-secondary"[^>]*>查看评测证据/, 'Evidence CTA must lead to ai-review/');
+  assert.match(html, /href="playground\/">12 个交互实验/, 'Lab route must remain discoverable');
 });
 
 test('hero exposes the complete evidence-first learning mechanism in order', () => {
@@ -46,6 +50,8 @@ test('features 3-minute judge review recommended demo path', () => {
   assert.match(html, /STEP 02/, 'Must feature Step 2');
   assert.match(html, /STEP 03/, 'Must feature Step 3');
   assert.match(html, /STEP 04/, 'Must feature Step 4');
+  assert.match(html, /role="tablist" aria-label="3 分钟演示步骤"/, 'Review path must expose accessible Stepper navigation');
+  assert.ok(fs.existsSync(scriptPath), 'Stepper script must exist');
 
   // Verify all 4 step links
   assert.match(html, /href="dashboard\/"[^>]*class="step-link-btn"/, 'Step 1 must link dashboard/');
@@ -64,11 +70,11 @@ test('features four core engineering pillars with 41 hands-on tasks and 7 core m
   assert.match(html, /PILLAR 04[\s\S]*?工业级严谨与科学诚信/, 'Pillar 4 must be Engineering Honesty');
 
   // Ground truth metrics
-  assert.match(html, /41<\/span>[\s\S]*?动手代码任务/, 'Must state 41 hands-on tasks');
-  assert.match(html, /10<\/span>[\s\S]*?核心课程章节/, 'Must state 10 chapters');
-  assert.match(html, /12<\/span>[\s\S]*?高可交互实验工坊/, 'Must state 12 labs');
-  assert.match(html, /7<\/span>[\s\S]*?口语讲解通关门禁/, 'Must state 7 modules');
-  assert.match(html, /90\.5%<\/span>[\s\S]*?AI 评测基准准确率/, 'Must state 90.5% AI accuracy');
+  assert.match(html, /41 个代码任务/, 'Must state 41 hands-on tasks');
+  assert.match(html, /10 个课程章节/, 'Must state 10 chapters');
+  assert.match(html, /12 个交互实验/, 'Must state 12 labs');
+  assert.match(html, /7 个讲解通关模块/, 'Must state 7 modules');
+  assert.match(html, /21 例样本的基准准确率为 90\.5%/, 'Must scope accuracy to the 21 verified cases');
 });
 
 test('landing CSS follows dark instrument tokens with zero radius', () => {

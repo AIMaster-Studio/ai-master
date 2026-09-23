@@ -4,7 +4,13 @@
   "description": "AIMaster 星际 AI 学习平台 - 桌面版",
   "engines": { "node": ">=24" },
   "main": "electron/main.js",
-  "author": "433525",
+  "author": "AI Master Studio",
+  "contributors": [
+    { "name": "433525", "url": "https://github.com/433525" },
+    { "name": "L2464", "url": "https://github.com/L2464" },
+    { "name": "An9020", "url": "https://github.com/An9020" },
+    { "name": "lbw61", "url": "https://github.com/lbw61" }
+  ],
   "license": "MIT",
   "scripts": {
     "start": "electron .",

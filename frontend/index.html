@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AI Master — AI 不替你学，AI 当你的考官</title>
+  <title>AI Master — 学会 AI，要能亲自讲清楚</title>
   <link rel="stylesheet" href="assets/tokens.css">
   <link rel="stylesheet" href="assets/frontend.css">
   <link rel="stylesheet" href="assets/landing.css">
   <link rel="stylesheet" href="assets/atmosphere.css">
   <script src="assets/atmosphere.js" defer></script>
+  <script src="assets/landing.js" defer></script>
 </head>
 <body>
   <nav class="demo-nav">
@@ -29,58 +30,41 @@
   </div>
 </nav>
   <main class="demo-page landing-page">
-    <section class="landing-hero">
-      <div class="hero-kicker">AI ENGINEERING MASTERY PLATFORM · 竞赛核心成果展台</div>
-      <h1 class="hero-title">
-        AI 不替你学，<span class="highlight-brand">AI 当你的考官。</span>
-      </h1>
-      <p class="hero-axiom">看懂 ≠ 会讲 ≠ 会用</p>
-      <p class="hero-desc">
-        不是把答案交给你，而是要求你<strong>讲清机制、拿出课程证据、通过复评并完成测验</strong>。每一次“学会”都必须留下可复核的通关证据。
-      </p>
-
-      <div class="mechanism-strip" aria-label="AI Master 通关机制">
-        <span class="mechanism-step">规则筛查</span><span class="mechanism-arrow">→</span>
-        <span class="mechanism-step">课程证据</span><span class="mechanism-arrow">→</span>
-        <span class="mechanism-step">AI 复评</span><span class="mechanism-arrow">→</span>
-        <span class="mechanism-step">引用校验</span><span class="mechanism-arrow">→</span>
-        <span class="mechanism-step">测验</span><span class="mechanism-arrow">→</span>
-        <span class="mechanism-step">复习</span>
+    <section class="landing-hero" aria-labelledby="landing-title">
+      <div class="landing-hero-copy">
+        <div class="hero-kicker">AI MASTER / LEARN · EXPLAIN · VERIFY</div>
+        <h1 class="hero-title" id="landing-title">学会 AI，<br><span class="highlight-brand">要能亲自讲清楚。</span></h1>
+        <p class="hero-desc">AI Master 把课程、动手实践、讲解复评和测验连成一条学习路线。AI 可以帮助检查，但不能替你完成理解。</p>
+        <p class="hero-axiom">看懂 ≠ 会讲 ≠ 会用</p>
+        <div class="hero-actions">
+          <a href="learning-center/" class="btn-hero-primary"><span>开始 3 分钟体验</span><span class="cta-arrow" aria-hidden="true">↗</span></a>
+          <a href="ai-review/" class="btn-hero-secondary">查看评测证据 ↗</a>
+        </div>
+        <p class="hero-footnote">无需注册即可浏览课程与实验；学习记录和 AI 服务状态以实际页面为准。</p>
       </div>
-
-      <div class="hero-actions">
-        <a href="learning-center/" class="btn-hero-primary">开始 3 分钟体验 ↗</a>
-        <a href="ai-review/" class="btn-hero-secondary">查看 AI 评测证据 ↗</a>
-        <a href="playground/" class="btn-hero-secondary">进入 AI 实验室 ↗</a>
+      <div class="landing-preview" aria-label="讲解通关流程示意">
+        <div class="preview-topline"><span>AI MASTER / 讲解通关</span><span>流程示意</span></div>
+        <div class="preview-body">
+          <span class="preview-eyebrow">01 / 从一个概念开始</span>
+          <h2>什么是大语言模型？</h2>
+          <p>说明它如何生成文本，举一个例子，再讲清它的局限。</p>
+          <div class="preview-answer"><span>你的任务</span><strong>用自己的话讲解</strong><small>提交后再进行规则筛查、课程证据核对与复评</small></div>
+          <div class="preview-flow" aria-hidden="true"><span>学习</span><i></i><span>讲解</span><i></i><span>复评</span><i></i><span>测验</span></div>
+        </div>
+        <div class="preview-footer"><span class="preview-status-dot" aria-hidden="true"></span>尚未提交 · 此处不展示模拟评审结果</div>
       </div>
+    </section>
 
-      <div class="metrics-strip">
-        <div class="metric-cell">
-          <span class="metric-num">10</span>
-          <span class="metric-label">核心课程章节</span>
-          <span class="metric-sub">全栈工程师知识谱系</span>
-        </div>
-        <div class="metric-cell">
-          <span class="metric-num">41</span>
-          <span class="metric-label">动手代码任务</span>
-          <span class="metric-sub">源码实战真实对齐</span>
-        </div>
-        <div class="metric-cell">
-          <span class="metric-num">12</span>
-          <span class="metric-label">高可交互实验工坊</span>
-          <span class="metric-sub">算法与可视化仿真</span>
-        </div>
-        <div class="metric-cell">
-          <span class="metric-num">7</span>
-          <span class="metric-label">口语讲解通关门禁</span>
-          <span class="metric-sub">费曼输出深度审查</span>
-        </div>
-        <div class="metric-cell">
-          <span class="metric-num">90.5%</span>
-          <span class="metric-label">AI 评测基准准确率</span>
-          <span class="metric-sub">0 假阳性劣质概念拦截</span>
-        </div>
+    <div class="landing-mechanism" aria-label="完整通关流程"><strong>提交讲解后的核验流程</strong><span>规则筛查 → 课程证据 → AI 复评 → 引用校验 → 测验 → 复习</span><small>未配置模型或模型不可用时，会明确显示本地反馈。</small></div>
+
+    <section class="landing-evidence" aria-labelledby="evidence-title">
+      <div class="evidence-heading"><div><div class="section-kicker">REAL PRODUCT / VERIFIABLE EVIDENCE</div><h2 class="section-title" id="evidence-title">课程、实践与评测，都有可查看的内容</h2></div><a href="ai-review/">核对评测方法 ↗</a></div>
+      <div class="evidence-grid">
+        <a class="evidence-card" href="dashboard/"><span class="evidence-index">01 / 学</span><strong>10 个课程章节</strong><p>从核心原理到工程实践，按知识路线逐步推进。</p><span class="evidence-link">浏览课程 ↗</span></a>
+        <a class="evidence-card" href="hands-on/"><span class="evidence-index">02 / 做</span><strong>41 个代码任务</strong><p>用具体任务检验概念是否能够落到实现。</p><span class="evidence-link">查看任务 ↗</span></a>
+        <a class="evidence-card" href="ai-review/"><span class="evidence-index">03 / 验</span><strong>21 例可核验评测样本</strong><p>公开复核依据，也明确标注尚未采集的指标。</p><span class="evidence-link">查看证据 ↗</span></a>
       </div>
+      <p class="evidence-meta">另有 <a href="playground/">12 个交互实验</a>和 <a href="learning-center/">7 个讲解通关模块</a>。21 例样本的基准准确率为 90.5%，具体口径见<a href="ai-review/">评测证据墙</a>。</p>
     </section>
 
     <section class="demo-path-section">
@@ -90,8 +74,14 @@
         专为评委设计的高密度动线，3 分钟即可深度检验本系统的三大核心工程壁垒与交互完成度：
       </p>
 
+      <div class="demo-stepper" role="tablist" aria-label="3 分钟演示步骤">
+        <button type="button" role="tab" id="demo-tab-1" aria-controls="demo-panel-1" aria-selected="true" tabindex="0"><span>01</span>课程总览</button>
+        <button type="button" role="tab" id="demo-tab-2" aria-controls="demo-panel-2" aria-selected="false" tabindex="-1"><span>02</span>算法实验</button>
+        <button type="button" role="tab" id="demo-tab-3" aria-controls="demo-panel-3" aria-selected="false" tabindex="-1"><span>03</span>评测证据</button>
+        <button type="button" role="tab" id="demo-tab-4" aria-controls="demo-panel-4" aria-selected="false" tabindex="-1"><span>04</span>讲解通关</button>
+      </div>
       <div class="demo-steps-grid">
-        <div class="demo-step-card">
+        <div class="demo-step-card" role="tabpanel" id="demo-panel-1" aria-labelledby="demo-tab-1">
           <span class="step-num-badge">STEP 01 · 全景与契约</span>
           <h3 class="step-name">课程总览与统一进度</h3>
           <p class="step-desc">
@@ -100,7 +90,7 @@
           <a href="dashboard/" class="step-link-btn">进入课程总览 ↗</a>
         </div>
 
-        <div class="demo-step-card">
+        <div class="demo-step-card" role="tabpanel" id="demo-panel-2" aria-labelledby="demo-tab-2" hidden>
           <span class="step-num-badge">STEP 02 · 算法工坊</span>
           <h3 class="step-name">可交互算法实验</h3>
           <p class="step-desc">
@@ -109,7 +99,7 @@
           <a href="playground/" class="step-link-btn">进入实验工坊 ↗</a>
         </div>
 
-        <div class="demo-step-card">
+        <div class="demo-step-card" role="tabpanel" id="demo-panel-3" aria-labelledby="demo-tab-3" hidden>
           <span class="step-num-badge">STEP 03 · 科学诚信</span>
           <h3 class="step-name">AI 评测双盲证据墙</h3>
           <p class="step-desc">
@@ -118,7 +108,7 @@
           <a href="ai-review/" class="step-link-btn">查看证据墙 ↗</a>
         </div>
 
-        <div class="demo-step-card">
+        <div class="demo-step-card" role="tabpanel" id="demo-panel-4" aria-labelledby="demo-tab-4" hidden>
           <span class="step-num-badge">STEP 04 · 费曼通关</span>
           <h3 class="step-name">讲解通关与实时反馈</h3>
           <p class="step-desc">
@@ -127,6 +117,7 @@
           <a href="learning-center/" class="step-link-btn">进入通关舱 ↗</a>
         </div>
       </div>
+      <div class="demo-stepper-actions"><button type="button" id="demo-prev" disabled>← 上一步</button><span id="demo-progress" aria-live="polite">1 / 4</span><button type="button" id="demo-next">下一步 →</button></div>
     </section>
 
     <section class="pillars-section">

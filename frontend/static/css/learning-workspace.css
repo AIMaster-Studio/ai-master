@@ -762,6 +762,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Evaluation Feedback Strip */
+.review-status { display: flex; align-items: center; gap: 10px; margin: 18px 0; padding: 11px 13px; border: 1px solid var(--line); background: var(--bg-panel); color: var(--ink-muted); font-size: .78rem; line-height: 1.4; }
+.review-status-mark { width: 18px; height: 18px; flex: 0 0 18px; display: grid; place-items: center; border: 1px solid var(--hold); color: var(--hold); font: 700 12px var(--font-mono); }
+.review-status-mark::after { content: '·'; }
+.review-status-mark[data-state="running"] { border-top-color: transparent; animation: review-status-turn .8s linear infinite; }
+.review-status-mark[data-state="running"]::after { content: ''; }
+.review-status-mark[data-state="done"] { border-color: var(--go); color: var(--go); }
+.review-status-mark[data-state="done"]::after { content: '✓'; }
+.review-status-mark[data-state="failed"] { border-color: var(--stop); color: var(--stop); }
+.review-status-mark[data-state="failed"]::after { content: '!'; }
+.review-status-mark[data-state="local"] { border-color: var(--ink-dim); color: var(--ink-dim); }
+.review-status-mark[data-state="local"]::after { content: '–'; }
+@keyframes review-status-turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .review-status-mark[data-state="running"] { animation: none; border-top-color: var(--hold); } }
 .feedback {
   margin-top: 24px;
   padding-top: 20px;
