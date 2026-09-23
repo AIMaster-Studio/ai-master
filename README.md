@@ -199,7 +199,7 @@ $local  = (Get-Content frontend/static/js/learning-workspace.js -Raw) -replace "
 | 文件 | 状态 | 说明 |
 | :--- | :--- | :--- |
 | `.env` / `.env.*` | 已 gitignore | 本机后端读取的密钥 |
-| **`.dev.vars`** | 已 gitignore | Cloudflare 本地开发变量，本项目里存的是 `TUNNEL_ORIGIN`（**真实隧道入口**）—— 与 `.env` 名字长得像，但**不受 `.env.*` 规则覆盖**，必须单独忽略 |
+| **`.dev.vars`** | 已 gitignore | Cloudflare 本地开发变量，可配置 `API_ORIGIN`；旧隧道配置仍兼容 `TUNNEL_ORIGIN`。与 `.env` 名字相近，但必须单独忽略 |
 | `.wrangler/` | 已 gitignore | wrangler 本地状态（含 sqlite 缓存） |
 | `frontend/static/js/ai-config.js` | **随仓库入库**（勿写密钥） | 见上；仓库只保留 `apiKey: ""` |
 
@@ -212,15 +212,15 @@ $local  = (Get-Content frontend/static/js/learning-workspace.js -Raw) -replace "
 | 页面 | 原生 HTML / CSS / JS | 沿用既有课程与交互页面 |
 | 3D | 本地 Three.js r128 | 浏览器支持与实际性能需实测 |
 | 内容 | JSON 章节与题库（7 个核心模块有独立通关题库） | 原课程**待审校**，不自动作为标答 |
-| 学习服务 | Node.js 内置 HTTP（`server/index.js`），默认 `127.0.0.1:8787` | **本机服务，不是互联网生产部署** |
-| 记录 | SQLite（本机）／ localStorage（静态模式） | 本机访客档案，**不声称云同步** |
+| 学习服务 | Node.js 内置 HTTP（`server/index.js`），本机默认 `127.0.0.1:8787`；公网由既有 Vercel 后端承载 | Cloudflare Pages 只代理 API；Vercel 版本与站点提交可能不同步 |
+| 记录 | 本机 SQLite、静态模式 localStorage；线上后端报告学习数据使用远程 Turso | 用户访客档案以实际页面和后端状态为准；其他文件/会话存储未全部持久化 |
 | 讲解评价 | 本地规则（7 项筛查）＋ 可选模型复评；复评前先检索课程证据，并要求模型回报引用号，服务端逐个复核 | 显示来源；失败明确降级；引用复核只能确认「引用真实存在」，不能确认结论被证据支持 |
 | 客观判题 | 服务端预设标答 | 不由模型决定答案 |
 | 知识库（RAG） | 多引擎注册表 + `version-N` 版本化索引；`sqlite-vec` 为首选、纯 JS 余弦兜底 | 默认嵌入是**词面重合而非语义检索**；PDF/Office 解析未安装，明确报错 |
 | 记忆 | 三层：L1 事件轨迹 / L2 各面事实 / L3 跨面综合 | L2/L3 是**确定性聚合而非 LLM 摘要**，无语义归纳能力；本机文件，不跨设备同步 |
 | 能力运行时 | `explain` / `quiz` / `research` 共享工具注册表与会话上下文，含 `ask_user` 中断续跑 | **无沙箱，故不提供代码执行工具** |
 | 技能包 | SKILL.md 声明式文本 + 导入安全门 | 不执行代码；可执行后缀一律阻断；越权话术检测是启发式 |
-| 公网出口 | cloudflared 隧道（URL 每次重启变化）｜ Cloudflare Pages `_worker.js` 代理 | 隧道挂了等于后端挂了 |
+| 公网出口 | Cloudflare Pages `_worker.js` 代理到 `API_ORIGIN`（当前为独立 Vercel 后端），旧 `TUNNEL_ORIGIN` 仅作兼容回退 | 后端不可达会返回 502；健康检查通过不等于模型复评成功 |
 
 ---
 
