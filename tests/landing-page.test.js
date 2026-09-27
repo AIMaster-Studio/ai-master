@@ -8,20 +8,23 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const FRONTEND = path.join(ROOT, 'frontend');
 const indexPath = path.join(FRONTEND, 'index.html');
-const cssPath = path.join(FRONTEND, 'ai-learning', 'styles.css');
+const cssPath = path.join(FRONTEND, 'assets', 'ai-master-home.css');
 const pageScriptPath = path.join(FRONTEND, 'ai-learning', 'pages.js');
 const mainScriptPath = path.join(FRONTEND, 'ai-learning', 'main.js');
 const redirectsPath = path.join(FRONTEND, '_redirects');
 
-test('AI Master landing page loads the native app and does not redirect away', () => {
+test('AI Master dynamic hero is served at the root with same-site assets', () => {
   assert.ok(fs.existsSync(indexPath), 'frontend/index.html must exist');
   const html = fs.readFileSync(indexPath, 'utf8');
   const redirects = fs.readFileSync(redirectsPath, 'utf8');
 
   assert.doesNotMatch(html, /http-equiv="refresh"/i, 'Landing page must not use a meta-refresh redirect');
   assert.match(html, /AI Master/, 'Must contain AI Master branding');
-  assert.match(html, /ai-learning\/styles\.css/, 'Landing must load the AI Master visual system');
-  assert.match(html, /ai-learning\/main\.js/, 'Landing must load the AI Master app');
+  assert.match(html, /Understand AI\. Put It to Work\./, 'Root must show the dynamic AI Master hero');
+  assert.match(html, /assets\/ai-master-home\.css/, 'Hero must load its stylesheet');
+  assert.match(html, /assets\/ai-master-home\.js/, 'Hero must load its navigation and video controls');
+  assert.match(html, /AI_MASTER_BASE_URL\s*=\s*''/, 'Production navigation must use the same site');
+  assert.match(html, /d8j0ntlcm91z4\.cloudfront\.net/, 'Hero must retain its background video');
   assert.doesNotMatch(redirects, /^\/\s+\/learning-center\/\s+30[12]/m, 'Root must serve the AI Master landing page');
 });
 
@@ -67,9 +70,9 @@ test('AI Master landing CSS provides responsive, accessible visual rules', () =>
   assert.ok(fs.existsSync(cssPath), 'AI Master stylesheet must exist');
   const css = fs.readFileSync(cssPath, 'utf8');
 
-  assert.match(css, /\.hero-copy h1\s*\{[\s\S]*?font-size:/, 'Styles must target the current hero heading');
-  assert.match(css, /@media\s*\(max-width:\s*620px\)/, 'Styles must include mobile layout rules');
-  assert.match(css, /\.review-step-tabs[\s\S]*?\.review-step-panel/, 'Review flow needs visible tabs and panels');
+  assert.match(css, /^h1\s*\{[\s\S]*?font-size:/m, 'Styles must target the current hero heading');
+  assert.match(css, /@media\s*\(max-width:\s*767px\)/, 'Styles must include mobile layout rules');
+  assert.match(css, /\.nav-menu/, 'Landing must style its secondary navigation menus');
   assert.match(css, /:focus-visible/, 'Interactive controls must have a visible focus treatment');
   assert.match(css, /prefers-reduced-motion:\s*reduce/, 'Motion must respect reduced-motion preference');
 });

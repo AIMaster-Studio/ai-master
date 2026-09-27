@@ -6,12 +6,31 @@ const path = require("node:path");
 const ROOT = path.resolve(__dirname, "..");
 const FRONTEND = path.join(ROOT, "frontend");
 
-test("demo-path: AI Master home exposes its navigable 3-minute review flow", () => {
+test("demo-path: dynamic root links to real routes and the learning app retains its review flow", () => {
   const landingHtml = fs.readFileSync(path.join(FRONTEND, "index.html"), "utf-8");
   const app = fs.readFileSync(path.join(FRONTEND, "ai-learning", "pages.js"), "utf-8");
 
-  assert.match(landingHtml, /ai-learning\/main\.js/, "Landing must load the AI Master app");
-  assert.match(app, /三分钟看懂 AI Master/, "Landing must show the review flow");
+  assert.match(landingHtml, /assets\/ai-master-home\.js/, "Root must load the dynamic hero navigation");
+  assert.match(app, /三分钟看懂 AI Master/, "The learning app must retain the 3-minute review flow");
+  const routes = [
+    "/beginner/",
+    "/learning-path/?stage=1",
+    "/knowledge/1-1/",
+    "/knowledge/2-1/",
+    "/knowledge/3-1/",
+    "/knowledge/3-5/",
+    "/knowledge/6-2/",
+    "/learning-center/",
+    "/hands-on/",
+    "/playground/",
+    "/course-progress/",
+    "/courses/?q=",
+    "/knowledge-stars/",
+    "/experiments/"
+  ];
+  for (const route of routes) {
+    assert.ok(landingHtml.includes(`href="${route}" data-ai-path="${route}"`), `Root menu must link to ${route}`);
+  }
   assert.match(app, /role="tablist" aria-label="三分钟演示步骤"/, "Review stepper must expose accessible tab navigation");
   assert.match(app, /href: "\/course-progress\/"/, "Step 1 must link to the actual course progress page");
   assert.match(app, /href: "\/experiments\/"/, "Step 2 must link to the preserved experiments");
