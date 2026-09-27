@@ -1,7 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/[...slug].js" },
-    { "source": "/", "destination": "/frontend/learning-center/" },
+    { "source": "/", "destination": "/frontend/index.html" },
     { "source": "/((?!api).*)", "destination": "/frontend/$1" }
   ],
   "functions": {

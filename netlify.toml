@@ -22,7 +22,7 @@
 #
 # 发布根已改为 frontend/，因此 frontend/_redirects 现在就是 Netlify 的生效规则文件：
 # 根路径 "/" 的规则统一写在那边，此处不再重复声明，避免两套语义并存。
-# 兜底：即使该规则失效，"/" 也会落到 frontend/index.html（其 meta refresh 进入 learning-center/）。
+# 兜底：即使该规则失效，"/" 也会直接显示 frontend/index.html 动态首页。
 #
 # 原 "/*  ->  /frontend/:splat" 通配重写已删除：发布根本身就是 frontend/，
 # 该重写已成自反映射，并会把每个真实的不存在路径都伪装成 200。
