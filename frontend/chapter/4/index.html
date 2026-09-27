@@ -144,5 +144,21 @@
   </footer>
 </main>
 <script src="../../assets/frontend.js"></script>
-</body>
+<script type="module">
+  import { initKnowledgeNodeFlow, initKnowledgeNodeProgressIndicators } from "../../assets/knowledge-node-flow.js?v=20260926-node";
+  initKnowledgeNodeProgressIndicators();
+  function mountCurrentNode() {
+    const match = location.hash.match(/^#kp-(\d+)$/);
+    if (!match) return;
+    const number = Number(match[1]);
+    const article = document.getElementById("kp-" + number);
+    document.querySelectorAll(".knowledge-body#core-title").forEach(body => body.removeAttribute("id"));
+    const body = article?.querySelector(".knowledge-body");
+    if (body) body.id = "core-title";
+    initKnowledgeNodeFlow({ stageId: 4, number, main: article, hero: article?.querySelector(".knowledge-head"), insertionPoint: body, anchorId: "node-mastery-4-" + number });
+  }
+  mountCurrentNode();
+  window.addEventListener("hashchange", mountCurrentNode);
+</script>
+<script type="module" src="/assets/mind-canvas-entry.js?v=20260927"></script></body>
 </html>

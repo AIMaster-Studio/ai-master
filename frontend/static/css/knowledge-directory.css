@@ -1,0 +1,41 @@
+.star-directory { position:fixed; z-index:65; right:clamp(16px,3vw,36px); bottom:clamp(16px,3vw,36px); width:min(390px,calc(100vw - 32px)); max-height:min(72vh,620px); overflow:auto; border:1px solid rgba(114,246,228,.5); border-radius:10px; background:rgba(5,16,31,.96); color:#e8f4fc; box-shadow:0 18px 50px rgba(0,0,0,.38); }
+.star-directory > summary { display:flex; align-items:center; min-height:48px; padding:0 16px; color:#b9f7f2; font-size:14px; font-weight:700; cursor:pointer; }
+.star-directory > summary:focus-visible, .star-directory a:focus-visible { outline:2px solid #72f6e4; outline-offset:2px; }
+.star-directory-list { display:grid; gap:12px; padding:0 16px 16px; }
+.star-directory-list section { border-top:1px solid rgba(114,246,228,.2); padding-top:10px; }
+.star-directory-list h3 { margin:0 0 8px; color:#a9d9e4; font-size:13px; }
+.star-directory-list ol { display:grid; gap:4px; margin:0; padding:0; list-style:none; }
+.star-directory-list a { display:block; min-height:36px; padding:8px; border-radius:5px; color:#dbeaf4; font-size:13px; line-height:1.45; }
+.star-directory-list a:hover { background:rgba(114,246,228,.12); color:#72f6e4; }
+@media (max-width:600px) { .star-directory { right:12px; bottom:12px; width:calc(100vw - 24px); max-height:68vh; } }
+
+/* Keep the course directory usable above this notice when the 3D renderer fails. */
+.error-card.directory-fallback {
+  inset: clamp(64px, 7vh, 92px) 12px auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 16px;
+  width: auto;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  border: 1px solid rgba(114, 246, 228, .35);
+  border-radius: 8px;
+  background: rgba(5, 16, 31, .97);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .38);
+  place-content: start;
+  text-align: left;
+}
+.error-card.directory-fallback > span { grid-column: 1; color: #72f6e4; }
+.error-card.directory-fallback h2 { grid-column: 1; margin: 0; font-size: 16px; line-height: 1.35; }
+.error-card.directory-fallback p { grid-column: 1; max-width: 58ch; margin: 0; color: #a4b0ce; font-size: 12px; line-height: 1.6; }
+.error-card.directory-fallback button { grid-column: 2; grid-row: 1 / span 3; align-self: center; min-height: 40px; margin: 0; white-space: nowrap; }
+html.embedded-courses .error-card.directory-fallback { inset: auto 24px 88px auto; width: min(480px, calc(100vw - 48px)); margin: 0; }
+@media (max-width: 600px) {
+  html.embedded-courses .error-card.directory-fallback { inset: auto 12px 84px; width: auto; }
+}
+@media (max-width: 360px) {
+  .error-card.directory-fallback { grid-template-columns: minmax(0, 1fr); }
+  .error-card.directory-fallback button { grid-column: 1; grid-row: auto; justify-self: end; }
+}

@@ -1,19 +1,84 @@
-<!doctype html><html lang="zh-CN" data-atmosphere="dashboard"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../assets/tokens.css"><link rel="stylesheet" href="../assets/frontend.css"><title>AI Master - 思维画布</title>  <link rel="stylesheet" href="../assets/atmosphere.css">
-  <script src="../assets/atmosphere.js" defer></script>
-</head><body><nav class="demo-nav">
-  <div class="demo-nav-inner">
-    <a class="demo-brand" href="./">
-      <span class="brand-badge">AI</span>
-      <span class="brand-name">AI MASTER <em class="brand-sub">/ CORE</em></span>
-    </a>
-    <div class="demo-nav-links">
-      <a href="../dashboard/">课程总览</a>
-      <a href="../learning-center/" class="nav-highlight">讲解通关 ↗</a>
-      <a href="../ai-review/">评测证据墙</a>
-      <a href="../hands-on/">动手实践</a>
-      <a href="../playground/">实验工坊</a>
-      <a href="../knowledge-stars/">知识星海</a>
-      <a href="../beginner/">新手入门</a>
-    </div>
-  </div>
-</nav><main class="demo-page"><section class="chapter-hero"><p class="kicker">KNOWLEDGE CANVAS</p><h1>思维画布</h1><p class="chapter-hero-desc">前端复现版保留知识导航与互动页面。完整的云端保存、AI 辅助生成与个人数据同步需要后端服务。</p><a class="btn btn-go" href="../dashboard/">返回总览 ↗</a></section></main></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090d16">
+  <title>思维画布 · AI Master</title>
+  <link rel="stylesheet" href="/assets/tokens.css">
+  <link rel="stylesheet" href="/canvas/canvas.css">
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const restore = () => {
+        root.classList.remove('mc-intro-pending');
+        const shell = document.getElementById('canvas-shell');
+        if (shell) { shell.style.clipPath = 'none'; shell.style.webkitClipPath = 'none'; shell.inert = false; shell.removeAttribute('inert'); shell.removeAttribute('aria-hidden'); }
+        if (window.__mcIntroFailsafe) clearTimeout(window.__mcIntroFailsafe);
+        window.removeEventListener('keydown', skip);
+        try { sessionStorage.setItem('aimaster:mind-canvas:intro:v1','1'); } catch {}
+      };
+      const skip = event => { if(event.key === 'Escape') restore(); };
+      window.__mcRestoreIntro = restore;
+      try {
+        const storage = window.sessionStorage;
+        const probe = 'aimaster:mind-canvas:intro:probe';
+        storage.setItem(probe, '1'); storage.removeItem(probe);
+        if (!storage.getItem('aimaster:mind-canvas:intro:v1') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          root.classList.add('mc-intro-pending');
+          window.addEventListener('keydown', skip);
+          window.__mcIntroFailsafe = setTimeout(restore, 1800);
+        }
+      } catch { restore(); }
+    })();
+  </script>
+  <script src="/static/vendor/three.r128.min.js" defer></script>
+  <script src="/canvas/controller.js" type="module"></script>
+</head>
+<body class="canvas-page">
+  <a class="canvas-skip-link" href="#knowledge-directory">跳到知识点目录</a>
+  <main class="mind-canvas-shell" id="canvas-shell">
+    <header class="canvas-toolbar" aria-label="思维画布工具">
+      <div class="canvas-toolbar-top">
+        <a class="canvas-brand" href="/" aria-label="AI Master 首页"><span class="canvas-brand-mark">AI</span><span>AI MASTER<span class="canvas-brand-context"> / 思维画布</span></span></a>
+        <a class="canvas-back-link" href="/courses/?q=">返回课程<svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-arrow"></use></svg></a>
+      </div>
+      <div class="canvas-toolbar-controls">
+        <button class="canvas-button canvas-directory-trigger" id="chapter-toggle" type="button" aria-expanded="false" aria-controls="canvas-chapters"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-book"></use></svg>章节目录</button>
+        <div class="canvas-mode-switch" role="group" aria-label="画布视图">
+          <button class="canvas-button" type="button" data-view="local" aria-pressed="false"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-book"></use></svg>当前知识图</button>
+          <button class="canvas-button" type="button" data-view="network" aria-pressed="true"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-network"></use></svg>全课程知识网</button>
+        </div>
+        <div class="canvas-scope-switch" role="group" aria-label="展开范围"><span class="canvas-control-label">范围</span><button class="canvas-button" type="button" data-scope="neighbors" aria-pressed="true" disabled>关联</button><button class="canvas-button" type="button" data-scope="chapter" aria-pressed="false" disabled>本章</button><button class="canvas-button" type="button" data-scope="course" aria-pressed="false" disabled>全课程</button></div>
+        <p class="canvas-anchor-readout">起点<span id="anchor-title">尚未选择</span></p>
+      </div>
+    </header>
+    <button class="canvas-drawer-backdrop" id="chapter-backdrop" type="button" aria-label="关闭章节目录" hidden></button>
+    <aside class="canvas-chapters" id="canvas-chapters" aria-label="课程章节">
+      <div class="canvas-panel-heading"><div><p class="canvas-eyebrow">课程章节</p><h2>从知识出发</h2></div><button class="canvas-icon-button canvas-drawer-close" type="button" id="chapter-close" aria-label="关闭章节目录"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-close"></use></svg></button></div>
+      <nav id="chapter-list" class="canvas-chapter-list" aria-label="章节选择"><p class="canvas-muted">正在读取课程目录…</p></nav>
+      <p class="canvas-chapter-note">选择章节，再查看知识点。探索画布不会改变课程通关进度。</p>
+    </aside>
+    <section class="canvas-stage" aria-label="知识关联图">
+      <div class="canvas-stage-header"><div><p class="canvas-eyebrow">KNOWLEDGE CANVAS</p><h1>思维画布</h1></div><p id="canvas-context">从课程章节进入，探索知识之间的关联。</p></div>
+      <div class="canvas-viewport" id="canvas-viewport">
+        <canvas id="knowledge-network" aria-hidden="true"></canvas>
+        <div class="canvas-node-labels" aria-label="图谱知识点"></div>
+        <div class="canvas-stage-message" id="stage-message"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-network"></use></svg><p>正在读取真实课程节点…</p></div>
+        <div class="canvas-legend" aria-label="图谱标记"><span><i class="canvas-legend-anchor"></i>起点</span><span><i class="canvas-legend-selected"></i>选中</span><span><i class="canvas-legend-path"></i>建议路径</span></div>
+      </div>
+      <p class="canvas-graph-status" id="graph-status" role="status">正在读取课程目录与关联状态…</p>
+      <details class="canvas-directory" id="knowledge-directory" open><summary><span id="directory-title">知识点目录</span><span class="canvas-directory-hint">等效文字入口</span><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-arrow"></use></svg></summary><div class="canvas-directory-list" id="node-list"><p class="canvas-muted">目录加载后，可直接选择知识点或进入课程。</p></div></details>
+      <noscript><p class="canvas-empty-note">此画布需要 JavaScript。你仍可<a href="/courses/?q=">进入课程目录</a>继续学习。</p></noscript>
+    </section>
+    <aside class="canvas-inspector" id="node-inspector" aria-label="选中知识点简介" tabindex="-1">
+      <div class="canvas-inspector-header"><p class="canvas-eyebrow">知识点简介</p><button class="canvas-icon-button" id="inspector-close" type="button" aria-label="关闭知识点简介"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-close"></use></svg></button></div>
+      <div class="canvas-inspector-body" id="inspector-body"><div class="canvas-inspector-empty"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-book"></use></svg><h2>选择一个知识点</h2><p>点选图谱或目录中的知识点，在这里阅读简介并进入课程。</p></div></div>
+      <section class="canvas-path-panel" aria-labelledby="path-title"><div class="canvas-path-heading"><svg class="canvas-icon" aria-hidden="true"><use href="/canvas/icons.svg#canvas-target"></use></svg><h2 id="path-title">建议学习顺序</h2></div><p id="path-status">选择起点后，查看已复核关联上的建议顺序。</p><ol class="canvas-path-list" id="path-list"></ol><button class="canvas-button canvas-clear-target" id="clear-target" type="button" hidden>清除目标</button></section>
+    </aside>
+    <p class="canvas-visually-hidden" id="canvas-announcement" role="status" aria-live="polite" aria-atomic="true"></p>
+  </main>
+  <canvas id="intro-particles" aria-hidden="true"></canvas>
+  <script>if (document.documentElement.classList.contains('mc-intro-pending')) { const shell = document.getElementById('canvas-shell'); shell.inert = true; shell.setAttribute('aria-hidden', 'true'); }</script>
+</body>
+</html>

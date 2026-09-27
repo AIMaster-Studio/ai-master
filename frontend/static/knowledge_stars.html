@@ -25,6 +25,7 @@
     .atlas-panel h1 em { color:var(--atlas-ui-hold); text-shadow:none; }
     @media (max-width:600px) { .top-actions button { min-height:32px; font-size:9.5px; } }
   </style>
+  <link rel="stylesheet" href="css/knowledge-directory.css?v=20260926">
 </head>
 <body data-view="universe">
   <canvas id="space" aria-label="可交互知识星海"></canvas>
@@ -48,6 +49,7 @@
   <section class="galaxy-title" id="galaxyTitle" aria-live="polite"><p>CHAPTER 00</p><h2>知识星系</h2><span>关联进度 0%</span></section>
   <button class="back-button" id="backButton" type="button">← 返回宇宙</button>
   <div class="orbit-hint" id="orbitHint"><span>拖拽星图探索</span><i></i><span>点击星球查看知识</span></div>
+  <details class="star-directory" id="starDirectory"><summary>文字目录 · 57 个知识点</summary><nav class="star-directory-list" id="starDirectoryList" aria-label="知识星海文字课程目录"></nav></details>
 
   <aside class="knowledge-panel" id="knowledgePanel" aria-live="polite">
     <button class="panel-close" id="panelClose" type="button" aria-label="关闭知识详情">×</button>

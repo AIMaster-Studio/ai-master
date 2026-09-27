@@ -36,6 +36,7 @@
   let universeGroup, galaxyGroup, skyGroup;
   let universeMap = [], planets = [], relationshipLines = [], activeGalaxy = null;
   let selectedPlanet = null, hoveredPlanet = null, mapData = null;
+  if (!window.THREE) { showDirectoryFallback("本地 Three.js 资源缺失，无法绘制星图。"); return; }
   let pointer = new THREE.Vector2(3, 3);
   let pointerClient = { x: -1000, y: -1000 };
   let targetRotation = { x: -0.16, y: 0.14, zoom: 118 };
@@ -894,11 +895,83 @@
       if (!response.ok) throw new Error(`服务器返回 ${response.status}`);
       const payload = await response.json(); if (!payload.success || !Array.isArray(payload.galaxies)) throw new Error("星图数据格式无效");
       mapData = payload; document.querySelector("#galaxyCount").textContent = payload.summary.galaxies; document.querySelector("#starCount").textContent = payload.summary.stars; document.querySelector("#completedCount").textContent = payload.summary.completed;
+      renderTextDirectory(payload);
       buildUniverse(); loading.classList.add("hide");
       syncLearningProgress();
     } catch (error) {
       console.error("Knowledge universe failed to load", error); errorMessage.textContent = error.message || "本地星图服务未响应。"; errorCard.classList.add("show"); loading.classList.add("hide");
     }
+  }
+
+  function renderTextDirectory(payload) {
+    const list = document.querySelector("#starDirectoryList");
+    const details = document.querySelector("#starDirectory");
+    if (!list || !details) return;
+    const galaxyCount = document.querySelector("#galaxyCount");
+    const starCount = document.querySelector("#starCount");
+    const progressSignal = document.querySelector("#progressSignal");
+    if (galaxyCount) galaxyCount.textContent = payload.summary?.galaxies ?? payload.galaxies.length;
+    if (starCount) starCount.textContent = payload.summary?.stars ?? payload.galaxies.reduce((sum, galaxy) => sum + galaxy.stars.length, 0);
+    if (progressSignal) progressSignal.textContent = "静态课程浏览";
+    list.replaceChildren();
+    details.querySelector("summary").textContent = "文字目录 · " + payload.galaxies.reduce((sum, galaxy) => sum + galaxy.stars.length, 0) + " 个知识点";
+    payload.galaxies.forEach((galaxy) => {
+      const section = document.createElement("section");
+      const heading = document.createElement("h3");
+      heading.textContent = String(galaxy.chapter).padStart(2, "0") + " · " + galaxy.name;
+      const items = document.createElement("ol");
+      galaxy.stars.forEach((star) => {
+        const row = document.createElement("li");
+        const link = document.createElement("a");
+        link.textContent = galaxy.chapter + "." + (star.index + 1) + " " + star.title;
+        link.href = /^\.\.\/chapter\/\d+\/#kp-\d+$/.test(star.url) ? star.url : "../chapter/" + galaxy.chapter + "/#kp-" + (star.index + 1);
+        if (document.documentElement.classList.contains("embedded-courses")) link.target = "_top";
+        row.append(link);
+        items.append(row);
+      });
+      section.append(heading, items);
+      list.append(section);
+    });
+  }
+
+  async function loadTextDirectory() {
+    try {
+      const response = await fetch("../data/knowledge-universe.json", { cache: "no-store" });
+      if (!response.ok) return false;
+      const payload = await response.json();
+      if (payload.success && Array.isArray(payload.galaxies)) {
+        renderTextDirectory(payload);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  async function showDirectoryFallback(message) {
+    errorCard.classList.remove("show");
+    errorCard.classList.remove("directory-fallback");
+    loading.classList.remove("hide");
+    const loadingLabel = document.querySelector("#loading p");
+    if (loadingLabel) loadingLabel.textContent = "正在加载课程目录";
+    const loadingNote = document.querySelector("#loadingNote");
+    if (loadingNote) loadingNote.textContent = "TEXT DIRECTORY";
+
+    const directoryAvailable = mapData
+      ? (renderTextDirectory(mapData), true)
+      : await loadTextDirectory();
+    loading.classList.add("hide");
+    if (directoryAvailable) {
+      errorMessage.textContent = message + " 可使用下方文字目录继续浏览课程。";
+      errorCard.classList.add("directory-fallback");
+      errorCard.setAttribute("role", "status");
+      errorCard.setAttribute("aria-live", "polite");
+    } else {
+      errorMessage.textContent = message + " 文字目录也无法加载，请检查本地服务后重试。";
+      errorCard.setAttribute("role", "alert");
+      errorCard.setAttribute("aria-live", "assertive");
+    }
+    document.querySelector("#retryButton").addEventListener("click", () => window.location.reload(), { once: true });
+    errorCard.classList.add("show");
   }
 
   async function syncLearningProgress() {
@@ -1019,11 +1092,10 @@
     document.querySelector("#qualityButton").addEventListener("click", (event) => { quality = quality === "auto" ? "high" : quality === "high" ? "calm" : "auto"; event.currentTarget.textContent = `画质 / ${quality.toUpperCase()}`; resize(); showToast(quality === "calm" ? "已切换至轻量星图" : "星图画质已更新"); });
     document.querySelector("#musicButton").addEventListener("click", async (event) => { const audio = document.querySelector("#bgm"); try { if (ambientAudio) { audio.pause(); ambientAudio = false; } else { await audio.play(); ambientAudio = true; } event.currentTarget.textContent = `声音 / ${ambientAudio ? "ON" : "OFF"}`; } catch { showToast("浏览器需要一次点击后才能播放声音"); } });
     window.addEventListener("keydown", (event) => { if (event.key === "Escape") { if (panel.classList.contains("show")) { selectedPlanet = null; panel.classList.remove("show"); updateFocus(); } else if (activeGalaxy) backToUniverse(); } });
-    canvas.addEventListener("webglcontextlost", (event) => { event.preventDefault(); paused = true; errorMessage.textContent = "星图图形上下文被系统暂停。点击重新连接即可恢复。"; errorCard.classList.add("show"); });
-    canvas.addEventListener("webglcontextrestored", () => { paused = false; errorCard.classList.remove("show"); createRenderer(); loadUniverse(); });
+    canvas.addEventListener("webglcontextlost", (event) => { event.preventDefault(); paused = true; errorMessage.textContent = "星图图形上下文被系统暂停。可重新连接，或使用下方文字目录继续浏览。"; if (mapData) renderTextDirectory(mapData); else loadTextDirectory(); errorCard.classList.add("directory-fallback"); errorCard.classList.add("show"); });
+    canvas.addEventListener("webglcontextrestored", () => { paused = false; errorCard.classList.remove("show"); errorCard.classList.remove("directory-fallback"); createRenderer(); loadUniverse(); });
   }
 
-  if (!window.THREE) { errorMessage.textContent = "本地 Three.js 资源缺失，无法绘制星图。"; errorCard.classList.add("show"); loading.classList.add("hide"); return; }
   try {
     createRenderer();
     // 首次尺寸设置：createRenderer 只设了像素比未设尺寸，canvas 默认 300x150 会被拉伸发虚。
@@ -1032,5 +1104,5 @@
     requestAnimationFrame(() => requestAnimationFrame(resize));
     setTimeout(resize, 300);
     initControls(); loadUniverse(); animate();
-  } catch (error) { console.error(error); errorMessage.textContent = "浏览器未能初始化 WebGL 星图。"; errorCard.classList.add("show"); loading.classList.add("hide"); }
+  } catch (error) { console.error(error); showDirectoryFallback("浏览器未能初始化 WebGL 星图。"); }
 })();

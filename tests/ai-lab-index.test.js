@@ -7,6 +7,7 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const pageHtmlPath = path.join(ROOT, 'frontend/playground/index.html');
+const labHtmlPath = path.join(ROOT, 'frontend/experiments/index.html');
 const cssPath = path.join(ROOT, 'frontend/assets/playground.css');
 const jsPath = path.join(ROOT, 'frontend/static/js/playground.js');
 const canvasHtmlPath = path.join(ROOT, 'frontend/canvas/index.html');
@@ -26,19 +27,21 @@ const EXPECTED_LABS = [
   { code: 'LAB-12', file: 'frontend/static/interview.html', title: '知识星辰互动与复核舱' }
 ];
 
-test('playground route index.html exists and is generated properly', () => {
+test('Prompt Playground route exists and exposes its working demo controls', () => {
   assert.ok(fs.existsSync(pageHtmlPath), 'frontend/playground/index.html must exist');
   const html = fs.readFileSync(pageHtmlPath, 'utf8');
+  const app = fs.readFileSync(path.join(ROOT, 'frontend/ai-learning/pages.js'), 'utf8');
 
-  assert.match(html, /AI 实验工坊技术索引/, 'Title must be AI 实验工坊技术索引');
-  assert.match(html, /AI ENGINEERING WORKBENCH/, 'Kicker must be present');
-  assert.match(html, /12 个高可交互舱室/, 'Must state 12 labs');
-  assert.ok(!html.includes('</article>\\n<article'), 'Lab cards must be separated by real whitespace, not a literal \\n grid item');
+  assert.match(html, /ai-learning\/main\.js/, 'Prompt Playground must load the AI Master app');
+  assert.match(app, /Prompt Playground/, 'Prompt Playground must be present');
+  assert.match(app, /不调用 AI 服务/, 'The demo-only output boundary must be visible');
+  assert.match(app, /prompt-input/, 'The prompt editor must be present');
+  assert.match(app, /response-content/, 'The response panel must be present');
 });
 
-test('every lab in index links to an existing, non-empty interactive file on disk', () => {
+test('every preserved AI lab links to an existing, non-empty interactive file on disk', () => {
   assert.equal(EXPECTED_LABS.length, 12);
-  const html = fs.readFileSync(pageHtmlPath, 'utf8');
+  const html = fs.readFileSync(labHtmlPath, 'utf8');
 
   for (const lab of EXPECTED_LABS) {
     const fullPath = path.join(ROOT, lab.file);
@@ -53,9 +56,12 @@ test('every lab in index links to an existing, non-empty interactive file on dis
 
 test('preserves canvas and auxiliary hub bridges', () => {
   assert.ok(fs.existsSync(canvasHtmlPath), 'frontend/canvas/index.html must be preserved');
-  const html = fs.readFileSync(pageHtmlPath, 'utf8');
+  const html = fs.readFileSync(labHtmlPath, 'utf8');
 
-  assert.match(html, /href="\.\.\/canvas\/"/, 'Playground must link to canvas');
+  const links = Array.from(html.matchAll(/href="([^"]+)"/g), match => new URL(match[1], 'http://localhost/experiments/'));
+  const canvasEntry = links.find(link => link.pathname === '/canvas/');
+  assert.ok(canvasEntry, 'Experiments must preserve the real canvas bridge');
+  assert.equal(canvasEntry.searchParams.get('view'), 'network', 'The global bridge must enter the full-course knowledge network');
   assert.match(html, /href="\.\.\/knowledge-stars\/"/, 'Playground must link to knowledge stars');
   assert.match(html, /href="\.\.\/ai-review\/"/, 'Playground must link to AI review evidence wall');
   assert.match(html, /href="\.\.\/hands-on\/"/, 'Playground must link to hands-on tasks');

@@ -156,7 +156,7 @@ test('state.progress[moduleId] is the sole progress authority', () => {
 
 // 7. Dashboard unified progress & builder output
 test('Dashboard HTML uses unified progress contract and displays honest empty 0/7', () => {
-  const dashHtml = fs.readFileSync(path.join(ROOT, 'frontend/dashboard/index.html'), 'utf8');
+  const dashHtml = fs.readFileSync(path.join(ROOT, 'frontend/course-progress/index.html'), 'utf8');
   assert.match(dashHtml, /learning-progress\.js/, 'Dashboard must load learning-progress.js');
   assert.match(dashHtml, /id="kpi-passed-count">0 \/ 7<\/span>/, 'Dashboard initial KPI must be honest 0 / 7');
   assert.match(dashHtml, /动手任务/, 'Dashboard KPI must label 动手任务');

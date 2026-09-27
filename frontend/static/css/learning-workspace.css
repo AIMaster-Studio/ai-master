@@ -10,7 +10,7 @@
   font-family: var(--font-sans);
   color: var(--ink);
   background: var(--bg);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.65;
   letter-spacing: 0;
 }
@@ -23,6 +23,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
+  --ink-dim: #a3b6c9;
 }
 
 button, input, select, textarea {
@@ -1375,6 +1376,23 @@ dialog::backdrop {
 @media (max-width: 520px) {
   .brand {
     min-width: 0;
+  }
+
+  .top-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 8px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+
+  .top-nav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    white-space: normal;
+    text-align: center;
   }
 
   .header-tools {

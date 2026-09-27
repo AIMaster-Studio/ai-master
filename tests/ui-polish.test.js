@@ -152,7 +152,7 @@ test("ui-polish: state motion is brief, optional and implemented without a new f
 
 test("ui-polish: evidence and lab controls expose quiet state, keyboard access and live feedback", () => {
   const reviewHtml = fs.readFileSync(path.join(FRONTEND, "ai-review", "index.html"), "utf-8");
-  const playgroundHtml = fs.readFileSync(path.join(FRONTEND, "playground", "index.html"), "utf-8");
+  const playgroundHtml = fs.readFileSync(path.join(FRONTEND, "experiments", "index.html"), "utf-8");
   const reviewCss = fs.readFileSync(path.join(ASSETS, "ai-review.css"), "utf-8");
   const playgroundCss = fs.readFileSync(path.join(ASSETS, "playground.css"), "utf-8");
   const reviewJs = fs.readFileSync(path.join(FRONTEND, "static", "js", "ai-review.js"), "utf-8");
@@ -183,9 +183,6 @@ test("ui-polish: hands-on and beginner pages use the shared instrument system", 
 
 test("ui-polish: core sprint HTML pages have valid doctype and link tokens.css", () => {
   const pages = [
-    "index.html",
-    "dashboard/index.html",
-    "playground/index.html",
     "ai-review/index.html",
     "chapter/1/index.html",
     "hands-on/index.html",
@@ -198,6 +195,13 @@ test("ui-polish: core sprint HTML pages have valid doctype and link tokens.css",
     const html = fs.readFileSync(fullPath, "utf-8");
     assert.match(html, /<!doctype html>/i, `Page ${relPage} must have standard <!DOCTYPE html>`);
     assert.match(html, /tokens\.css/, `Page ${relPage} must import tokens.css`);
+    assert.match(html, /viewport/, `Page ${relPage} must have viewport meta tag`);
+  }
+
+  for (const relPage of ["index.html", "dashboard/index.html", "playground/index.html", "learning-path/index.html", "courses/index.html", "projects/index.html"]) {
+    const html = fs.readFileSync(path.join(FRONTEND, relPage), "utf-8");
+    assert.match(html, /<!doctype html>/i, `Page ${relPage} must have standard <!DOCTYPE html>`);
+    assert.match(html, /ai-learning\/styles\.css/, `Page ${relPage} must import AI Master styles`);
     assert.match(html, /viewport/, `Page ${relPage} must have viewport meta tag`);
   }
 });

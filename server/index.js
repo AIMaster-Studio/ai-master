@@ -44,7 +44,7 @@ const { createLearningRoutes, LEARNING_ROUTE_NAMES, shuffleQuestion } = require(
 const ROOT = path.resolve(__dirname, '..');
 const BODY_LIMIT = 64000;
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml',
+  '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml',
   '.webm': 'video/webm', '.mp4': 'video/mp4', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.md': 'text/plain; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 const fail = (status, message) => { throw Object.assign(new Error(message), { status }); };
 const stamp = () => new Date().toISOString();
@@ -253,10 +253,11 @@ function createApp(options = {}) {
     if (!['GET', 'HEAD'].includes(req.method)) fail(405, '不支持此请求方式。');
     let pathname;
     try { pathname = decodeURIComponent(url.pathname); } catch { fail(400, '地址编码不正确。'); }
-    if (pathname === '/') { res.writeHead(302, { Location: '/frontend/learning-center/' }); return res.end(); }
-    if (/^\/(learning-center|dashboard|chapter|knowledge-stars|canvas|playground|static|assets|data)(\/|$)/.test(pathname)) pathname = '/frontend' + pathname;
+    if (pathname === '/') pathname = '/frontend/index.html';
+    if (/^\/(learning-center|dashboard|course-progress|learning-path|beginner|hands-on|ai-review|courses|projects|experiments|chapter|knowledge|knowledge-stars|canvas|playground|ai-learning|static|assets|data)(\/|$)/.test(pathname)) pathname = '/frontend' + pathname;
     const allowed = pathname.startsWith('/frontend/') || pathname.startsWith('/third_party/dsh-pet/dsh-pet/assets/') || pathname.startsWith('/docs/ican/');
-    if (!allowed || pathname.toLowerCase() === '/frontend/data/learning-curriculum.json' || /[\\:]/.test(pathname) || pathname.split('/').some(part => part.startsWith('.') || /[. ]$/.test(part) || /^(users\.json|.*\.db|.*\.sqlite|.*token.*|.*secret.*)$/i.test(part))) fail(404, '文件不存在。');
+    const publicDesignTokens = pathname === '/frontend/assets/tokens.css';
+    if (!allowed || pathname.toLowerCase() === '/frontend/data/learning-curriculum.json' || /[\\:]/.test(pathname) || pathname.split('/').some(part => part.startsWith('.') || /[. ]$/.test(part) || (!publicDesignTokens && /^(users\.json|.*\.db|.*\.sqlite|.*token.*|.*secret.*)$/i.test(part)))) fail(404, '文件不存在。');
     let filename = path.resolve(ROOT, '.' + pathname);
     if (!filename.startsWith(ROOT + path.sep)) fail(404, '文件不存在。');
     let stat;

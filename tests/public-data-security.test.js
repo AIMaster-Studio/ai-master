@@ -130,6 +130,13 @@ const PUBLISHED_ANSWER_ALLOWLIST = [
     maxKeys: 3,
   },
   {
+    file: 'assets/knowledge-node-flow.js',
+    classification: 'code-reference',
+    carriesAnswerData: false,
+    purpose: '把错题复习表单中学习者选择的选项作为 answer 请求参数提交给服务端，不携带标准答案',
+    maxKeys: 1,
+  },
+  {
     file: 'static/jj_interview.html',
     classification: 'code-reference',
     carriesAnswerData: false,
@@ -693,6 +700,27 @@ test('mutation proof: injecting a real course answer set into an allowlisted fil
       problems.some((p) => p.includes('static/js/learning-core.js')),
       '已登记文件被灌入题库时必须失败，实际：' + JSON.stringify(problems),
     );
+  });
+});
+
+test('mutation proof: the knowledge-node review request cannot acquire embedded answer data', () => {
+  withStagedPublishRoot((staging) => {
+    assert.deepEqual(allowlistViolations(staging), [], '用户作答请求应已登记，且基线不携带标准答案');
+    const rel = 'assets/knowledge-node-flow.js';
+    const target = path.join(staging, rel);
+    const original = fs.readFileSync(target, 'utf8');
+    const injections = [
+      { source: '\nconst SMUGGLED = { "answer": 0 };\n', reason: '标识符引用型文件出现整块答案数据' },
+      { source: '\nconst SMUGGLED = { answer: 0 };\n', reason: '答案键超出登记预算' },
+    ];
+    for (const injection of injections) {
+      fs.writeFileSync(target, original + injection.source, 'utf8');
+      const problems = allowlistViolations(staging);
+      assert.ok(
+        problems.some((problem) => problem.includes(rel) && problem.includes(injection.reason)),
+        '登记用户输入字段后仍须拦截标准答案注入：' + JSON.stringify(problems),
+      );
+    }
   });
 });
 

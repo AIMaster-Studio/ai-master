@@ -1,0 +1,7 @@
+.mind-canvas-entry { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 22px; padding:12px 0; border-block:1px solid rgb(130 185 210 / 12%); }
+.mind-canvas-entry .mc-entry-link { display:inline-flex; align-items:center; gap:8px; min-height:42px; padding:9px 13px; border:1px solid rgb(115 187 205 / 25%); border-radius:10px; background:rgb(7 22 36 / 75%); color:#b6d2df; font:inherit; font-size:13px; font-weight:500; line-height:1.5; text-decoration:none; transition:color 180ms,border-color 180ms,background 180ms; }
+.mind-canvas-entry .mc-entry-link:hover { color:#18dff4; border-color:rgb(24 223 244 / 55%); background:#081a29; }
+.mind-canvas-entry .mc-entry-link:focus-visible { outline:2px solid #18dff4; outline-offset:4px; }
+.mind-canvas-entry svg { width:18px; height:18px; flex:none; fill:none; stroke:currentColor; stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; }
+@media(max-width:480px) { .mind-canvas-entry { gap:8px; margin-block:12px 18px; } .mind-canvas-entry .mc-entry-link { min-height:44px; } }
+@media(prefers-reduced-motion:reduce) { .mind-canvas-entry .mc-entry-link { transition:none; } }
