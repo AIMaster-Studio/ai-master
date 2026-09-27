@@ -12,7 +12,10 @@ const mobileViewport = window.matchMedia('(max-width: 767px)');
 function getAiMasterHref(path) {
   const base = window.AI_MASTER_BASE_URL;
   if (typeof base !== 'string') throw new Error('AI_MASTER_BASE_URL must be explicitly configured.');
-  if (base === '') return path;
+  if (base === '') {
+    const mountPoint = new URL('.', location.href);
+    return new URL(path.replace(/^\/+/, ''), mountPoint).href;
+  }
   const target = new URL(base);
   const isLoopback = hostname => hostname === 'localhost' || hostname.endsWith('.localhost') || hostname === '[::1]' || /^127\./.test(hostname);
   const localPreview = location.protocol === 'file:' || isLoopback(location.hostname);
