@@ -1,0 +1,1967 @@
+{
+  "schemaVersion": "1.0.0",
+  "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+  "reviewState": "complete",
+  "nodes": [
+    {
+      "id": "1_0",
+      "chapter": 1,
+      "index": 0,
+      "curriculumId": "chapter-1-kp-1",
+      "chapterTitle": "大模型基础原理",
+      "title": "什么是大语言模型（LLM）？",
+      "summary": "大语言模型（Large Language Model, LLM）是一种基于深度学习的神经网络模型，通过在海量文本数据上进行自监督学习，掌握人类语言的统计规律、语法结构和语义关系。其核心思想是：给定上文，预测下文——即自回归语言建模（Autoregressive Language Modeling, ARLM）。",
+      "href": "/knowledge/1-1/",
+      "sourceFile": "frontend/data/chapter_01.json",
+      "sourceHash": "1b9917e4621805925c6f71a6664cd6ed80fd646804a1798ae1e37c307fa64593"
+    },
+    {
+      "id": "1_1",
+      "chapter": 1,
+      "index": 1,
+      "curriculumId": "chapter-1-kp-2",
+      "chapterTitle": "大模型基础原理",
+      "title": "LLM 的核心能力与局限性",
+      "summary": "资料：Dai 等：Why Can GPT Learn In-Context?（2023）。论文摘要明确指出 ICL 的工作机制仍是开放问题。",
+      "href": "/knowledge/1-2/",
+      "sourceFile": "frontend/data/chapter_01.json",
+      "sourceHash": "1b9917e4621805925c6f71a6664cd6ed80fd646804a1798ae1e37c307fa64593"
+    },
+    {
+      "id": "1_2",
+      "chapter": 1,
+      "index": 2,
+      "curriculumId": "chapter-1-kp-3",
+      "chapterTitle": "大模型基础原理",
+      "title": "Token 与 Tokenization 算法（BPE）",
+      "summary": "Token 是分词器处理文本时划分的文本片段，再映射为模型使用的 token ID。它可能对应一个词、词的一部分、标点、空白或字节片段，不保证具有独立语义，也不总与一个汉字或单词对应。",
+      "href": "/knowledge/1-3/",
+      "sourceFile": "frontend/data/chapter_01.json",
+      "sourceHash": "1b9917e4621805925c6f71a6664cd6ed80fd646804a1798ae1e37c307fa64593"
+    },
+    {
+      "id": "1_3",
+      "chapter": 1,
+      "index": 3,
+      "curriculumId": "chapter-1-kp-4",
+      "chapterTitle": "大模型基础原理",
+      "title": "预训练与微调",
+      "summary": "预训练是在海量无标注数据上训练模型的核心阶段：",
+      "href": "/knowledge/1-4/",
+      "sourceFile": "frontend/data/chapter_01.json",
+      "sourceHash": "1b9917e4621805925c6f71a6664cd6ed80fd646804a1798ae1e37c307fa64593"
+    },
+    {
+      "id": "1_4",
+      "chapter": 1,
+      "index": 4,
+      "curriculumId": "chapter-1-kp-5",
+      "chapterTitle": "大模型基础原理",
+      "title": "缩放定律（Scaling Laws）",
+      "summary": "2020 年 OpenAI 发表的 Scaling Laws 揭示了一个关键规律：模型的性能与模型参数量 N、数据量 D、计算量 C 之间存在可预测的幂律关系。",
+      "href": "/knowledge/1-5/",
+      "sourceFile": "frontend/data/chapter_01.json",
+      "sourceHash": "1b9917e4621805925c6f71a6664cd6ed80fd646804a1798ae1e37c307fa64593"
+    },
+    {
+      "id": "1_5",
+      "chapter": 1,
+      "index": 5,
+      "curriculumId": "chapter-1-kp-6",
+      "chapterTitle": "大模型基础原理",
+      "title": "RLHF 与人类对齐",
+      "summary": "预训练模型的目标是「预测下一个 token」，而非「输出有用且安全的回答」。对齐（Alignment）的目标是让模型行为符合人类价值观和期望。",
+      "href": "/knowledge/1-6/",
+      "sourceFile": "frontend/data/chapter_01.json",
+      "sourceHash": "1b9917e4621805925c6f71a6664cd6ed80fd646804a1798ae1e37c307fa64593"
+    },
+    {
+      "id": "2_0",
+      "chapter": 2,
+      "index": 0,
+      "curriculumId": "chapter-2-kp-1",
+      "chapterTitle": "Transformer 架构详解",
+      "title": "Transformer 整体架构",
+      "summary": "2017 年 Google 在《Attention Is All You Need》中提出 Transformer，它用自注意力机制替代了传统的 RNN/LSTM，解决了长序列建模和并行化训练两大难题。",
+      "href": "/chapter/2/#kp-1",
+      "sourceFile": "frontend/data/chapter_02.json",
+      "sourceHash": "8f6de610c19f533731d0123071a02229f5ad77ffb2610bb3d439c79435b29f2f"
+    },
+    {
+      "id": "2_1",
+      "chapter": 2,
+      "index": 1,
+      "curriculumId": "chapter-2-kp-2",
+      "chapterTitle": "Transformer 架构详解",
+      "title": "自注意力机制（Self-Attention）",
+      "summary": "Self-Attention 让输入序列中的每个位置都与其他所有位置建立直接联系，捕获全局依赖关系。与 RNN 的逐步传递不同，Self-Attention 一步到位建立所有位置间的连接。",
+      "href": "/chapter/2/#kp-2",
+      "sourceFile": "frontend/data/chapter_02.json",
+      "sourceHash": "8f6de610c19f533731d0123071a02229f5ad77ffb2610bb3d439c79435b29f2f"
+    },
+    {
+      "id": "2_2",
+      "chapter": 2,
+      "index": 2,
+      "curriculumId": "chapter-2-kp-3",
+      "chapterTitle": "Transformer 架构详解",
+      "title": "注意力公式推导与数学原理",
+      "summary": "假设 q 和 k 是 d_k 维的独立随机向量，每个分量的均值为 0、方差为 1，则点积 q·k 的均值为 0、方差为 d_k。方差越大，softmax 的输入值就越大，导致梯度趋近于 0。",
+      "href": "/chapter/2/#kp-3",
+      "sourceFile": "frontend/data/chapter_02.json",
+      "sourceHash": "8f6de610c19f533731d0123071a02229f5ad77ffb2610bb3d439c79435b29f2f"
+    },
+    {
+      "id": "2_3",
+      "chapter": 2,
+      "index": 3,
+      "curriculumId": "chapter-2-kp-4",
+      "chapterTitle": "Transformer 架构详解",
+      "title": "多头注意力与位置编码（RoPE）",
+      "summary": "不是只做一次注意力计算，而是并行做多次，每次关注不同的方面：",
+      "href": "/chapter/2/#kp-4",
+      "sourceFile": "frontend/data/chapter_02.json",
+      "sourceHash": "8f6de610c19f533731d0123071a02229f5ad77ffb2610bb3d439c79435b29f2f"
+    },
+    {
+      "id": "2_4",
+      "chapter": 2,
+      "index": 4,
+      "curriculumId": "chapter-2-kp-5",
+      "chapterTitle": "Transformer 架构详解",
+      "title": "KV-Cache 与推理优化",
+      "summary": "在自回归生成中，每步生成一个新 token，但前面的 token 已经计算过的 K 和 V 矩阵可以缓存复用，避免重复计算。",
+      "href": "/chapter/2/#kp-5",
+      "sourceFile": "frontend/data/chapter_02.json",
+      "sourceHash": "8f6de610c19f533731d0123071a02229f5ad77ffb2610bb3d439c79435b29f2f"
+    },
+    {
+      "id": "2_5",
+      "chapter": 2,
+      "index": 5,
+      "curriculumId": "chapter-2-kp-6",
+      "chapterTitle": "Transformer 架构详解",
+      "title": "FlashAttention 原理",
+      "summary": "标准注意力计算在 GPU 上存在显存带宽瓶颈：",
+      "href": "/chapter/2/#kp-6",
+      "sourceFile": "frontend/data/chapter_02.json",
+      "sourceHash": "8f6de610c19f533731d0123071a02229f5ad77ffb2610bb3d439c79435b29f2f"
+    },
+    {
+      "id": "3_0",
+      "chapter": 3,
+      "index": 0,
+      "curriculumId": "chapter-3-kp-1",
+      "chapterTitle": "提示词工程基础",
+      "title": "什么是提示词工程？",
+      "summary": "提示词工程（Prompt Engineering）是设计和优化输入给 LLM 的提示文本，以引导模型生成期望输出的系统性方法。它既是艺术（需要直觉和创造力）也是科学（有可重复的方法论）。",
+      "href": "/knowledge/2-1/",
+      "sourceFile": "frontend/data/chapter_03.json",
+      "sourceHash": "89024596f9d5e57450b6dca8318f8c008841e1bbb0ed7d1deb1aa88faa352ab8"
+    },
+    {
+      "id": "3_1",
+      "chapter": 3,
+      "index": 1,
+      "curriculumId": "chapter-3-kp-2",
+      "chapterTitle": "提示词工程基础",
+      "title": "提示词编写核心原则",
+      "summary": "四大黄金法则\n清晰明确：避免模糊，具体说明需求错误: \"写一个排序\"\n正确: \"用 Python 实现快速排序算法，要求包含详细注释，\n      时间复杂度分析，并给出 3 个测试用例\"\n\n提供上下文：告知背景和目标错误: \"翻译这句话\"\n正确: \"将以下技术文档从英文翻译成中文，保持专业术语\n      的准确性，面向有 3 年经验的软件工程师\"\n\n设定约束：限制输出范围错误: \"介绍一下 Transformer\"\n正确: \"用 300 字以内介绍 Transformer 的核心思想，\n      面向高中生，避免数学公式\"\n\n给出示例：用 Few-shot 引导格式和风格\n\n进阶原则\n负向提示：明确告诉模型不要做什么（\"不要使用专业术语\"）\n分步指示：复杂任务拆解为步骤（\"先分析，再总结，最后建议\"）\n输出验证：要求模型自我检查（\"请验证你的回答是否准确\"）\nToken 预算：明确限制输出长度（\"不超过 200 字\"）",
+      "href": "/knowledge/2-2/",
+      "sourceFile": "frontend/data/chapter_03.json",
+      "sourceHash": "89024596f9d5e57450b6dca8318f8c008841e1bbb0ed7d1deb1aa88faa352ab8"
+    },
+    {
+      "id": "3_2",
+      "chapter": 3,
+      "index": 2,
+      "curriculumId": "chapter-3-kp-3",
+      "chapterTitle": "提示词工程基础",
+      "title": "角色扮演提示法",
+      "summary": "给模型设定角色会激活训练数据中与该角色相关的知识分布和语言风格。本质上，角色设定相当于在隐式地选择一条推理路径——模型会调用其参数空间中与角色相关的子网络。",
+      "href": "/knowledge/2-3/",
+      "sourceFile": "frontend/data/chapter_03.json",
+      "sourceHash": "89024596f9d5e57450b6dca8318f8c008841e1bbb0ed7d1deb1aa88faa352ab8"
+    },
+    {
+      "id": "3_3",
+      "chapter": 3,
+      "index": 3,
+      "curriculumId": "chapter-3-kp-4",
+      "chapterTitle": "提示词工程基础",
+      "title": "Zero-shot / Few-shot / Many-shot",
+      "summary": "Zero-shot（零样本）\n不给示例，直接描述任务。适用于简单、常见的任务，模型已具备能力。\"将以下句子分类为积极、消极或中性：\n'这部电影让我非常感动'\"\nFew-shot（少样本）\n提供 1-5 个示例，让模型学习任务模式。\"分类句子情感：\n句子：'服务态度很差' → 消极\n句子：'性价比还不错' → 积极\n句子：'今天天气阴天' → 中性\n句子：'产品质量超出预期' →\"\nMany-shot（多样本）\n提供几十到上百个示例。Claude 等长上下文模型尤其擅长利用大量示例学习复杂模式。研究显示 Many-shot 的效果可以接近微调。\n选择建议\n任务类型 | 推荐方式 | 示例数 | \n简单分类/提取 | Zero-shot | 0 | \n格式化输出 | Few-shot | 2-5 | \n复杂推理/转化 | Few-shot CoT | 3-5 | \n复杂模式学习 | Many-shot | 20-100+ |",
+      "href": "/knowledge/2-4/",
+      "sourceFile": "frontend/data/chapter_03.json",
+      "sourceHash": "89024596f9d5e57450b6dca8318f8c008841e1bbb0ed7d1deb1aa88faa352ab8"
+    },
+    {
+      "id": "3_4",
+      "chapter": 3,
+      "index": 4,
+      "curriculumId": "chapter-3-kp-5",
+      "chapterTitle": "提示词工程基础",
+      "title": "Prompt 模式系统性分类",
+      "summary": "任务越复杂，需要的 Prompt 模式越多层：简单任务用指令/角色模式，复杂推理任务加思维链模式，需要高质量输出时加反思模式。",
+      "href": "/knowledge/2-5/",
+      "sourceFile": "frontend/data/chapter_03.json",
+      "sourceHash": "89024596f9d5e57450b6dca8318f8c008841e1bbb0ed7d1deb1aa88faa352ab8"
+    },
+    {
+      "id": "3_5",
+      "chapter": 3,
+      "index": 5,
+      "curriculumId": "chapter-3-kp-6",
+      "chapterTitle": "提示词工程基础",
+      "title": "复杂约束工程与输出控制",
+      "summary": "模型倾向于更关注提示词末尾的内容。因此：最重要的指令放在最前面和最后面。中间部分可能被「遗忘」（Lost in the Middle 现象）。",
+      "href": "/knowledge/2-6/",
+      "sourceFile": "frontend/data/chapter_03.json",
+      "sourceHash": "89024596f9d5e57450b6dca8318f8c008841e1bbb0ed7d1deb1aa88faa352ab8"
+    },
+    {
+      "id": "4_0",
+      "chapter": 4,
+      "index": 0,
+      "curriculumId": "chapter-4-kp-1",
+      "chapterTitle": "驾驭框架与智能体概念",
+      "title": "LangChain 核心：Chain 与 Prompt 模板",
+      "summary": "LLM API 本身是无状态的——它不保存对话历史，每次请求都要把上下文重新带上。所以多轮问答不是「API 不支持」，而是需要应用自己维护历史并逐次携带。一个完整的 AI 应用还需要：提示词管理、多步推理、工具调用、记忆管理、流式输出。框架把这些能力封装为可组合的模块。",
+      "href": "/knowledge/4-1/",
+      "sourceFile": "frontend/data/chapter_04.json",
+      "sourceHash": "17b3eb57a86c3621118c1f3813023be6d453a0aaf693f5f9230beff99d54a5f4"
+    },
+    {
+      "id": "4_1",
+      "chapter": 4,
+      "index": 1,
+      "curriculumId": "chapter-4-kp-2",
+      "chapterTitle": "驾驭框架与智能体概念",
+      "title": "LlamaIndex：数据连接与 RAG 框架",
+      "summary": "LangChain vs LlamaIndex\n维度 | LangChain | LlamaIndex | \n定位 | 通用 LLM 应用框架 | 数据索引与检索框架 | \n强项 | Chain 编排、Agent、工具调用 | 文档解析、索引构建、检索增强 | \n核心抽象 | Chain / Agent / Tool | Index / Node / QueryEngine | \n适合场景 | 多步推理、Agent 系统 | RAG 问答、知识库搜索 | \nLlamaIndex 数据流水线\nfrom llama_index.core import VectorStoreIndex, SimpleDirectoryReader\n\n# 1. 加载文档\ndocuments = SimpleDirectoryReader(\"./docs\").load_data()\n\n# 2. 构建索引\nindex = VectorStoreIndex.from_documents(\n    documents,\n    chunk_size=512,\n    chunk_overlap=50\n)\n\n# 3. 查询\nquery_engine = index.as_query_engine(similarity_top_k=5)\nresponse = query_engine.query(\"Transformer 的注意力机制如何工作？\")\nprint(response)\n高级检索模式\n递归检索：先检索文档摘要，再深入具体 chunk\nRouterQueryEngine：根据问题类型自动路由到不同索引\nSubQuestionQueryEngine：复杂问题自动拆解为子问题",
+      "href": "/knowledge/4-2/",
+      "sourceFile": "frontend/data/chapter_04.json",
+      "sourceHash": "17b3eb57a86c3621118c1f3813023be6d453a0aaf693f5f9230beff99d54a5f4"
+    },
+    {
+      "id": "4_2",
+      "chapter": 4,
+      "index": 2,
+      "curriculumId": "chapter-4-kp-3",
+      "chapterTitle": "驾驭框架与智能体概念",
+      "title": "AI Agent 架构：感知-决策-执行循环",
+      "summary": "Agent（智能体）是一个能自主感知环境、制定计划、调用工具、执行动作的 AI 系统。不同于简单的问答模型，Agent 能自己决定「下一步该做什么」。",
+      "href": "/knowledge/4-3/",
+      "sourceFile": "frontend/data/chapter_04.json",
+      "sourceHash": "17b3eb57a86c3621118c1f3813023be6d453a0aaf693f5f9230beff99d54a5f4"
+    },
+    {
+      "id": "4_3",
+      "chapter": 4,
+      "index": 3,
+      "curriculumId": "chapter-4-kp-4",
+      "chapterTitle": "驾驭框架与智能体概念",
+      "title": "工具调用（Function Calling）深度实践",
+      "summary": "LLM 不直接执行函数，而是输出 JSON 描述「调用哪个函数、传什么参数」，由你的代码实际执行。",
+      "href": "/knowledge/4-4/",
+      "sourceFile": "frontend/data/chapter_04.json",
+      "sourceHash": "17b3eb57a86c3621118c1f3813023be6d453a0aaf693f5f9230beff99d54a5f4"
+    },
+    {
+      "id": "4_4",
+      "chapter": 4,
+      "index": 4,
+      "curriculumId": "chapter-4-kp-5",
+      "chapterTitle": "驾驭框架与智能体概念",
+      "title": "多 Agent 协作与通信机制",
+      "summary": "单个 Agent 面对复杂项目时：上下文超限、不同任务需不同专长、缺乏第二意见。",
+      "href": "/knowledge/4-5/",
+      "sourceFile": "frontend/data/chapter_04.json",
+      "sourceHash": "17b3eb57a86c3621118c1f3813023be6d453a0aaf693f5f9230beff99d54a5f4"
+    },
+    {
+      "id": "4_5",
+      "chapter": 4,
+      "index": 5,
+      "curriculumId": "chapter-4-kp-6",
+      "chapterTitle": "驾驭框架与智能体概念",
+      "title": "生产级框架选型与工程化落地",
+      "summary": "合格的 AI 工程师不仅用框架，更要理解框架为什么这样设计。当框架不满足需求时，能从底层 API 自行构建解决方案——这才是从使用者到工程师的跃迁。",
+      "href": "/chapter/4/#kp-6",
+      "sourceFile": "frontend/data/chapter_04.json",
+      "sourceHash": "17b3eb57a86c3621118c1f3813023be6d453a0aaf693f5f9230beff99d54a5f4"
+    },
+    {
+      "id": "5_0",
+      "chapter": 5,
+      "index": 0,
+      "curriculumId": "chapter-5-kp-1",
+      "chapterTitle": "Claude Code 入门细致讲解",
+      "title": "Claude Code 安装与首次配置",
+      "summary": "Claude Code 是 Anthropic 推出的命令行 AI 编程助手，直接在终端中与 Claude 协作编程。它不是一个简单的聊天工具——它能读取整个项目、编辑文件、执行命令、管理 Git，是一个真正的 AI 编程搭档。",
+      "href": "/knowledge/3-1/",
+      "sourceFile": "frontend/data/chapter_05.json",
+      "sourceHash": "7dd5cb83b835370875c3d362747cb49e07c919025fb9d9cb90c592cff35b9feb"
+    },
+    {
+      "id": "5_1",
+      "chapter": 5,
+      "index": 1,
+      "curriculumId": "chapter-5-kp-2",
+      "chapterTitle": "Claude Code 入门细致讲解",
+      "title": "核心命令与斜杠指令",
+      "summary": "启动与基础命令\n# 在项目目录启动\nclaude                              # 交互模式\nclaude -p \"解释这个项目\"             # 单次提问\nclaude -p \"修复 login 的 bug\" --model opus  # 指定模型\nclaude --resume                     # 恢复上次会话\n\n# 管道模式\ncat error.log | claude -p \"分析这些错误\"\ngit diff | claude -p \"review 这些改动\"\n核心斜杠命令\n命令 | 功能 | 使用场景 | \n/help | 查看帮助 | 任何时候 | \n/clear | 清空对话上下文 | 切换话题 | \n/compact | 压缩上下文总结 | 长对话节省 token | \n/init | 初始化项目 CLAUDE.md | 新项目配置 | \n/review | 代码审查 | 提交前检查 | \n/model | 切换模型 | 不同任务选不同模型 | \n/cost | 查看 token 消耗 | 成本控制 | \n/add-dir | 添加工作目录 | 多目录项目 | \n/permissions | 管理权限 | 安全配置 | \n对话技巧\n@文件名 引用特定文件让 Claude 聚焦\nShift+Enter 多行输入\nCtrl+C 中断当前操作\nCtrl+R 搜索历史命令",
+      "href": "/knowledge/3-2/",
+      "sourceFile": "frontend/data/chapter_05.json",
+      "sourceHash": "7dd5cb83b835370875c3d362747cb49e07c919025fb9d9cb90c592cff35b9feb"
+    },
+    {
+      "id": "5_2",
+      "chapter": 5,
+      "index": 2,
+      "curriculumId": "chapter-5-kp-3",
+      "chapterTitle": "Claude Code 入门细致讲解",
+      "title": "Hooks 系统：事件驱动的自动化",
+      "summary": "Hooks 是 Claude Code 的事件驱动扩展机制。在特定事件发生时自动触发自定义脚本或 Prompt，实现工作流自动化。类似于 Git Hooks 但作用于 Claude Code 的操作生命周期。",
+      "href": "/knowledge/3-3/",
+      "sourceFile": "frontend/data/chapter_05.json",
+      "sourceHash": "7dd5cb83b835370875c3d362747cb49e07c919025fb9d9cb90c592cff35b9feb"
+    },
+    {
+      "id": "5_3",
+      "chapter": 5,
+      "index": 3,
+      "curriculumId": "chapter-5-kp-4",
+      "chapterTitle": "Claude Code 入门细致讲解",
+      "title": "Skills 开发：自定义技能体系",
+      "summary": "Skills 是 Claude Code 的可复用专业能力模块——将特定领域的知识、工作流程和最佳实践封装为可加载的「技能卡」。当 Claude 识别到任务匹配时，自动加载相应 Skill 的完整上下文。",
+      "href": "/knowledge/3-4/",
+      "sourceFile": "frontend/data/chapter_05.json",
+      "sourceHash": "7dd5cb83b835370875c3d362747cb49e07c919025fb9d9cb90c592cff35b9feb"
+    },
+    {
+      "id": "5_4",
+      "chapter": 5,
+      "index": 4,
+      "curriculumId": "chapter-5-kp-5",
+      "chapterTitle": "Claude Code 入门细致讲解",
+      "title": "MCP 协议：连接外部工具与数据",
+      "summary": "MCP 是 Anthropic 推出的开放协议标准，让 Claude 能安全地连接外部工具和数据源。就像 USB-C 统一了硬件接口——MCP 统一了 AI 与外部系统的交互方式。",
+      "href": "/knowledge/3-5/",
+      "sourceFile": "frontend/data/chapter_05.json",
+      "sourceHash": "7dd5cb83b835370875c3d362747cb49e07c919025fb9d9cb90c592cff35b9feb"
+    },
+    {
+      "id": "5_5",
+      "chapter": 5,
+      "index": 5,
+      "curriculumId": "chapter-5-kp-6",
+      "chapterTitle": "Claude Code 入门细致讲解",
+      "title": "Claude Code 项目实战全流程",
+      "summary": "实战：用 Claude Code 构建一个 Web API\n# 1. 项目初始化\nmkdir my-api && cd my-api\nclaude\n> 帮我初始化一个 FastAPI 项目，包含用户认证模块\n> （Claude 会自动创建项目结构、安装依赖、写代码）\n\n# 2. 查看 CLAUDE.md——Claude 自动生成的项目文档\ncat CLAUDE.md\n\n# 3. 让 Claude 理解你的代码风格\n> /init  # 生成或更新 CLAUDE.md\n\n# 4. 迭代开发\n> 给 /users 接口添加分页和搜索功能\n> 数据验证用 Pydantic v2 的 model_validate\n\n# 5. 测试\n> 写 pytest 测试用例，覆盖所有 API 端点\n> 运行测试看看有什么问题\n\n# 6. 代码审查\n> /review  # 全面检查代码质量\n\n# 7. Git 提交\n> 帮我把改动分几个语义清晰的 commit 提交\n高效工作流程\n阶段 | Claude Code 命令 | 产出 | \n需求分析 | 帮我分析这个需求的技术方案 | 技术方案文档 | \n架构设计 | 设计模块结构和数据流 | 架构图+接口定义 | \n编码实现 | 实现 XXX 功能 | 代码+测试 | \n代码审查 | /review | 审查报告 | \n文档生成 | 更新 README 和 API 文档 | 文档 | \n部署 | 写 Dockerfile 和部署脚本 | 部署配置 | \n进阶技巧\nCLAUDE.md：项目级指令文件，Claude 每次启动都会读取——写好它等于给 Claude 配置了专属工作手册\nWorktree 隔离：/worktree 创建独立工作区，避免主分支被意外修改\n子代理并行：复杂任务让 Claude 自动拆分为多个子代理并行处理\n成本管理：用 /cost 关注 token 消耗，长对话用 /compact 压缩",
+      "href": "/knowledge/3-6/",
+      "sourceFile": "frontend/data/chapter_05.json",
+      "sourceHash": "7dd5cb83b835370875c3d362747cb49e07c919025fb9d9cb90c592cff35b9feb"
+    },
+    {
+      "id": "6_0",
+      "chapter": 6,
+      "index": 0,
+      "curriculumId": "chapter-6-kp-1",
+      "chapterTitle": "RAG 技术详解",
+      "title": "RAG 架构设计与核心流程",
+      "summary": "大语言模型虽然知识渊博，但存在两个致命缺陷：知识截止（训练数据有截止日期，无法感知新知识）和幻觉（可能编造看似合理但事实错误的内容）。RAG（Retrieval-Augmented Generation）通过检索外部知识库来增强生成能力，像一个学者在回答问题前先去查资料。",
+      "href": "/chapter/6/#kp-1",
+      "sourceFile": "frontend/data/chapter_06.json",
+      "sourceHash": "ef1c724fd8186baa435f6447b15b2319f42b1e3bcb3f377ef26a3bbd79bedea8"
+    },
+    {
+      "id": "6_1",
+      "chapter": 6,
+      "index": 1,
+      "curriculumId": "chapter-6-kp-2",
+      "chapterTitle": "RAG 技术详解",
+      "title": "向量数据库与 Embedding",
+      "summary": "Embedding 是将文本、图片等非结构化数据映射到高维向量空间的技术。语义相近的文本在向量空间中距离更近——这是 RAG 检索的数学基础。",
+      "href": "/chapter/6/#kp-2",
+      "sourceFile": "frontend/data/chapter_06.json",
+      "sourceHash": "ef1c724fd8186baa435f6447b15b2319f42b1e3bcb3f377ef26a3bbd79bedea8"
+    },
+    {
+      "id": "6_2",
+      "chapter": 6,
+      "index": 2,
+      "curriculumId": "chapter-6-kp-3",
+      "chapterTitle": "RAG 技术详解",
+      "title": "检索策略：从朴素到智能",
+      "summary": "RAG 的检索策略经历了从简单到复杂的演进，理解每种方法的优劣是构建高质量 RAG 系统的关键。",
+      "href": "/chapter/6/#kp-3",
+      "sourceFile": "frontend/data/chapter_06.json",
+      "sourceHash": "ef1c724fd8186baa435f6447b15b2319f42b1e3bcb3f377ef26a3bbd79bedea8"
+    },
+    {
+      "id": "6_3",
+      "chapter": 6,
+      "index": 3,
+      "curriculumId": "chapter-6-kp-4",
+      "chapterTitle": "RAG 技术详解",
+      "title": "高阶 RAG 范式",
+      "summary": "基础 RAG（检索→生成）虽然有效，但在复杂场景下暴露出诸多问题：检索结果不相关、多步推理困难、无法自我修正。于是，一系列高阶 RAG 范式应运而生。",
+      "href": "/chapter/6/#kp-4",
+      "sourceFile": "frontend/data/chapter_06.json",
+      "sourceHash": "ef1c724fd8186baa435f6447b15b2319f42b1e3bcb3f377ef26a3bbd79bedea8"
+    },
+    {
+      "id": "6_4",
+      "chapter": 6,
+      "index": 4,
+      "curriculumId": "chapter-6-kp-5",
+      "chapterTitle": "RAG 技术详解",
+      "title": "RAG 评估与质量保障",
+      "summary": "一个 RAG 系统的好坏不能只看最终回答是否准确，需要从三个独立维度评估：",
+      "href": "/chapter/6/#kp-5",
+      "sourceFile": "frontend/data/chapter_06.json",
+      "sourceHash": "ef1c724fd8186baa435f6447b15b2319f42b1e3bcb3f377ef26a3bbd79bedea8"
+    },
+    {
+      "id": "6_5",
+      "chapter": 6,
+      "index": 5,
+      "curriculumId": "chapter-6-kp-6",
+      "chapterTitle": "RAG 技术详解",
+      "title": "RAG 的局限性与未来方向",
+      "summary": "RAG 并非万能。在追求 RAG 的同时，我们需要清醒认识它的边界：",
+      "href": "/chapter/6/#kp-6",
+      "sourceFile": "frontend/data/chapter_06.json",
+      "sourceHash": "ef1c724fd8186baa435f6447b15b2319f42b1e3bcb3f377ef26a3bbd79bedea8"
+    },
+    {
+      "id": "7_0",
+      "chapter": 7,
+      "index": 0,
+      "curriculumId": "chapter-7-kp-1",
+      "chapterTitle": "阿里云ACP大模型认证（上）",
+      "title": "阿里云ACP认证概述",
+      "summary": "阿里云认证分为三个等级，呈金字塔结构：",
+      "href": "/chapter/7/#kp-1",
+      "sourceFile": "frontend/data/chapter_07.json",
+      "sourceHash": "297131daf725c5cbd68a1b8da2237d397b4ba7607b94371e72e604bdf290cf64"
+    },
+    {
+      "id": "7_1",
+      "chapter": 7,
+      "index": 1,
+      "curriculumId": "chapter-7-kp-2",
+      "chapterTitle": "阿里云ACP大模型认证（上）",
+      "title": "灵积（DashScope）模型服务",
+      "summary": "DashScope（灵积）是阿里云的一站式模型服务平台，提供统一 API 调用各类 AI 模型的能力。它是阿里云大模型服务的核心入口。",
+      "href": "/chapter/7/#kp-2",
+      "sourceFile": "frontend/data/chapter_07.json",
+      "sourceHash": "297131daf725c5cbd68a1b8da2237d397b4ba7607b94371e72e604bdf290cf64"
+    },
+    {
+      "id": "7_2",
+      "chapter": 7,
+      "index": 2,
+      "curriculumId": "chapter-7-kp-3",
+      "chapterTitle": "阿里云ACP大模型认证（上）",
+      "title": "百炼平台",
+      "summary": "百炼是阿里云的大模型应用开发平台，提供从数据准备、模型调优到应用评测的全链路 AI 开发能力。比 DashScope 更偏上层应用开发。",
+      "href": "/chapter/7/#kp-3",
+      "sourceFile": "frontend/data/chapter_07.json",
+      "sourceHash": "297131daf725c5cbd68a1b8da2237d397b4ba7607b94371e72e604bdf290cf64"
+    },
+    {
+      "id": "7_3",
+      "chapter": 7,
+      "index": 3,
+      "curriculumId": "chapter-7-kp-4",
+      "chapterTitle": "阿里云ACP大模型认证（上）",
+      "title": "PAI 平台全流程",
+      "summary": "PAI 平台组件\n组件 | 功能 | 适用场景 | \nPAI-Studio | 可视化建模，拖拽式 ML 流程 | 低代码 ML 开发 | \nPAI-DSW | 交互式 Notebook（Jupyter） | 算法探索、原型开发 | \nPAI-DLC | 分布式训练集群 | 大规模模型训练 | \nPAI-EAS | 在线推理服务 | 模型部署为 API | \n全流程 MLOps\n1. 数据准备（PAI-Studio / DataWorks）\n   - 数据采集、清洗、标注\n   - 特征工程、数据分割\n\n2. 模型训练（PAI-DLC）\n   - 配置训练任务（镜像、资源、超参）\n   - 分布式训练（数据并行+模型并行）\n   - 训练监控（Loss、GPU 利用率）\n\n3. 模型评估（PAI 评估模块）\n   - 内置评测集评测\n   - 对比实验（A/B 测试）\n\n4. 模型部署（PAI-EAS）\n   - 一键部署为在线 API\n   - 弹性伸缩配置\n   - 蓝绿部署/灰度发布",
+      "href": "/chapter/7/#kp-4",
+      "sourceFile": "frontend/data/chapter_07.json",
+      "sourceHash": "297131daf725c5cbd68a1b8da2237d397b4ba7607b94371e72e604bdf290cf64"
+    },
+    {
+      "id": "7_4",
+      "chapter": 7,
+      "index": 4,
+      "curriculumId": "chapter-7-kp-5",
+      "chapterTitle": "阿里云ACP大模型认证（上）",
+      "title": "ACP 高频考点总结",
+      "summary": "云计算基础考点\nECS 实例规格族（通用型/计算型/内存型/GPU 型）及适用场景\nOSS 存储类型（标准/低频/归档/冷归档）\nSLB 负载均衡调度算法（轮询/最小连接数/一致性哈希）\nVPC 网络规划（CIDR 划分、安全组规则）\n\nAI 平台考点\nPAI 各组件功能区分（尤其是 DSW/DLC/EAS 的定位差异）\n分布式训练策略（数据并行、模型并行、流水线并行）\n模型部署配置（实例规格、副本数、弹性伸缩策略）\nGPU 资源管理（vGPU、MIG、资源共享）\n\n大模型应用考点\nPrompt 工程在百炼平台中的实现\nRAG 架构中的向量检索配置\n模型微调参数对效果的影响\n模型评估指标含义和计算方法\n\n安全考点\nRAM 权限策略配置（最小权限原则）\n数据加密方案（KMS 密钥管理）\n内容安全审核策略\n操作审计（ActionTrail）",
+      "href": "/chapter/7/#kp-5",
+      "sourceFile": "frontend/data/chapter_07.json",
+      "sourceHash": "297131daf725c5cbd68a1b8da2237d397b4ba7607b94371e72e604bdf290cf64"
+    },
+    {
+      "id": "7_5",
+      "chapter": 7,
+      "index": 5,
+      "curriculumId": "chapter-7-kp-6",
+      "chapterTitle": "阿里云ACP大模型认证（上）",
+      "title": "模型评估指标",
+      "summary": "分类任务指标\n# 混淆矩阵\n            预测正类    预测负类\n实际正类      TP          FN\n实际负类      FP          TN\n\n# 核心指标\n准确率 Accuracy = (TP + TN) / (TP + TN + FP + FN)\n精确率 Precision = TP / (TP + FP)\n召回率 Recall = TP / (TP + FN)\nF1-Score = 2 × Precision × Recall / (Precision + Recall)\n生成任务指标\nBLEU：基于 n-gram 精确度，衡量生成文本和参考文本的词汇重叠度（0-1）\nROUGE-L：基于最长公共子序列（LCS），衡量生成文本和参考文本的相似度\nPerplexity：困惑度，衡量模型对文本的预测能力（越低越好）\nLLM-as-Judge：用另一个 LLM 评估生成质量，覆盖准确性、相关性、流畅性等维度\n\n评估方法论\n人工评估：最准确但成本高，适合小规模精测\n自动评估：使用 BLEU/ROUGE 等指标，适合大规模回归\n混合评估：自动指标初筛 + 人工抽样复核\n对抗评估：红队测试、边界测试",
+      "href": "/chapter/7/#kp-6",
+      "sourceFile": "frontend/data/chapter_07.json",
+      "sourceHash": "297131daf725c5cbd68a1b8da2237d397b4ba7607b94371e72e604bdf290cf64"
+    },
+    {
+      "id": "8_0",
+      "chapter": 8,
+      "index": 0,
+      "curriculumId": "chapter-8-kp-1",
+      "chapterTitle": "阿里云ACP大模型认证（下）",
+      "title": "模型部署与优化",
+      "summary": "部署架构选择\n方式 | 适用场景 | 特点 | \nPAI-EAS 在线推理 | 实时 API 服务 | 低延迟（PAI-DLC 分布式训练 | 大规模模型训练 | GPU 集群调度，弹性资源 | \n函数计算 FC + GPU | 轻量推理 | 按需付费，事件驱动，冷启动 | \nACK 容器服务 | 自定义部署 | K8s 编排，灵活度最高 | \n推理优化技术\n模型量化：FP16→INT8/INT4，减少 50-75% 显存占用，推理速度提升 2-4 倍\nKV-Cache 优化：共享前缀缓存、PagedAttention（vLLM）\n动态批处理：合并多个请求提高 GPU 利用率\n模型蒸馏：用大模型教小模型，保持 90%+ 性能但体积减少 90%\nTensor 并行：多 GPU 并行推理，减少单卡显存压力\n\n弹性伸缩策略\n基于 QPS/CPU/GPU 利用率的自动扩容\nGPU 资源预热（冷启动优化）\n预留实例 + 按量实例混合部署降成本\nHPA（水平自动扩缩）和 VPA（垂直自动扩缩）",
+      "href": "/chapter/8/#kp-1",
+      "sourceFile": "frontend/data/chapter_08.json",
+      "sourceHash": "151f5fa88d6f2ae46f3a567a8790b87275cf09bc7148886613f7a70a56e987ba"
+    },
+    {
+      "id": "8_1",
+      "chapter": 8,
+      "index": 1,
+      "curriculumId": "chapter-8-kp-2",
+      "chapterTitle": "阿里云ACP大模型认证（下）",
+      "title": "模型量化原理",
+      "summary": "大模型通常使用 FP32（32 位浮点数）训练，每个参数占 4 字节。一个 70B 模型仅参数就需要 280GB 显存，远超单张 GPU 容量。量化通过降低数值精度来压缩模型。",
+      "href": "/chapter/8/#kp-2",
+      "sourceFile": "frontend/data/chapter_08.json",
+      "sourceHash": "151f5fa88d6f2ae46f3a567a8790b87275cf09bc7148886613f7a70a56e987ba"
+    },
+    {
+      "id": "8_2",
+      "chapter": 8,
+      "index": 2,
+      "curriculumId": "chapter-8-kp-3",
+      "chapterTitle": "阿里云ACP大模型认证（下）",
+      "title": "RAG 架构与向量数据库",
+      "summary": "RAG 完整流程\nRAG 系统流程：\n用户提问\n  → 1. 向量化：将问题转为 embedding 向量\n  → 2. 检索：在向量数据库中搜索最相似的文档\n  → 3. 重排序：对检索结果精排\n  → 4. 注入：将相关文档注入 Prompt\n  → 5. 生成：LLM 基于上下文生成答案\n  → 6. 溯源：附上引用来源\n向量检索核心原理\n# 余弦相似度\nsimilarity(A, B) = cos(θ) = (A · B) / (||A|| × ||B||)\n\n# 向量检索算法\n- 暴力搜索（KNN）：O(n×d)，小数据集可用\n- IVF（倒排文件）：聚类+局部搜索，O(√n)\n- HNSW（分层可导航小世界图）：O(log n)，目前最流行\n阿里云向量检索产品\n产品 | 类型 | 适用场景 | \nDashVector | 专用向量数据库 | 高性能向量检索，10ms 级延迟 | \nElasticsearch | 搜索引擎（支持向量） | 文本+向量混合搜索 | \nOpenSearch | 智能搜索服务 | 企业级搜索，向量+关键词融合 | \nADB PG | 分析型数据库（向量插件） | SQL+向量混合查询 |",
+      "href": "/chapter/8/#kp-3",
+      "sourceFile": "frontend/data/chapter_08.json",
+      "sourceHash": "151f5fa88d6f2ae46f3a567a8790b87275cf09bc7148886613f7a70a56e987ba"
+    },
+    {
+      "id": "8_3",
+      "chapter": 8,
+      "index": 3,
+      "curriculumId": "chapter-8-kp-4",
+      "chapterTitle": "阿里云ACP大模型认证（下）",
+      "title": "RAG 评估框架",
+      "summary": "RAGAS 是流行的开源 RAG 评估框架，包含以下核心指标：",
+      "href": "/chapter/8/#kp-4",
+      "sourceFile": "frontend/data/chapter_08.json",
+      "sourceHash": "151f5fa88d6f2ae46f3a567a8790b87275cf09bc7148886613f7a70a56e987ba"
+    },
+    {
+      "id": "8_4",
+      "chapter": 8,
+      "index": 4,
+      "curriculumId": "chapter-8-kp-5",
+      "chapterTitle": "阿里云ACP大模型认证（下）",
+      "title": "大模型安全与合规",
+      "summary": "大模型安全挑战\nPrompt 注入：恶意提示词绕过安全限制，诱使模型执行未授权操作\n数据泄露：模型输出中包含训练数据中的敏感信息\n有害内容生成：输出违法、暴力、歧视性内容\n偏见与歧视：训练数据中的社会偏见被模型继承和放大\n\n阿里云安全方案\n内容安全：文本/图片审核 API，检测违规内容\n数据加密：传输加密（TLS 1.3）、存储加密（KMS + 密钥轮换）\n访问控制：RAM 精细化权限管理，最小权限原则\n审计日志：ActionTrail 操作审计，90 天日志保留\nWAF：Web 应用防火墙，防御注入攻击\n\n合规要求\n《生成式人工智能服务管理暂行办法》——算法备案、安全评估\n《个人信息保护法》（PIPL）——用户数据保护\n等保 2.0 三级——信息安全等级保护\n数据分类分级管理",
+      "href": "/chapter/8/#kp-5",
+      "sourceFile": "frontend/data/chapter_08.json",
+      "sourceHash": "151f5fa88d6f2ae46f3a567a8790b87275cf09bc7148886613f7a70a56e987ba"
+    },
+    {
+      "id": "8_5",
+      "chapter": 8,
+      "index": 5,
+      "curriculumId": "chapter-8-kp-6",
+      "chapterTitle": "阿里云ACP大模型认证（下）",
+      "title": "安全评测方法论",
+      "summary": "红队测试是模拟攻击者行为对模型进行安全评估的方法，目的是在大规模部署前发现安全漏洞。",
+      "href": "/chapter/8/#kp-6",
+      "sourceFile": "frontend/data/chapter_08.json",
+      "sourceHash": "151f5fa88d6f2ae46f3a567a8790b87275cf09bc7148886613f7a70a56e987ba"
+    },
+    {
+      "id": "9_0",
+      "chapter": 9,
+      "index": 0,
+      "curriculumId": "chapter-9-kp-1",
+      "chapterTitle": "大模型应用实战",
+      "title": "构建 RAG 问答系统",
+      "summary": "完整 RAG 系统设计\n系统架构：\n用户输入\n  → Query Understanding（查询理解：改写、扩展）\n    → Retriever（检索器：稠密检索 + BM25 混合）\n      → Reranker（重排序：cross-encoder 精排）\n        → Prompt Constructor（提示词构造：上下文注入+引用标记）\n          → LLM Generator（生成器：基于上下文回答）\n            → Output Validator（输出验证：引用检查+格式校验）\n文档处理策略\n文档切分：固定长度（512 chars）、语义切分（按段落）、递归切分（按层级）\n重叠策略：相邻块重叠 10-20% 保证上下文连贯\n元数据标注：记录来源、章节、时间戳便于溯源\n\n检索策略\n策略 | 方法 | 适用场景 | \n稠密检索 | embedding 模型向量化 + ANN 搜索 | 语义匹配 | \n稀疏检索 | BM25 关键词匹配 | 精确关键词匹配 | \n混合检索 | 稠密+稀疏结果加权融合 | 通用（推荐） | \n多路召回 | 多种检索策略并行，结果融合 | 高精度要求 |",
+      "href": "/knowledge/6-1/",
+      "sourceFile": "frontend/data/chapter_09.json",
+      "sourceHash": "0bbd6f18066f3b827278f3a8d475810bfb536bcfdcb998b4ff8569ff6417da33"
+    },
+    {
+      "id": "9_1",
+      "chapter": 9,
+      "index": 1,
+      "curriculumId": "chapter-9-kp-2",
+      "chapterTitle": "大模型应用实战",
+      "title": "AI Agent 开发",
+      "summary": "Agent 核心架构\nAgent 核心循环：\n  用户请求\n    → Plan（规划：分解任务为子步骤）\n      → Execute（执行：调用工具处理每个子步骤）\n        → Observe（观察：收集执行结果）\n          → Reflect（反思：是否需要调整计划？）\n            → Repeat / Final Answer\nAgent 组件详解\nLLM 大脑：推理和决策的核心\n工具集：Search, Calculator, Code Executor, File I/O, API 调用\n记忆系统：短期记忆（对话历史）\n长期记忆（向量数据库）\n工作记忆（当前任务状态）\n\n\n规划器：任务分解和依赖管理\n\nAgent 设计原则\n工具接口标准化：每个工具一致的方法签名\n错误隔离：一个工具失败不影响其他工具\n安全边界：限制工具权限，沙箱执行\n可观测性：每个步骤可记录和审计",
+      "href": "/knowledge/6-2/",
+      "sourceFile": "frontend/data/chapter_09.json",
+      "sourceHash": "0bbd6f18066f3b827278f3a8d475810bfb536bcfdcb998b4ff8569ff6417da33"
+    },
+    {
+      "id": "9_2",
+      "chapter": 9,
+      "index": 2,
+      "curriculumId": "chapter-9-kp-3",
+      "chapterTitle": "大模型应用实战",
+      "title": "多工具编排",
+      "summary": "实现一个支持 DAG（有向无环图）的工具编排引擎，支持：",
+      "href": "/knowledge/6-3/",
+      "sourceFile": "frontend/data/chapter_09.json",
+      "sourceHash": "0bbd6f18066f3b827278f3a8d475810bfb536bcfdcb998b4ff8569ff6417da33"
+    },
+    {
+      "id": "9_3",
+      "chapter": 9,
+      "index": 3,
+      "curriculumId": "chapter-9-kp-4",
+      "chapterTitle": "大模型应用实战",
+      "title": "评估驱动开发（EDD）",
+      "summary": "评估驱动开发（Evaluation-Driven Development）借鉴了 TDD（测试驱动开发）的思路：先定义评估指标，再开发模型应用，确保每次改动都有可量化的效果验证。",
+      "href": "/knowledge/6-4/",
+      "sourceFile": "frontend/data/chapter_09.json",
+      "sourceHash": "0bbd6f18066f3b827278f3a8d475810bfb536bcfdcb998b4ff8569ff6417da33"
+    },
+    {
+      "id": "9_4",
+      "chapter": 9,
+      "index": 4,
+      "curriculumId": "chapter-9-kp-5",
+      "chapterTitle": "大模型应用实战",
+      "title": "Prompt 缓存与成本优化",
+      "summary": "对于重复使用的长前缀（如系统提示词、Few-shot 示例、工具定义），API 会缓存计算结果。后续请求只需计算增量部分，显著降低成本。",
+      "href": "/knowledge/6-5/",
+      "sourceFile": "frontend/data/chapter_09.json",
+      "sourceHash": "0bbd6f18066f3b827278f3a8d475810bfb536bcfdcb998b4ff8569ff6417da33"
+    },
+    {
+      "id": "9_5",
+      "chapter": 9,
+      "index": 5,
+      "curriculumId": "chapter-9-kp-6",
+      "chapterTitle": "大模型应用实战",
+      "title": "生产级部署架构",
+      "summary": "典型生产架构\n用户客户端\n  ↓\nCDN（静态资源加速）\n  ↓\nAPI Gateway（流量控制、认证、限流、日志）\n  ↓\n应用服务层（业务逻辑、Prompt 管理、会话管理）\n  ↓              ↗\n模型推理层         缓存层\n(PAI-EAS/vLLM)   (Redis/Memcached)\n  ↓              ↗\n向量检索层（检索增强生成 RAG）\n  ↑\n数据处理层（ETL、文档更新、索引重建）\n关键组件设计\nAPI Gateway：限流（Token Bucket）、认证（JWT）、负载均衡\n推理集群：多副本部署，HPA 自动伸缩，蓝绿部署\n缓存：热点问题 Redis 缓存，TTL 策略\n监控告警：Prometheus + Grafana，关注延迟、吞吐、错误率\n日志：结构化日志（JSON），ELK 收集分析\n\n高可用设计\n多 AZ（可用区）部署\n优雅降级：模型服务不可用时返回缓存或默认回复\n熔断机制：超时超过阈值时快速失败\n数据备份：定期备份配置、知识库和日志",
+      "href": "/knowledge/6-6/",
+      "sourceFile": "frontend/data/chapter_09.json",
+      "sourceHash": "0bbd6f18066f3b827278f3a8d475810bfb536bcfdcb998b4ff8569ff6417da33"
+    },
+    {
+      "id": "10_0",
+      "chapter": 10,
+      "index": 0,
+      "curriculumId": "chapter-10-kp-1",
+      "chapterTitle": "AI Agent 原理与安全",
+      "title": "AI Agent 的基本概念与组成",
+      "summary": "AI Agent 是一种能够感知环境、自主规划、调用工具执行行动、并根据结果反思调整的智能体。与传统的单轮问答不同，Agent 可以在没有人类逐步指令的情况下，自主完成多步骤复杂任务。",
+      "href": "/knowledge/5-1/",
+      "sourceFile": "frontend/data/chapter_10.json",
+      "sourceHash": "5ecad0db7aaa9c23405a370cb0590c90f2f94f4eae9d7cb33367c3e58160f9f9"
+    },
+    {
+      "id": "10_1",
+      "chapter": 10,
+      "index": 1,
+      "curriculumId": "chapter-10-kp-2",
+      "chapterTitle": "AI Agent 原理与安全",
+      "title": "工具调用与函数执行",
+      "summary": "Tool Use 完整流程\n1. 工具定义（Tool Definition）\n   ↓ 向 LLM 描述工具的 name、description、parameters(JSON Schema)\n2. 意图识别（Intent Recognition）\n   ↓ LLM 判断是否需要调用工具、调用哪个工具\n3. 参数提取（Argument Extraction）\n   ↓ LLM 输出结构化的工具调用参数\n4. 工具执行（Tool Execution）\n   ↓ 程序根据名称匹配并调用对应函数\n5. 结果回传（Result Return）\n   ↓ 将工具返回值作为新的上下文交给 LLM\n6. 后续决策（Next Decision）\n   ↓ LLM 根据结果决定继续调用或给出最终回答\n常见工具类型\n检索类：搜索引擎、向量数据库查询、知识库检索\n计算类：计算器、代码解释器、公式求值\n操作类：文件读写、数据库操作、API 调用\n通信类：发送邮件、调用 Webhook、推送通知\n\n工具设计要点\n单一职责：每个工具只做一件事，描述清晰无歧义\n参数校验：对 LLM 生成的参数做类型和范围校验，不可信\n错误处理：工具失败时返回结构化错误信息，供 LLM 决策重试或换路径\n幂等设计：写操作尽量幂等，避免重复调用导致副作用\n超时控制：每个工具设置最大执行时间，防止卡死 Agent 循环",
+      "href": "/knowledge/5-2/",
+      "sourceFile": "frontend/data/chapter_10.json",
+      "sourceHash": "5ecad0db7aaa9c23405a370cb0590c90f2f94f4eae9d7cb33367c3e58160f9f9"
+    },
+    {
+      "id": "10_2",
+      "chapter": 10,
+      "index": 2,
+      "curriculumId": "chapter-10-kp-3",
+      "chapterTitle": "AI Agent 原理与安全",
+      "title": "多智能体协作与安全边界",
+      "summary": "风险：用户输入或工具返回的内容中包含\"忽略之前指令\"等攻击文本，劫持 Agent 行为。",
+      "href": "/knowledge/5-3/",
+      "sourceFile": "frontend/data/chapter_10.json",
+      "sourceHash": "5ecad0db7aaa9c23405a370cb0590c90f2f94f4eae9d7cb33367c3e58160f9f9"
+    }
+  ],
+  "edges": [
+    {
+      "id": "01487e2fac5d12a69d15843451e7a168fbafc0aaa75c04aafc4a2fc4757ebdeb",
+      "source": "4_0",
+      "target": "9_2",
+      "type": "related",
+      "directed": false,
+      "rationale": "LangChain 的声明式流水线支持并行和条件分支，工具编排页定义无依赖工具并行调度与依赖管理，连接组合模块的执行模式与工具调度。",
+      "evidence": [
+        {
+          "nodeId": "4_0",
+          "blockId": "4_0:b007",
+          "quote": "使用 | 管道符串联组件，构成声明式流水线。支持并行（RunnableParallel）、条件分支（RunnableBranch）、回退（with_fallbacks）。"
+        },
+        {
+          "nodeId": "9_2",
+          "blockId": "9_2:b006",
+          "quote": "并行调度：无依赖的工具并行执行"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "1a3717c48a5b48c545fb30f0fb83805b907f7275a84f295f85877533acfe2085",
+      "source": "4_5",
+      "target": "4_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "选型页将 RAG 问答指向 LlamaIndex 数据索引或 LangChain 加向量库，框架比较页列出相同的 RAG 问答与知识库搜索适用场景。",
+      "evidence": [
+        {
+          "nodeId": "4_5",
+          "blockId": "4_5:b002",
+          "quote": "├── RAG 问答 → LlamaIndex（数据索引）或 LangChain + 向量库"
+        },
+        {
+          "nodeId": "4_1",
+          "blockId": "4_1:b006",
+          "quote": "适合场景 | 多步推理、Agent 系统 | RAG 问答、知识库搜索 |"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "1b5d733fb3a50e7e1d1975d6df0aa9846374212b292fbf4a2ba52a0fa00b6a7c",
+      "source": "4_2",
+      "target": "10_0",
+      "type": "related",
+      "directed": false,
+      "rationale": "两页都把 Agent 解释为感知、规划、调用工具执行的系统；后者补充执行后反思调整，关联共同的 Agent 架构行为。",
+      "evidence": [
+        {
+          "nodeId": "4_2",
+          "blockId": "4_2:b002",
+          "quote": "Agent（智能体）是一个能自主感知环境、制定计划、调用工具、执行动作的 AI 系统。"
+        },
+        {
+          "nodeId": "10_0",
+          "blockId": "10_0:b002",
+          "quote": "AI Agent 是一种能够感知环境、自主规划、调用工具执行行动、并根据结果反思调整的智能体。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "1bbdacb00bfa7ccf6b53b4247f40d063525983369253270aad012cdf72144033",
+      "source": "4_0",
+      "target": "4_1",
+      "type": "contrast",
+      "directed": false,
+      "rationale": "LangChain 页以 Chain 组件流水线为核心，LlamaIndex 比较表区别 Chain/Agent/Tool 与 Index/Node/QueryEngine，明确展示两种框架的核心抽象差异。",
+      "evidence": [
+        {
+          "nodeId": "4_0",
+          "blockId": "4_0:b004",
+          "quote": "核心抽象是 Chain（链）——将多个组件串联为一条处理流水线。"
+        },
+        {
+          "nodeId": "4_1",
+          "blockId": "4_1:b005",
+          "quote": "核心抽象 | Chain / Agent / Tool | Index / Node / QueryEngine |"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "1e25d3e07ae174182d6ae39dd05c5d127d47a474e40af15c6e5dbd0fd8b9003f",
+      "source": "4_3",
+      "target": "10_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "函数调用页强调模型只输出调用描述、程序实际执行；Tool Use 流程明确分开参数提取与程序匹配执行，同一权限与执行分工在两页贯通。",
+      "evidence": [
+        {
+          "nodeId": "4_3",
+          "blockId": "4_3:b002",
+          "quote": "LLM 不直接执行函数，而是输出 JSON 描述「调用哪个函数、传什么参数」，由你的代码实际执行。"
+        },
+        {
+          "nodeId": "10_1",
+          "blockId": "10_1:b002",
+          "quote": "3. 参数提取（Argument Extraction）\n   ↓ LLM 输出结构化的工具调用参数\n4. 工具执行（Tool Execution）\n   ↓ 程序根据名称匹配并调用对应函数"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "2153f1138a05e2a5bf0bc680d661b92f292dee03b960b0c06be5f7fd77452033",
+      "source": "4_4",
+      "target": "10_2",
+      "type": "related",
+      "directed": false,
+      "rationale": "多 Agent 页用 Manager-Worker 代码安排经理、编码器和审查者，协作模式页给出 Planner 分派多个 Worker 的主从模式，连接实现样例与模式定义。",
+      "evidence": [
+        {
+          "nodeId": "4_4",
+          "blockId": "4_4:b004",
+          "quote": "self.manager = Agent(role=\"项目经理\")\n        self.coder = Agent(role=\"代码专家\", tools=[\"write_code\"])\n        self.reviewer = Agent(role=\"代码审查\", tools=[\"review_code\"])"
+        },
+        {
+          "nodeId": "10_2",
+          "blockId": "10_2:b003",
+          "quote": "主从模式 | 一个 Planner 分配任务给多个 Worker | 任务可明确分解、各子任务独立 |"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "24949dc5c0e45c35ff4f90653ed84bd61d44ba5ad1d11f8cf0d3ec5af00ab504",
+      "source": "8_4",
+      "target": "8_5",
+      "type": "application",
+      "directed": true,
+      "rationale": "安全挑战页描述 Prompt 注入导致未授权操作，红队流程将 Prompt 注入、越狱和角色反转列入威胁建模攻击面，方向从风险识别到安全测试实施。",
+      "evidence": [
+        {
+          "nodeId": "8_4",
+          "blockId": "8_4:b002",
+          "quote": "Prompt 注入：恶意提示词绕过安全限制，诱使模型执行未授权操作"
+        },
+        {
+          "nodeId": "8_5",
+          "blockId": "8_5:b003",
+          "quote": "1. 威胁建模：识别可能的攻击面\n   - Prompt 注入、越狱、角色反转"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "26feb10ba1462d7236a8011472b5110970e7c31f5a365c41caa8dc8591e8529b",
+      "source": "6_2",
+      "target": "9_0",
+      "type": "application",
+      "directed": true,
+      "rationale": "检索策略页定义稠密与稀疏的混合融合，问答系统设计将稠密加 BM25 混合检索作为 Retriever，实现该检索策略。",
+      "evidence": [
+        {
+          "nodeId": "6_2",
+          "blockId": "6_2:b010",
+          "quote": "稠密检索擅长语义匹配但可能遗漏精准关键词，稀疏检索擅长关键词匹配但缺乏语义理解。混合检索加权融合两者："
+        },
+        {
+          "nodeId": "9_0",
+          "blockId": "9_0:b002",
+          "quote": "→ Retriever（检索器：稠密检索 + BM25 混合）"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "3d4591c816a4fff7c28dbd2260d9537279bd6a780a5ca08416d42bc492c48fa1",
+      "source": "3_3",
+      "target": "4_0",
+      "type": "application",
+      "directed": true,
+      "rationale": "Few-shot 使用示例教授模式，LangChain 模板页说明模板支持 Few-shot 示例注入，方向从提示方法到框架中的复用机制。",
+      "evidence": [
+        {
+          "nodeId": "3_3",
+          "blockId": "3_3:b004",
+          "quote": "提供 1-5 个示例，让模型学习任务模式。"
+        },
+        {
+          "nodeId": "4_0",
+          "blockId": "4_0:b009",
+          "quote": "Prompt 模板支持 Few-shot 示例注入，通过 MessagesPlaceholder 动态添加历史对话"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "3f0cca6093c7645112a90925863ad10f4bd7af469b7ee8ced210ff00b7d82be7",
+      "source": "1_3",
+      "target": "1_5",
+      "type": "related",
+      "directed": false,
+      "rationale": "微调页列出人类偏好、奖励模型和 PPO；对齐页展开奖励模型训练及 PPO 优化，连接概览与具体训练过程。",
+      "evidence": [
+        {
+          "nodeId": "1_3",
+          "blockId": "1_3:b010",
+          "quote": "RLHF（人类反馈强化学习）：RLHF 三阶段：1) 收集人类偏好数据 2) 训练奖励模型 RM 3) 用 PPO 算法优化语言模型"
+        },
+        {
+          "nodeId": "1_5",
+          "blockId": "1_5:b004",
+          "quote": "阶段三：PPO 强化学习\n  使用 RM 作为奖励信号，优化语言模型"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "413e8ded71d0e24f0c484cdffa9cf2d67170f20f81b8c6157fe172d53e0615d8",
+      "source": "2_0",
+      "target": "2_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "架构页把自注意力列为 Transformer 替代 RNN 的核心机制，注意力页解释序列各位置直接建立联系的具体行为。",
+      "evidence": [
+        {
+          "nodeId": "2_0",
+          "blockId": "2_0:b002",
+          "quote": "它用自注意力机制替代了传统的 RNN/LSTM"
+        },
+        {
+          "nodeId": "2_1",
+          "blockId": "2_1:b002",
+          "quote": "Self-Attention 让输入序列中的每个位置都与其他所有位置建立直接联系，捕获全局依赖关系。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "486ac4ba1a2b9bb59343e3a47914e8491ad6544dd50e609d63203356ab831268",
+      "source": "6_0",
+      "target": "4_1",
+      "type": "application",
+      "directed": true,
+      "rationale": "RAG 原理包含文档索引、检索与生成，LlamaIndex 的文档加载、VectorStoreIndex 与 query_engine 示例是该流程的框架实现。",
+      "evidence": [
+        {
+          "nodeId": "6_0",
+          "blockId": "6_0:b003",
+          "quote": "# 1. 索引（Indexing）：将文档切片、向量化，构建可检索的知识库"
+        },
+        {
+          "nodeId": "4_1",
+          "blockId": "4_1:b008",
+          "quote": "index = VectorStoreIndex.from_documents(\n    documents,\n    chunk_size=512,\n    chunk_overlap=50\n)"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "4b76ccd007b661177d44a41ad77afcc47c0f5b6ea716e911cd8963317328c70d",
+      "source": "1_0",
+      "target": "1_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "定义中的“给定上文，预测下文”与能力页的逐 token 自回归生成描述的是同一个生成机制；能力页把该机制具体化为上下文依赖。",
+      "evidence": [
+        {
+          "nodeId": "1_0",
+          "blockId": "1_0:b002",
+          "quote": "其核心思想是：给定上文，预测下文——即自回归语言建模（Autoregressive Language Modeling, ARLM）。"
+        },
+        {
+          "nodeId": "1_1",
+          "blockId": "1_1:b002",
+          "quote": "文本生成：基于概率分布的自回归生成，每个 token 的预测都依赖于前面的全部上下文。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "4d0b709650ec21a92658f7c6da1bab9d914e1ebe1fe933639b5dda43cba22cfb",
+      "source": "10_1",
+      "target": "9_2",
+      "type": "related",
+      "directed": false,
+      "rationale": "工具执行页要求每个工具最大执行时间，编排引擎页要求工具可配置超时，两者衔接单工具调用约束与编排层的执行控制。",
+      "evidence": [
+        {
+          "nodeId": "10_1",
+          "blockId": "10_1:b013",
+          "quote": "超时控制：每个工具设置最大执行时间，防止卡死 Agent 循环"
+        },
+        {
+          "nodeId": "9_2",
+          "blockId": "9_2:b009",
+          "quote": "超时控制：每个工具可配置超时时间"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "58d2bf7ba64bebcb1439045291ec2c943acabab43c7f50c3715a458f09b444f0",
+      "source": "1_4",
+      "target": "1_3",
+      "type": "related",
+      "directed": false,
+      "rationale": "缩放页讨论固定计算预算下参数和训练 token 的配置；预训练页给出自回归训练目标。关系聚焦训练规模与训练过程，不把未经核实的成本估计作为事实。",
+      "evidence": [
+        {
+          "nodeId": "1_4",
+          "blockId": "1_4:b005",
+          "quote": "DeepMind 2022 年的 Chinchilla 论文：对于给定的计算预算，模型参数量和训练 token 数应该等比例扩展。"
+        },
+        {
+          "nodeId": "1_3",
+          "blockId": "1_3:b003",
+          "quote": "# 预训练目标函数（自回归语言建模）\nLoss = -Σ log P(token_i | token_1, ..., token_{i-1})"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "5c7f06f91e7eb926e02c73686f623490c7fd7c1496ce6a1147f13b4ef151e4be",
+      "source": "1_2",
+      "target": "1_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "分词器把文本片段映射成 token ID，生成机制逐 token 预测。两页分别解释生成单位的编码与该单位在生成中的作用，并非仅共享术语。",
+      "evidence": [
+        {
+          "nodeId": "1_2",
+          "blockId": "1_2:b002",
+          "quote": "Token 是分词器处理文本时划分的文本片段，再映射为模型使用的 token ID。"
+        },
+        {
+          "nodeId": "1_1",
+          "blockId": "1_1:b002",
+          "quote": "文本生成：基于概率分布的自回归生成，每个 token 的预测都依赖于前面的全部上下文。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "68ec5978278c0382195ddb211caa2258817a61e43823fab1b60e169b060510ca",
+      "source": "6_0",
+      "target": "7_2",
+      "type": "application",
+      "directed": true,
+      "rationale": "检索外部知识库增强生成是 RAG 原理，百炼内置知识库和检索增强生成功能，方向从 RAG 方法到平台能力。",
+      "evidence": [
+        {
+          "nodeId": "6_0",
+          "blockId": "6_0:b002",
+          "quote": "RAG（Retrieval-Augmented Generation）通过检索外部知识库来增强生成能力"
+        },
+        {
+          "nodeId": "7_2",
+          "blockId": "7_2:b009",
+          "quote": "RAG 应用：内置知识库搭建和检索增强生成能力"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "6aa6ba76536e363d0a19327bc77f2bb54a0a308e858d45b0b9fcb7c7f7679f8f",
+      "source": "1_3",
+      "target": "3_0",
+      "type": "contrast",
+      "directed": false,
+      "rationale": "微调页明确比较提示词工程与微调的推荐场景，提示词定义页说明通过设计输入文本引导输出；两种任务适配路径可按原文所列原型验证与定制场景比较，不宣称其中一种普遍更好。",
+      "evidence": [
+        {
+          "nodeId": "1_3",
+          "blockId": "1_3:b017",
+          "quote": "推荐场景 | 初步验证、快速原型 | 生产级定制、私有知识 |"
+        },
+        {
+          "nodeId": "3_0",
+          "blockId": "3_0:b002",
+          "quote": "提示词工程（Prompt Engineering）是设计和优化输入给 LLM 的提示文本，以引导模型生成期望输出的系统性方法。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "6e89e2109fb12ec4eb5f3699577eb24987c1fcbe1b3b4d66ee684734b3a5c306",
+      "source": "8_0",
+      "target": "9_5",
+      "type": "application",
+      "directed": true,
+      "rationale": "部署页给出 HPA 水平扩缩，生产架构页的推理集群采用多副本和 HPA 自动伸缩，方向从部署技术到生产组件设计。",
+      "evidence": [
+        {
+          "nodeId": "8_0",
+          "blockId": "8_0:b017",
+          "quote": "HPA（水平自动扩缩）和 VPA（垂直自动扩缩）"
+        },
+        {
+          "nodeId": "9_5",
+          "blockId": "9_5:b005",
+          "quote": "推理集群：多副本部署，HPA 自动伸缩，蓝绿部署"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "72ea10a1488b24d11e34076482c104e1e2f709920c93dba62b8422909b0ed13f",
+      "source": "6_3",
+      "target": "6_5",
+      "type": "related",
+      "directed": false,
+      "rationale": "高阶 RAG 的 Agentic 模式让智能体自主规划检索，未来方向页也明确把自主获取与验证信息作为 Agentic 融合，连接已有范式与演进讨论。",
+      "evidence": [
+        {
+          "nodeId": "6_3",
+          "blockId": "6_3:b009",
+          "quote": "Agentic RAG 将 RAG 流程从「固定的检索→生成」流水线升级为智能体自主规划："
+        },
+        {
+          "nodeId": "6_5",
+          "blockId": "6_5:b010",
+          "quote": "Agentic 融合：RAG 不再是固定的检索→生成流程，而是由 Agent 自主规划——它会自问「我需要什么信息？从哪里获取？如何验证？」"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "7717d1170eba6309bfc95deb62c6caefb9960dad21070c2d0df49f26fcd5b288",
+      "source": "2_3",
+      "target": "2_0",
+      "type": "related",
+      "directed": false,
+      "rationale": "总体架构说明 Attention 不感知顺序并需要位置编码，位置编码页进一步解释必须额外注入位置信息。",
+      "evidence": [
+        {
+          "nodeId": "2_3",
+          "blockId": "2_3:b006",
+          "quote": "Attention 本身不感知顺序，需要额外注入位置信息："
+        },
+        {
+          "nodeId": "2_0",
+          "blockId": "2_0:b011",
+          "quote": "Position Encoding | 为模型提供位置信息（Attention 本身不感知顺序） |"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "7c8b29cedd833a40a8ac21e83e0470541ab8a828f906970f707bc02fb39907f7",
+      "source": "6_1",
+      "target": "8_2",
+      "type": "application",
+      "directed": true,
+      "rationale": "Embedding 解释非结构化数据的向量表示，RAG 向量数据库流程中先将问题转为 embedding 再搜索相似文档，方向从表示方法到检索流水线。",
+      "evidence": [
+        {
+          "nodeId": "6_1",
+          "blockId": "6_1:b002",
+          "quote": "Embedding 是将文本、图片等非结构化数据映射到高维向量空间的技术。"
+        },
+        {
+          "nodeId": "8_2",
+          "blockId": "8_2:b002",
+          "quote": "→ 1. 向量化：将问题转为 embedding 向量\n  → 2. 检索：在向量数据库中搜索最相似的文档"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "7d1ae52614d144cd58562bfbf9b458727088f4ae1456d73f4623876da0c45d2a",
+      "source": "8_3",
+      "target": "9_3",
+      "type": "related",
+      "directed": false,
+      "rationale": "RAG 评估页区分检索、生成与端到端指标，EDD 要求先定义指标后开发并验证改动；二者连接领域指标与评估驱动的工程方法。",
+      "evidence": [
+        {
+          "nodeId": "8_3",
+          "blockId": "8_3:b004",
+          "quote": "生成质量 | Faithfulness, Answer Relevance | LLM-as-Judge 评分 |"
+        },
+        {
+          "nodeId": "9_3",
+          "blockId": "9_3:b002",
+          "quote": "评估驱动开发（Evaluation-Driven Development）借鉴了 TDD（测试驱动开发）的思路：先定义评估指标，再开发模型应用，确保每次改动都有可量化的效果验证。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "813169a6ede14eefaa568db0de07407cd034104f0c2086029ce40c8d437a290e",
+      "source": "10_0",
+      "target": "9_1",
+      "type": "application",
+      "directed": true,
+      "rationale": "基本概念页定义自主规划、执行和反思，开发页以 Plan→Execute→Observe→Reflect→Repeat 循环落实这些组件，方向从概念到系统开发组织。",
+      "evidence": [
+        {
+          "nodeId": "10_0",
+          "blockId": "10_0:b002",
+          "quote": "AI Agent 是一种能够感知环境、自主规划、调用工具执行行动、并根据结果反思调整的智能体。"
+        },
+        {
+          "nodeId": "9_1",
+          "blockId": "9_1:b002",
+          "quote": "→ Plan（规划：分解任务为子步骤）\n      → Execute（执行：调用工具处理每个子步骤）\n        → Observe（观察：收集执行结果）\n          → Reflect（反思：是否需要调整计划？）"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "871b4bb35e2e9a0d36630f5fc83f47bb68d37fc0ff2fcc1643527b2deae15d75",
+      "source": "1_1",
+      "target": "2_4",
+      "type": "application",
+      "directed": true,
+      "rationale": "逐 token 自回归生成在推理优化页中体现为复用前文已计算的 K、V，减少每一步生成的重复工作。",
+      "evidence": [
+        {
+          "nodeId": "1_1",
+          "blockId": "1_1:b002",
+          "quote": "文本生成：基于概率分布的自回归生成，每个 token 的预测都依赖于前面的全部上下文。"
+        },
+        {
+          "nodeId": "2_4",
+          "blockId": "2_4:b002",
+          "quote": "在自回归生成中，每步生成一个新 token，但前面的 token 已经计算过的 K 和 V 矩阵可以缓存复用，避免重复计算。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "8d11162584a8a043db6c58d0edafaecc296152c89593719fea317a4e3e8e850a",
+      "source": "5_1",
+      "target": "5_5",
+      "type": "application",
+      "directed": true,
+      "rationale": "核心命令将 /review 定位为提交前代码检查，项目实战在开发流程的代码审查阶段调用 /review，体现该命令在项目中的具体使用。",
+      "evidence": [
+        {
+          "nodeId": "5_1",
+          "blockId": "5_1:b009",
+          "quote": "/review | 代码审查 | 提交前检查 |"
+        },
+        {
+          "nodeId": "5_5",
+          "blockId": "5_5:b008",
+          "quote": "代码审查 | /review | 审查报告 |"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "9062e08bae5ba2aed0f6bec5a1d53431d7c86c1107a27f1f8a149463f1f71c0a",
+      "source": "1_1",
+      "target": "3_3",
+      "type": "application",
+      "directed": true,
+      "rationale": "能力页的上下文学习明确以任务示例调整当前回答、无需更新参数；Few-shot 页提供少量情感分类示例作为该能力的具体使用方式。",
+      "evidence": [
+        {
+          "nodeId": "1_1",
+          "blockId": "1_1:b004",
+          "quote": "上下文学习（In-Context Learning）：模型可依据提示词中的任务示例调整当前回答，无需在推理时更新模型参数。"
+        },
+        {
+          "nodeId": "3_3",
+          "blockId": "3_3:b004",
+          "quote": "提供 1-5 个示例，让模型学习任务模式。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "90fb85f29adb35a920f2d919d37da497ca06b3599eda8111b615131afa9e13d8",
+      "source": "5_4",
+      "target": "10_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "MCP 架构通过 Tools 暴露 API 调用与计算功能，Tool Use 页列出 API、文件和数据库操作工具，两者连接外部可执行能力的协议暴露与调用使用。",
+      "evidence": [
+        {
+          "nodeId": "5_4",
+          "blockId": "5_4:b004",
+          "quote": "• Tools：暴露可执行功能（API调用、计算）"
+        },
+        {
+          "nodeId": "10_1",
+          "blockId": "10_1:b006",
+          "quote": "操作类：文件读写、数据库操作、API 调用"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "914045ebcc34e117fec1b84d5ad3e53ea3903f4eea99e423be4e764ddd628a58",
+      "source": "7_0",
+      "target": "7_4",
+      "type": "related",
+      "directed": false,
+      "rationale": "认证概述把 PAI 组件功能区分列为高频考点，考点总结再次列出 DSW、DLC、EAS 的定位差异，连接备考范围与具体复习目标。",
+      "evidence": [
+        {
+          "nodeId": "7_0",
+          "blockId": "7_0:b019",
+          "quote": "PAI 平台各组件（DSW/DLC/EAS/Studio）的功能区分是高频考点"
+        },
+        {
+          "nodeId": "7_4",
+          "blockId": "7_4:b007",
+          "quote": "PAI 各组件功能区分（尤其是 DSW/DLC/EAS 的定位差异）"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "92736c6a27aadb6cd6af91b5319a7948fff8212bdd8704c712384384f469122b",
+      "source": "7_4",
+      "target": "7_5",
+      "type": "related",
+      "directed": false,
+      "rationale": "考点页要求理解模型评估指标含义与计算方法，指标页具体定义 Accuracy、Precision、Recall 与 F1，连接考试学习目标与相应计算内容。",
+      "evidence": [
+        {
+          "nodeId": "7_4",
+          "blockId": "7_4:b015",
+          "quote": "模型评估指标含义和计算方法"
+        },
+        {
+          "nodeId": "7_5",
+          "blockId": "7_5:b002",
+          "quote": "准确率 Accuracy = (TP + TN) / (TP + TN + FP + FN)\n精确率 Precision = TP / (TP + FP)"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "9485075d7b463542b4aeb4b1e794f356d351dfccb91d340c6045e03e6e444279",
+      "source": "7_3",
+      "target": "8_0",
+      "type": "related",
+      "directed": false,
+      "rationale": "PAI-EAS 组件表将其定位为在线推理和模型 API 部署，部署架构页给出实时 API 服务与扩缩能力，连接平台组件与部署选择。",
+      "evidence": [
+        {
+          "nodeId": "7_3",
+          "blockId": "7_3:b006",
+          "quote": "PAI-EAS | 在线推理服务 | 模型部署为 API |"
+        },
+        {
+          "nodeId": "8_0",
+          "blockId": "8_0:b003",
+          "quote": "PAI-EAS 在线推理 | 实时 API 服务 | 低延迟（<100ms），自动扩缩 |"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "9e0a60abcd4fe9c65693793fd4815e2947874ddf722f8f1e4faad37031fe700c",
+      "source": "2_1",
+      "target": "2_2",
+      "type": "prerequisite",
+      "directed": true,
+      "rationale": "公式推导使用自注意力中的 Q、K 点积和 √d_k 缩放；注意力页先给出该计算，数学页解释点积方差与 softmax 饱和，因此先理解基本注意力计算有助于阅读该推导。",
+      "evidence": [
+        {
+          "nodeId": "2_1",
+          "blockId": "2_1:b004",
+          "quote": "Attention(Q, K, V) = softmax(QK^T / √d_k) × V"
+        },
+        {
+          "nodeId": "2_2",
+          "blockId": "2_2:b002",
+          "quote": "假设 q 和 k 是 d_k 维的独立随机向量，每个分量的均值为 0、方差为 1，则点积 q·k 的均值为 0、方差为 d_k。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "a0aa757dd99c69131292e4ac81c19ee154eef7705885944dd0311f9d77f2e4fc",
+      "source": "3_3",
+      "target": "9_4",
+      "type": "related",
+      "directed": false,
+      "rationale": "Few-shot 将示例加入提示输入，缓存页把 Few-shot 示例列为重复长前缀可缓存的内容；关联示例提示的结构与成本优化机制。",
+      "evidence": [
+        {
+          "nodeId": "3_3",
+          "blockId": "3_3:b004",
+          "quote": "提供 1-5 个示例，让模型学习任务模式。"
+        },
+        {
+          "nodeId": "9_4",
+          "blockId": "9_4:b002",
+          "quote": "对于重复使用的长前缀（如系统提示词、Few-shot 示例、工具定义），API 会缓存计算结果。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "a5490d3fce421203b8535262010ca7f0ade0de6c602a29ef9420bc4c4e907699",
+      "source": "6_5",
+      "target": "6_2",
+      "type": "related",
+      "directed": false,
+      "rationale": "局限性页指出未进入 top-k 的关键信息无法由生成弥补；检索策略页的粗排 top-100、精排 top-5 管线提供了该召回与精排取舍的具体环节。",
+      "evidence": [
+        {
+          "nodeId": "6_5",
+          "blockId": "6_5:b004",
+          "quote": "检索瓶颈：再好的检索算法也有召回极限。如果关键信息不在 top-k 中，后续生成再好也无济于事。"
+        },
+        {
+          "nodeId": "6_2",
+          "blockId": "6_2:b014",
+          "quote": "# 粗排：双编码器（效率高，精度一般）\n# 精排：Cross-encoder（效率低，精度高）\n# 典型管线：粗排取 top-100 → 精排取 top-5"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "a5ce53e199cb4e7046980f6566eb1718c8f699e993d728df573a8a07226bf976",
+      "source": "8_1",
+      "target": "8_0",
+      "type": "application",
+      "directed": true,
+      "rationale": "量化页以降低数值精度压缩模型，部署页把模型量化列为减少显存占用的推理优化手段；只引用机制，不采用无适用范围的速度倍数。",
+      "evidence": [
+        {
+          "nodeId": "8_1",
+          "blockId": "8_1:b002",
+          "quote": "量化通过降低数值精度来压缩模型。"
+        },
+        {
+          "nodeId": "8_0",
+          "blockId": "8_0:b008",
+          "quote": "模型量化：FP16→INT8/INT4"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "b225d3706614e54e1bb501ca83f130267a022dc499d6b3eb580016dc2852faba",
+      "source": "6_1",
+      "target": "6_2",
+      "type": "prerequisite",
+      "directed": true,
+      "rationale": "Embedding 的语义向量空间是原文明确指出的 RAG 检索数学基础，稠密检索使用查询与文档编码后的向量相似度；理解向量表示有助于理解该检索方法。",
+      "evidence": [
+        {
+          "nodeId": "6_1",
+          "blockId": "6_1:b002",
+          "quote": "Embedding 是将文本、图片等非结构化数据映射到高维向量空间的技术。语义相近的文本在向量空间中距离更近——这是 RAG 检索的数学基础。"
+        },
+        {
+          "nodeId": "6_2",
+          "blockId": "6_2:b004",
+          "quote": "用双编码器（Dual Encoder）架构将查询和文档分别编码为向量，通过向量相似度检索。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "b394739003923e1ce3106f02d959bd68fec009c51d220083136b2c0d4064b34b",
+      "source": "8_4",
+      "target": "10_2",
+      "type": "related",
+      "directed": false,
+      "rationale": "安全页要求访问控制遵循最小权限，Agent 安全边界把相同原则具体化为每个工具仅授予完成任务所需权限。",
+      "evidence": [
+        {
+          "nodeId": "8_4",
+          "blockId": "8_4:b009",
+          "quote": "访问控制：RAM 精细化权限管理，最小权限原则"
+        },
+        {
+          "nodeId": "10_2",
+          "blockId": "10_2:b017",
+          "quote": "遵循最小权限原则，每个工具只授予完成任务所需的最低权限"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "b502a5713cfc3a4dcc0828d6ba17177fc6dbf53d8dc7f7b25e49dd46763ef815",
+      "source": "7_5",
+      "target": "9_3",
+      "type": "application",
+      "directed": true,
+      "rationale": "评估页描述 BLEU/ROUGE 自动指标用于回归，EDD 工作流在每次 Prompt 或策略变更后运行评估并检查指标变化，方向从评估方法到持续开发验证。",
+      "evidence": [
+        {
+          "nodeId": "7_5",
+          "blockId": "7_5:b010",
+          "quote": "自动评估：使用 BLEU/ROUGE 等指标，适合大规模回归"
+        },
+        {
+          "nodeId": "9_3",
+          "blockId": "9_3:b004",
+          "quote": "3. 迭代开发\n   - 每次 Prompt/策略变更后运行评估\n   - 关注指标变化（改进 vs 回归）\n   - 回归测试确保旧问题不重现"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "ba8fa001fd19abe6060d02d972f26d36b7179d1af22797bd47aa8bb405182d16",
+      "source": "7_1",
+      "target": "7_2",
+      "type": "contrast",
+      "directed": false,
+      "rationale": "DashScope 提供统一模型调用 API，百炼的定位描述直接说明比 DashScope 更偏上层应用开发；这是模型服务与全链路应用平台的明确区别。",
+      "evidence": [
+        {
+          "nodeId": "7_1",
+          "blockId": "7_1:b002",
+          "quote": "DashScope（灵积）是阿里云的一站式模型服务平台，提供统一 API 调用各类 AI 模型的能力。它是阿里云大模型服务的核心入口。"
+        },
+        {
+          "nodeId": "7_2",
+          "blockId": "7_2:b002",
+          "quote": "百炼是阿里云的大模型应用开发平台，提供从数据准备、模型调优到应用评测的全链路 AI 开发能力。比 DashScope 更偏上层应用开发。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "bedf89f191e349b6d21240cf09d7add6da0493d9daa01a9683136436c9267538",
+      "source": "2_4",
+      "target": "8_0",
+      "type": "application",
+      "directed": true,
+      "rationale": "KV-Cache 页用 PagedAttention 管理缓存减少碎片，部署优化页把 PagedAttention 列为 KV-Cache 优化方法，方向从缓存技术到推理部署选择。",
+      "evidence": [
+        {
+          "nodeId": "2_4",
+          "blockId": "2_4:b010",
+          "quote": "PagedAttention：vLLM 的核心技术，像虚拟内存一样管理 KV-Cache，减少碎片"
+        },
+        {
+          "nodeId": "8_0",
+          "blockId": "8_0:b009",
+          "quote": "KV-Cache 优化：共享前缀缓存、PagedAttention（vLLM）"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "bef2d69044042e6055422aaa94d7bc314b4d59c8d2cde2e3e312e2d158b61ce3",
+      "source": "6_0",
+      "target": "6_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "RAG 索引流程要求文档向量化，Embedding 页解释非结构化数据到语义向量空间的映射并指出其检索基础作用。",
+      "evidence": [
+        {
+          "nodeId": "6_0",
+          "blockId": "6_0:b003",
+          "quote": "# 1. 索引（Indexing）：将文档切片、向量化，构建可检索的知识库"
+        },
+        {
+          "nodeId": "6_1",
+          "blockId": "6_1:b002",
+          "quote": "Embedding 是将文本、图片等非结构化数据映射到高维向量空间的技术。语义相近的文本在向量空间中距离更近——这是 RAG 检索的数学基础。"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "c04ce01e240cd59a28c53dc7a8bd6e5b7ad9dc20ce8288b19d99d5224d7ff63b",
+      "source": "6_4",
+      "target": "8_3",
+      "type": "related",
+      "directed": false,
+      "rationale": "两处 RAGAS 课程都用 faithfulness 衡量回答与检索来源的一致性，连接质量保障框架与指标细化，不把答案正确与来源忠实混为一谈。",
+      "evidence": [
+        {
+          "nodeId": "6_4",
+          "blockId": "6_4:b006",
+          "quote": "# faithfulness：生成的回答中有多少信息有检索结果支撑"
+        },
+        {
+          "nodeId": "8_3",
+          "blockId": "8_3:b009",
+          "quote": "Faithfulness：生成答案是否忠实于检索上下文（无幻觉）"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "c5c44cffd5d3e492557cf3bd9d6ef143508f7a15dc3f3008f51746d5866141bc",
+      "source": "3_0",
+      "target": "3_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "提示词工程定义为设计输入来引导输出，编写原则以清晰描述语言、算法、注释和测试要求示范具体设计方法。",
+      "evidence": [
+        {
+          "nodeId": "3_0",
+          "blockId": "3_0:b002",
+          "quote": "提示词工程（Prompt Engineering）是设计和优化输入给 LLM 的提示文本，以引导模型生成期望输出的系统性方法。"
+        },
+        {
+          "nodeId": "3_1",
+          "blockId": "3_1:b002",
+          "quote": "清晰明确：避免模糊，具体说明需求"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "c939d0541dcf8401cadbe6fb7dd77856784a003a22221dd523642308e5576bbc",
+      "source": "4_2",
+      "target": "6_3",
+      "type": "application",
+      "directed": true,
+      "rationale": "Agent 的自主计划和工具执行在 Agentic RAG 中用于让检索生成流程由智能体自主规划，方向从通用 Agent 架构到 RAG 的应用范式。",
+      "evidence": [
+        {
+          "nodeId": "4_2",
+          "blockId": "4_2:b002",
+          "quote": "Agent（智能体）是一个能自主感知环境、制定计划、调用工具、执行动作的 AI 系统。"
+        },
+        {
+          "nodeId": "6_3",
+          "blockId": "6_3:b009",
+          "quote": "Agentic RAG 将 RAG 流程从「固定的检索→生成」流水线升级为智能体自主规划："
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "d610505d509f867ec28d57790b2fb7d8241af6f5f5bbc69fdb037b3c86bb5ce2",
+      "source": "6_2",
+      "target": "6_4",
+      "type": "related",
+      "directed": false,
+      "rationale": "混合检索融合稠密与稀疏结果，质量保障页针对回答不完整建议查询改写和多路检索融合，连接检索策略与具体的质量优化选择。",
+      "evidence": [
+        {
+          "nodeId": "6_2",
+          "blockId": "6_2:b010",
+          "quote": "稠密检索擅长语义匹配但可能遗漏精准关键词，稀疏检索擅长关键词匹配但缺乏语义理解。混合检索加权融合两者："
+        },
+        {
+          "nodeId": "6_4",
+          "blockId": "6_4:b011",
+          "quote": "回答不完整 | 检索遗漏关键信息、查询理解不充分 | 查询改写、多路检索融合 |"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "da3674d61b3cd58dafb85f227b1c5ea7d42699a88b63e964092178c3f92bdf52",
+      "source": "3_2",
+      "target": "3_4",
+      "type": "related",
+      "directed": false,
+      "rationale": "角色页要求给角色添加具体专业属性，模式页把赋予资深架构师身份列为角色模式，连接角色细化方法与模式分类。",
+      "evidence": [
+        {
+          "nodeId": "3_2",
+          "blockId": "3_2:b009",
+          "quote": "角色参数：为角色添加具体属性（\"你是一位使用 Django 5 年、擅长性能优化的 Python 工程师\"）"
+        },
+        {
+          "nodeId": "3_4",
+          "blockId": "3_4:b003",
+          "quote": "角色模式：赋予角色设定后提问\"你是一名资深架构师，请分析这个系统的扩展性问题\""
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "e3863c963bc7fb77f9feb0020decdcaed32f3f81af1e4965c4cd9dd4d7c87292",
+      "source": "3_5",
+      "target": "3_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "核心原则要求限制输出范围，高阶约束页将这种要求细化为必须包含及不能包含的元素，关联的是可检验的输出边界。",
+      "evidence": [
+        {
+          "nodeId": "3_5",
+          "blockId": "3_5:b006",
+          "quote": "约束满足：明确列出必须包含/绝对不能包含的元素"
+        },
+        {
+          "nodeId": "3_1",
+          "blockId": "3_1:b004",
+          "quote": "设定约束：限制输出范围"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "e5b521786b8e25fdc21cabd7cd76b3a2ad967c3084a7265c4d76e8fa0a4d81d9",
+      "source": "5_0",
+      "target": "5_1",
+      "type": "related",
+      "directed": false,
+      "rationale": "首次配置页在项目目录通过 claude 启动，命令页给出项目启动及交互、单次提问、恢复会话等用法，连接安装后的启动操作与日常命令。",
+      "evidence": [
+        {
+          "nodeId": "5_0",
+          "blockId": "5_0:b010",
+          "quote": "# 在项目目录启动：\ncd my-project && claude"
+        },
+        {
+          "nodeId": "5_1",
+          "blockId": "5_1:b002",
+          "quote": "# 在项目目录启动\nclaude                              # 交互模式"
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    },
+    {
+      "id": "fc4212802e0452579ad8c1ec68b15b9c0872e6a0b074adbbd2a29b4889f69591",
+      "source": "2_1",
+      "target": "2_5",
+      "type": "application",
+      "directed": true,
+      "rationale": "标准自注意力产生 n×n 分数矩阵，FlashAttention 针对该矩阵的显存开销采用分块和融合计算；方向从基础机制到该机制的实现优化。",
+      "evidence": [
+        {
+          "nodeId": "2_1",
+          "blockId": "2_1:b007",
+          "quote": "计算 Q 与 K 的点积相似度，得到 n×n 的注意力分数矩阵"
+        },
+        {
+          "nodeId": "2_5",
+          "blockId": "2_5:b005",
+          "quote": "FlashAttention 通过分块计算（Tiling）和内核融合避免显式实例化 n×n 的注意力矩阵："
+        }
+      ],
+      "sourceSnapshot": "7c760e86f373033e87bfb86236e63dbc3d27720d2d3451e35d1980ad915d167b",
+      "generator": "gpt-6-sol",
+      "generatedAt": "2026-09-26T19:48:01.083Z",
+      "status": "ai-reviewed",
+      "reviewer": "gpt-6-astra",
+      "reviewedAt": "2026-09-27T05:12:00.1352719Z"
+    }
+  ]
+}

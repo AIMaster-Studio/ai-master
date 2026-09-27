@@ -21,6 +21,7 @@
 const { randomUUID, randomInt } = require('node:crypto');
 const { retrieveEvidence } = require('./grounding');
 const { reviewExplanation } = require('./ai-review');
+const { createKnowledgeNodeRoutes } = require('./learning/knowledge-node-routes');
 
 const DAY = 86400000;
 const QUIZ_PASS_SCORE = 75;
@@ -29,7 +30,7 @@ const AI_REVIEW_DAILY_BUDGET = 5000; // 全服务每日 AI 复评总预算，超
 
 // 本模块负责的接口名（与 server/index.js 的派发条件共用一份，避免两边各写一遍导致漂移）。
 // 注意 'quiz' 与 'review' 同时有 GET 与 POST 两个方向，不能按请求方法拆成两个名字。
-const LEARNING_ROUTE_NAMES = new Set(['plan', 'explanation', 'quiz', 'complete', 'review', 'export']);
+const LEARNING_ROUTE_NAMES = new Set(['plan', 'explanation', 'quiz', 'complete', 'review', 'export', 'knowledge-progress']);
 
 const stamp = () => new Date().toISOString();
 
@@ -64,6 +65,7 @@ function csvCell(value) {
 
 function createLearningRoutes(options) {
   const { store, learning, core, catalog, recordMemory, rag, courseKbId, fetchImpl } = options;
+  const knowledgeNodeRoutes = createKnowledgeNodeRoutes({ store, learning, core, rag, courseKbId, fetchImpl });
   const {
     modules, questions, limited, moduleFor, progressFor, quizDay,
     reserveQuizAttempt, addAttempt, checkAnswers, gradeWithContext, recordWrongAnswers, reviewDelayDays
@@ -71,6 +73,7 @@ function createLearningRoutes(options) {
 
   return async function handleLearning(ctx) {
     const { req, url, route, body, send, fail, user, res } = ctx;
+    if (route === 'knowledge-progress') return knowledgeNodeRoutes(ctx);
     let state = ctx.state;
     const save = () => store.save(user.id, state);
     const isPost = req.method === 'POST';

@@ -75,10 +75,29 @@ test('catalog strips answers, private files are blocked, animations support byte
   for (const route of ['/server/index.js', '/.git/config', '/.local/learning.sqlite', '/server/data/learning-curriculum.json', '/frontend/data/learning-curriculum.json', '/data/learning-curriculum.json', '/frontend/data/LEARNING-CURRICULUM.JSON', '/frontend/DATA/learning-curriculum.json', '/frontend/data/learning-curriculum.json.', '/frontend/data/learning-curriculum.json%20', '/frontend/data/learning-curriculum.json::$DATA', '/frontend/.local/test', '/frontend/data/users.json']) {
     assert.equal((await request(route)).status, 404, route);
   }
+  const designTokens = await request('/assets/tokens.css');
+  assert.equal(designTokens.status, 200);
+  assert.match(designTokens.data, /--ink\s*:/);
+  assert.equal((await request('/assets/private-token.txt')).status, 404);
   const video = await request('/third_party/dsh-pet/dsh-pet/assets/webm/' + encodeURIComponent('待机呼吸休闲') + '.webm', undefined, { headers: { Range: 'bytes=0-99' } });
   assert.equal(video.status, 206);
   assert.equal(video.headers.get('content-length'), '100');
   assert.match(video.headers.get('content-range'), /^bytes 0-99\//);
+});
+
+test('static navigation serves the beginner, hands-on and evidence pages', async t => {
+  const { request } = await start(t);
+  const pages = [
+    { route: '/beginner/', title: '新手入门' },
+    { route: '/hands-on/', title: '动手实践操作题' },
+    { route: '/ai-review/', title: 'AI 评测证据墙' }
+  ];
+  for (const page of pages) {
+    const response = await request(page.route);
+    assert.equal(response.status, 200, page.route);
+    assert.match(response.headers.get('content-type') || '', /text\/html/, page.route);
+    assert.ok(response.data.includes(page.title), page.route + ' did not serve its own entry page');
+  }
 });
 
 test('cannot skip tasks, cannot pass repeated text, completion requires both current gates and is idempotent', async t => {

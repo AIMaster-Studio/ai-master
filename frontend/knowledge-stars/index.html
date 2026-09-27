@@ -9,6 +9,12 @@
   <meta http-equiv="Expires" content="0" />
   <title>知识星海 · AI Master</title>
   <link rel="stylesheet" href="../static/css/knowledge_stars.css?v=20260905" />
+  <script>
+    if (new URLSearchParams(location.search).get("embed") === "courses") {
+      document.documentElement.classList.add("embedded-courses");
+      addEventListener("DOMContentLoaded", () => { document.getElementById("learnButton").target = "_top"; });
+    }
+  </script>
   <style>
     /* Competition polish: instrument chrome only. Keep the starfield rendering untouched. */
     :root { --atlas-ui-go:#2dd4bf; --atlas-ui-hold:#f59e0b; }
@@ -23,8 +29,29 @@
     .eyebrow { color:var(--atlas-ui-go); }
     .eyebrow:before { background:var(--atlas-ui-go); box-shadow:none; }
     .atlas-panel h1 em { color:var(--atlas-ui-hold); text-shadow:none; }
+    .embedded-courses .topbar { display:none; }
+    .embedded-courses .atlas-panel {
+      top:clamp(28px,5vh,48px);
+      bottom:clamp(28px,5vh,48px);
+      left:clamp(24px,4.5vw,68px);
+      width:min(440px,40vw);
+      transform:none;
+    }
+    .embedded-courses .atlas-panel.hidden { transform:translateX(-35px); }
+    .embedded-courses .atlas-panel .eyebrow { margin-bottom:12px; }
+    .embedded-courses .atlas-panel h1 { font-size:clamp(30px,3.2vw,44px); line-height:1.13; letter-spacing:-.045em; }
+    .embedded-courses .atlas-copy { margin-top:16px; font-size:12px; }
+    .embedded-courses .atlas-stats { position:absolute; bottom:0; left:0; margin:0; }
+    .embedded-courses .atlas-stats div:nth-child(3),
+    .embedded-courses .legend { display:none; }
     @media (max-width:600px) { .top-actions button { min-height:32px; font-size:9.5px; } }
+    @media (max-width:600px) {
+      .embedded-courses .atlas-panel { top:24px; bottom:30px; left:22px; width:calc(100vw - 44px); }
+      .embedded-courses .atlas-panel h1 { font-size:clamp(30px,8vw,38px); }
+      .embedded-courses .atlas-copy { max-width:320px; }
+    }
   </style>
+  <link rel="stylesheet" href="../static/css/knowledge-directory.css?v=20260926">
   <link rel="stylesheet" href="../assets/atmosphere.css">
   <script src="../assets/atmosphere.js" defer></script>
 </head>
@@ -50,6 +77,7 @@
   <section class="galaxy-title" id="galaxyTitle" aria-live="polite"><p>CHAPTER 00</p><h2>知识星系</h2><span>关联进度 0%</span></section>
   <button class="back-button" id="backButton" type="button">← 返回宇宙</button>
   <div class="orbit-hint" id="orbitHint"><span>拖拽星图探索</span><i></i><span>点击星球查看知识</span></div>
+  <details class="star-directory" id="starDirectory"><summary>文字目录 · 57 个知识点</summary><nav class="star-directory-list" id="starDirectoryList" aria-label="知识星海文字课程目录"></nav></details>
 
   <aside class="knowledge-panel" id="knowledgePanel" aria-live="polite">
     <button class="panel-close" id="panelClose" type="button" aria-label="关闭知识详情">×</button>

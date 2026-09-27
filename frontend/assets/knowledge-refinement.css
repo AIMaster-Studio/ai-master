@@ -1,0 +1,177 @@
+/* Reading and status tokens shared by every knowledge page. */
+body.knowledge-lesson-body {
+  --read-title: clamp(30px, 3vw, 42px);
+  --read-section: clamp(20px, 1.6vw, 24px);
+  --read-subsection: 18px;
+  --read-body: 15px;
+  --read-support: 13px;
+  --read-meta: 12px;
+  --read-line: 1.72;
+  --read-ink: #d9e8f1;
+  --read-muted: #aabfce;
+  --read-line-color: rgba(70, 186, 230, .24);
+}
+
+body.knowledge-lesson-body .knowledge-layout .lesson-main { min-width: 0; }
+body.knowledge-lesson-body .knowledge-layout .lesson-main > section { margin-top: 16px; }
+body.knowledge-lesson-body .knowledge-layout .lesson-main > section,
+body.knowledge-lesson-body .knowledge-layout .rail-panel { padding: clamp(16px, 1.4vw, 24px); }
+body.knowledge-lesson-body .knowledge-layout h1 { font-size: var(--read-title); line-height: 1.2; }
+body.knowledge-lesson-body .knowledge-layout .compact-section-heading h2,
+body.knowledge-lesson-body .knowledge-layout .knowledge-panel-heading h2,
+body.knowledge-lesson-body .knowledge-layout .series-section-head h2 { font-size: var(--read-section); line-height: 1.35; }
+body.knowledge-lesson-body .knowledge-layout .module-heading h3 { font-size: var(--read-subsection); line-height: 1.4; }
+body.knowledge-lesson-body .knowledge-layout .lesson-intro {
+  max-width: 72ch;
+  color: var(--read-ink);
+  font-size: var(--read-body);
+  line-height: var(--read-line);
+}
+body.knowledge-lesson-body .knowledge-layout .series-hero .lesson-intro {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+body.knowledge-lesson-body .knowledge-layout .module-body,
+body.knowledge-lesson-body .knowledge-layout .series-module .module-body,
+body.knowledge-lesson-body .knowledge-layout .prompt-core-card .module-body,
+body.knowledge-lesson-body .knowledge-layout .series-prompt .series-module .module-body {
+  color: var(--read-ink);
+  font-size: var(--read-body);
+  line-height: var(--read-line);
+  overflow-wrap: anywhere;
+}
+body.knowledge-lesson-body .knowledge-layout .module-body pre,
+body.knowledge-lesson-body .knowledge-layout .module-body table,
+body.knowledge-lesson-body .knowledge-layout .module-body > ol > li pre {
+  max-width: 100%;
+  font-size: var(--read-meta);
+  line-height: 1.65;
+  overflow-x: auto;
+}
+body.knowledge-lesson-body .knowledge-layout .module-body th,
+body.knowledge-lesson-body .knowledge-layout .module-body td { font-size: var(--read-support); }
+body.knowledge-lesson-body .knowledge-layout .objective-card p,
+body.knowledge-lesson-body .knowledge-layout .series-objective-copy strong,
+body.knowledge-lesson-body .knowledge-layout .summary-list p,
+body.knowledge-lesson-body .knowledge-layout .prompt-summary-panel .summary-list p,
+body.knowledge-lesson-body .knowledge-layout .series-summary .summary-list p,
+body.knowledge-lesson-body .knowledge-layout .prompt-importance-item p,
+body.knowledge-lesson-body .knowledge-layout .series-overview-card p,
+body.knowledge-lesson-body .knowledge-layout .term-list dd {
+  color: var(--read-ink);
+  font-size: var(--read-support);
+  line-height: 1.65;
+}
+body.knowledge-lesson-body .knowledge-layout .route-point-copy strong,
+body.knowledge-lesson-body .knowledge-layout .progress-point-list .route-point-copy strong,
+body.knowledge-lesson-body .knowledge-layout .prompt-route-points .route-point-copy strong,
+body.knowledge-lesson-body .knowledge-layout .series-layout .route-point-copy strong {
+  font-size: var(--read-meta);
+  line-height: 1.45;
+  white-space: normal;
+  text-overflow: clip;
+}
+body.knowledge-lesson-body .knowledge-layout .route-level-copy strong,
+body.knowledge-lesson-body .knowledge-layout .prompt-route-panel .route-level-copy strong { font-size: var(--read-support); }
+body.knowledge-lesson-body .knowledge-layout .route-level-count,
+body.knowledge-lesson-body .knowledge-layout .active-level-count { font-size: var(--read-meta); }
+body.knowledge-lesson-body .knowledge-layout .route-point { min-height: 44px; }
+body.knowledge-lesson-body .knowledge-layout .lesson-metric small,
+body.knowledge-lesson-body .knowledge-layout .series-hero-metrics small { color: var(--read-muted); font-size: var(--read-meta); }
+body.knowledge-lesson-body .knowledge-layout .quick-check-question { font-size: 16px; line-height: 1.55; }
+body.knowledge-lesson-body .knowledge-layout .quick-check-options button,
+body.knowledge-lesson-body .knowledge-layout .prompt-quick-check .quick-check-options button { min-height: 44px; font-size: var(--read-support); }
+body.knowledge-lesson-body .knowledge-layout .quick-check-feedback { font-size: var(--read-support); }
+body.knowledge-lesson-body .knowledge-layout .summary-list { gap: 10px; }
+body.knowledge-lesson-body .knowledge-layout .summary-list li { min-width: 0; padding: 12px; }
+body.knowledge-lesson-body .knowledge-layout .series-prompt .series-module-grid { grid-template-columns: 1fr; }
+body.knowledge-lesson-body .knowledge-layout .series-prompt .series-module { grid-column: auto; }
+body.knowledge-lesson-body .knowledge-layout .series-prompt[data-lesson="2-4"] .series-module-grid { grid-template-columns: 1fr; }
+body.knowledge-lesson-body .knowledge-layout .series-visual-grid img { width: auto; height: auto; max-height: 320px; object-fit: contain; }
+body.knowledge-lesson-body .knowledge-layout .series-image-open { display: flex; align-items: center; justify-content: center; min-height: 44px; }
+body.knowledge-lesson-body .knowledge-layout .series-image-open img { max-width: 100%; }
+body.knowledge-lesson-body .knowledge-layout .series-visual-grid figcaption { color: var(--read-muted); font-size: var(--read-meta); line-height: 1.5; }
+body.knowledge-lesson-body .knowledge-layout .prompt-assistant-panel { align-content: start; }
+body.knowledge-lesson-body .knowledge-layout .prompt-assistant-copy { max-width: 100%; }
+body.knowledge-lesson-body .knowledge-layout .prompt-assistant-copy p { max-width: 100%; color: var(--read-ink); font-size: var(--read-support); line-height: 1.55; }
+body.knowledge-lesson-body .knowledge-layout .prompt-assistant-art {
+  position: relative;
+  top: auto;
+  right: auto;
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 88px;
+  background-position: center, right center;
+  background-size: cover, 210px auto;
+  opacity: .82;
+}
+body.knowledge-lesson-body .knowledge-layout .prompt-progress-summary .progress-ring,
+body.knowledge-lesson-body .knowledge-layout .progress-ring {
+  background: conic-gradient(#3bdde6 0 var(--position, 17%), rgba(60, 100, 124, .28) var(--position, 17%) 100%);
+}
+body.knowledge-lesson-body .knowledge-layout .series-progress-ring {
+  background: conic-gradient(#27e2d2 0 var(--position, 17%), rgba(49, 92, 118, .35) var(--position, 17%) 100%);
+}
+body.knowledge-lesson-body .knowledge-layout .learning-status-note,
+body.knowledge-lesson-body .knowledge-layout .quick-check-note {
+  margin: 0 0 12px;
+  color: var(--read-muted);
+  font-size: var(--read-meta);
+  line-height: 1.55;
+}
+body.knowledge-lesson-body .knowledge-layout .quick-check-note { margin: 12px 0 0; }
+body.knowledge-lesson-body .knowledge-layout .rail-fold { margin-top: 8px; border-top: 1px solid var(--read-line-color); }
+body.knowledge-lesson-body .knowledge-layout .rail-fold > summary {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  color: #85eaf0;
+  font-size: var(--read-support);
+  font-weight: 650;
+  cursor: pointer;
+}
+body.knowledge-lesson-body .knowledge-layout .rail-fold > summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+body.knowledge-lesson-body .knowledge-layout .rail-fold .resource-list,
+body.knowledge-lesson-body .knowledge-layout .rail-fold .progress-point-list { padding-top: 9px; }
+body.knowledge-lesson-body .knowledge-layout .learning-next-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border: 1px solid rgba(36, 201, 218, .45);
+  border-radius: 12px;
+  background: linear-gradient(110deg, rgba(12, 56, 72, .72), rgba(8, 30, 49, .92));
+}
+body.knowledge-lesson-body .knowledge-layout .learning-next-step span { color: #67dce5; font-size: var(--read-meta); letter-spacing: .03em; }
+body.knowledge-lesson-body .knowledge-layout .learning-next-step h2 { margin: 4px 0; font-size: var(--read-section); }
+body.knowledge-lesson-body .knowledge-layout .learning-next-step p { max-width: 62ch; margin: 0; color: var(--read-ink); font-size: var(--read-support); line-height: 1.6; }
+body.knowledge-lesson-body .knowledge-layout .learning-next-step a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 8px;
+  color: #03151c;
+  background: #31dce9;
+  font-size: var(--read-support);
+  font-weight: 700;
+}
+body.knowledge-lesson-body .knowledge-layout .learning-next-step a:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+body.knowledge-lesson-body :is(a, button, summary):focus-visible { outline: 2px solid #65e6ee; outline-offset: 3px; }
+
+@media (max-width: 1100px) {
+  body.knowledge-lesson-body .knowledge-layout .learning-next-step { flex-wrap: wrap; }
+}
+@media (max-width: 620px) {
+  body.knowledge-lesson-body { --read-title: 30px; --read-section: 20px; --read-subsection: 17px; --read-body: 15px; --read-support: 13px; --read-meta: 12px; }
+  body.knowledge-lesson-body .knowledge-layout .lesson-main > section { margin-top: 12px; }
+  body.knowledge-lesson-body .knowledge-layout .series-hero { min-height: 0; padding-bottom: 140px; }
+  body.knowledge-lesson-body .knowledge-layout .series-hero .lesson-intro { max-width: 100%; }
+  body.knowledge-lesson-body .knowledge-layout .series-visual-grid.is-paired { grid-template-columns: 1fr; }
+  body.knowledge-lesson-body .knowledge-layout .learning-next-step { display: grid; }
+  body.knowledge-lesson-body .knowledge-layout .learning-next-step a { width: 100%; }
+}

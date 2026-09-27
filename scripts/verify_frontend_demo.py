@@ -23,9 +23,14 @@ FRONTEND = ROOT / "frontend"
 PAGES = [
     "/",
     "/dashboard/",
+    "/course-progress/",
+    "/learning-path/",
+    "/courses/",
+    "/projects/",
     "/knowledge-stars/",
     "/canvas/",
     "/playground/",
+    "/experiments/",
     "/learning-center/",
     "/beginner/",
     "/hands-on/",
@@ -46,6 +51,13 @@ PAGES = [
 ]
 
 ASSETS = [
+    "/ai-learning/styles.css",
+    "/ai-learning/main.js",
+    "/ai-learning/data.js",
+    "/ai-learning/components.js",
+    "/ai-learning/pages.js",
+    "/ai-learning/playground.js",
+    "/assets/learning-hero-visual.webp",
     "/assets/tokens.css",
     "/assets/frontend.css",
     "/assets/landing.css",
