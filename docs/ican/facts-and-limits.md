@@ -1,16 +1,19 @@
 # 事实与边界
 
-核查日期：2026-09-09。范围是当前仓库和本次本机原型，不延伸到未提供的私有系统。
+文档更新：2026-09-28。新增的 33 节点流程与部署路由依据公开仓库 `master` 核对；其余历史事实仍以各自证据文件记录的日期为准。本次没有探测线上实例可用性。
 
 | 事项 | 可核实事实与边界 | 证据 |
 | --- | --- | --- |
 | 课程结构 | 10 个章节、57 个节点；节点数不代表正文与考核均完整 | `frontend/data/knowledge-universe.json` |
+| 节点级闭环 | 六阶段中的 33 个可点击节点分别保存学习、讲解、测验、错题、复习与通关状态；每次测验从现有题库取 4 题，75% 达标 | `frontend/assets/knowledge-node-flow.js`、`server/learning/knowledge-node-routes.js`、`tests/knowledge-progress.test.js` |
+| 范围区别 | 7 个核心模块级闭环、33 个节点级进度与 57 个课程总节点是不同统计口径；不能说 57 节点都有独立题库或独立验收 | `frontend/data/learning-curriculum.json`、`frontend/ai-learning/data.js`、`server/learning/knowledge-node-routes.js` |
 | 内容缺口 | 第 10 章已替换为 AI Agent 教学内容；第 7 章首节点已补充 ACP 认证概述正文 | `chapter_07.json`、`chapter_10.json` |
 | 认知地图 | 57 条团队设计标注，包含目标、活动、证据与建议先修；尚无独立专家一致性或效果验证 | `knowledge-cognitive-map.json` |
-| 新服务 | 本次采用 Node.js 本机服务与 SQLite；实际可用能力由本次验收确认 | 当前服务代码与运行测试 |
+| 新服务 | Node.js 24 本机服务默认监听 `127.0.0.1:8787`；节点闭环由 `/api/knowledge-progress` 提供；代码存在不等于当前线上实例已验收 | `server/index.js`、`server/learning-routes.js`、`server/learning/knowledge-node-routes.js` |
 | 模型反馈 | 可选模型复评；未配置或失败明确降级，本地规则不是 AI 评审 | 讲解接口的反馈来源与页面状态 |
 | 通关 | 讲解满足规则且客观题达到 75%；表示规则达标，不证明长期掌握 | 服务端判定及对应题库 |
-| 存储 | 本地 SQLite 或远程 Turso 双模式；Render 免费层重启后数据通过 Turso 持久化，无 Turso 配置时回退本机 SQLite | `server/store.js`、`render.yaml` 环境变量 |
+| 存储 | 本机服务使用 SQLite；静态回退使用 localStorage；公网后端按环境配置使用远程存储，仓库当前文档记录为 Turso | `server/store.js`、`.env.example`、`README.md` |
+| 公网 API 路由 | Cloudflare Pages `_worker.js` 将 `/api/*` 转发到 `API_ORIGIN`；仓库当前说明其目标为独立 Vercel 后端 | `frontend/_worker.js`、`frontend/_routes.json`、`README.md` |
 | API 密钥 | 所有模型密钥通过环境变量注入，代码中无硬编码密钥 | `server/store.js`、`.env.example`、`render.yaml` |
 | AI 复评 | 推理模型需较大 max_tokens（4096）与 60s 超时；失败时明确拒绝而非自动通关；21 组双盲测试准确率 90.5%、零假阳性 | `server/ai-review.js`、`tests/ai-rubric-validation-results.json` |
 | RAG 检索 | 默认用**本机哈希嵌入**：零依赖、不联网，但只反映词面重合，**不是语义检索**，同义改写会漏召回；该事实由 `embedder.semantic=false` 与索引清单的 notice 对外暴露 | `server/rag/embedder.js`、`server/rag/kb-store.js` |
