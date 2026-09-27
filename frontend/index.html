@@ -1,14 +1,96 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#03070d">
-  <meta name="description" content="从模型基础到 Prompt、Agent 与项目实战，沿着 AI Master 学习路线逐步掌握 AI。">
-  <title>从零开始，系统学会 AI · AI Master</title>
-  <link rel="icon" href="/static/favicon.svg">
-  <link rel="stylesheet" href="/ai-learning/styles.css">
-  <script type="module" src="/ai-learning/main.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Learn AI from fundamentals to real-world practice. Learn by doing, explain what you learn, and test your understanding with AI Master.">
+  <title>AI Master — Understand AI. Put It to Work.</title>
+  <link rel="icon" type="image/svg+xml" href="assets/ai-master-mark-outline.svg">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+  <link rel="preconnect" href="https://d8j0ntlcm91z4.cloudfront.net">
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/ai-master-home.css">
+  <script>window.AI_MASTER_BASE_URL = '';</script>
+  <script src="assets/ai-master-home.js" defer></script>
 </head>
-<body><div id="app"><main class="app-loading" aria-live="polite">正在打开 AI Master 学习平台…</main><noscript>请启用 JavaScript 浏览 AI Master 学习平台。</noscript></div></body>
+<body>
+  <section class="hero" aria-labelledby="hero-title">
+    <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1">
+      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260217_030345_246c0224-10a4-422c-b324-070b7c0eceda.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay" aria-hidden="true"></div>
+    <header class="navbar">
+      <div class="nav-left">
+        <a class="wordmark" href="/" data-ai-path="/" aria-label="AI master home">
+          <img class="logo-symbol" src="assets/ai-master-mark-outline.svg" alt="" width="27" height="27">
+          <span>AI master</span>
+        </a>
+        <button class="menu-toggle" aria-expanded="false" aria-controls="main-navigation">Menu</button>
+        <nav class="nav-links" id="main-navigation" aria-label="Main navigation">
+          <div class="nav-item">
+            <button class="nav-trigger" aria-expanded="false" aria-controls="menu-start">Get Started<svg viewBox="0 0 14 14" aria-hidden="true"><path d="m3 5 4 4 4-4"/></svg></button>
+            <div class="nav-menu" id="menu-start" hidden>
+              <a href="/beginner/" data-ai-path="/beginner/"><strong lang="zh-CN">新手入门</strong><span>Take your first steps with AI.</span></a>
+              <a href="/learning-path/?stage=1" data-ai-path="/learning-path/?stage=1"><strong lang="zh-CN">学习路线</strong><span>Follow six stages of AI learning.</span></a>
+              <a href="/knowledge/1-1/" data-ai-path="/knowledge/1-1/"><strong lang="zh-CN">AI 基础</strong><span>Understand language models and their limits.</span></a>
+            </div>
+          </div>
+          <div class="nav-item">
+            <button class="nav-trigger" aria-expanded="false" aria-controls="menu-developers">Developers<svg viewBox="0 0 14 14" aria-hidden="true"><path d="m3 5 4 4 4-4"/></svg></button>
+            <div class="nav-menu" id="menu-developers" hidden>
+              <a href="/knowledge/2-1/" data-ai-path="/knowledge/2-1/"><strong lang="zh-CN">提示词工程</strong><span>Learn to write clearer, more useful prompts.</span></a>
+              <a href="/knowledge/3-1/" data-ai-path="/knowledge/3-1/"><strong lang="zh-CN">AI 编程</strong><span>Get started with Claude Code.</span></a>
+              <a href="/knowledge/3-5/" data-ai-path="/knowledge/3-5/"><strong lang="zh-CN">MCP 工具连接</strong><span>Connect AI to tools and data.</span></a>
+              <a href="/knowledge/6-2/" data-ai-path="/knowledge/6-2/"><strong lang="zh-CN">智能体开发</strong><span>Explore agent architecture and development.</span></a>
+            </div>
+          </div>
+          <div class="nav-item">
+            <button class="nav-trigger" aria-expanded="false" aria-controls="menu-features">Features<svg viewBox="0 0 14 14" aria-hidden="true"><path d="m3 5 4 4 4-4"/></svg></button>
+            <div class="nav-menu" id="menu-features" hidden>
+              <a href="/learning-center/" data-ai-path="/learning-center/"><strong lang="zh-CN">讲解通关</strong><span>Explain concepts and test your understanding.</span></a>
+              <a href="/hands-on/" data-ai-path="/hands-on/"><strong lang="zh-CN">动手实践</strong><span>Turn what you learn into practical results.</span></a>
+              <a href="/playground/" data-ai-path="/playground/"><strong lang="zh-CN">提示词实验室</strong><span>Try prompts with local demo responses.</span></a>
+              <a href="/course-progress/" data-ai-path="/course-progress/"><strong lang="zh-CN">学习进度</strong><span>Review your course progress and completed modules.</span></a>
+            </div>
+          </div>
+          <div class="nav-item">
+            <button class="nav-trigger" aria-expanded="false" aria-controls="menu-resources">Resources<svg viewBox="0 0 14 14" aria-hidden="true"><path d="m3 5 4 4 4-4"/></svg></button>
+            <div class="nav-menu" id="menu-resources" hidden>
+              <a href="/courses/?q=" data-ai-path="/courses/?q="><strong lang="zh-CN">课程目录</strong><span>Browse the full AI Master course catalog.</span></a>
+              <a href="/knowledge-stars/" data-ai-path="/knowledge-stars/"><strong lang="zh-CN">知识星海</strong><span>Explore courses in an interactive knowledge galaxy.</span></a>
+              <a href="/experiments/" data-ai-path="/experiments/"><strong lang="zh-CN">实验工坊</strong><span>Learn AI concepts through interactive experiments.</span></a>
+            </div>
+          </div>
+        </nav>
+      </div>
+      <a class="pill-button pill-dark" href="/" data-ai-path="/"><span>Home</span></a>
+    </header>
+    <main class="hero-content">
+      <div class="hero-stack">
+        <div class="access-badge"><span class="badge-dot" aria-hidden="true"></span><span class="badge-label">Your starting point for learning <span class="badge-date">AI</span></span></div>
+        <div class="hero-copy">
+          <h1 id="hero-title">Understand AI. Put It to Work.</h1>
+          <p>From fundamentals to real-world practice. Learn by doing, explain what you’ve learned, and test your understanding with quizzes.</p>
+        </div>
+        <a class="pill-button pill-light" href="/" data-ai-path="/"><span>Home</span></a>
+      </div>
+    </main>
+    <button class="video-toggle" aria-label="Pause background video" title="Pause background video"><svg class="pause-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3v10M11 3v10"/></svg><svg class="play-icon" viewBox="0 0 16 16" aria-hidden="true" hidden><path d="m5 3 8 5-8 5Z"/></svg></button>
+  </section>
+  <dialog class="waitlist-dialog" aria-labelledby="waitlist-title" aria-describedby="waitlist-description">
+    <button class="dialog-close" aria-label="Close waitlist"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button>
+    <div class="dialog-eyebrow">EARLY ACCESS</div>
+    <h2 id="waitlist-title">Be part of what’s next.</h2>
+    <p id="waitlist-description">Join the EOS waitlist.</p>
+    <form id="waitlist-form">
+      <label for="email">Email address</label>
+      <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+      <button type="submit" class="pill-button pill-light"><span>Join Waitlist</span></button>
+      <p class="form-note">Preview only. Registration is not connected yet; your email will not be sent or stored.</p>
+      <p class="form-feedback" role="status" hidden>Email format confirmed. Live registration is coming soon.</p>
+    </form>
+  </dialog>
+</body>
 </html>

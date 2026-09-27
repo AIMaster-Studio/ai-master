@@ -182,6 +182,9 @@ test("ui-polish: hands-on and beginner pages use the shared instrument system", 
 });
 
 test("ui-polish: core sprint HTML pages have valid doctype and link tokens.css", () => {
+  const rootHtml = fs.readFileSync(path.join(FRONTEND, "index.html"), "utf-8");
+  assert.match(rootHtml, /assets\/ai-master-home\.css/, "Root hero must load its dedicated visual system");
+
   const pages = [
     "ai-review/index.html",
     "chapter/1/index.html",
@@ -198,7 +201,7 @@ test("ui-polish: core sprint HTML pages have valid doctype and link tokens.css",
     assert.match(html, /viewport/, `Page ${relPage} must have viewport meta tag`);
   }
 
-  for (const relPage of ["index.html", "dashboard/index.html", "playground/index.html", "learning-path/index.html", "courses/index.html", "projects/index.html"]) {
+  for (const relPage of ["dashboard/index.html", "playground/index.html", "learning-path/index.html", "courses/index.html", "projects/index.html"]) {
     const html = fs.readFileSync(path.join(FRONTEND, relPage), "utf-8");
     assert.match(html, /<!doctype html>/i, `Page ${relPage} must have standard <!DOCTYPE html>`);
     assert.match(html, /ai-learning\/styles\.css/, `Page ${relPage} must import AI Master styles`);
