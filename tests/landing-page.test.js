@@ -13,6 +13,11 @@ const pageScriptPath = path.join(FRONTEND, 'ai-learning', 'pages.js');
 const mainScriptPath = path.join(FRONTEND, 'ai-learning', 'main.js');
 const redirectsPath = path.join(FRONTEND, '_redirects');
 
+test('landing page provides direct entry to the beginner course', () => {
+  const html = fs.readFileSync(indexPath, 'utf8');
+  assert.equal((html.match(/class="pill-button pill-(?:dark|light)" href="\.\/beginner\/" data-ai-path="\/beginner\/"/g) || []).length, 2);
+});
+
 test('AI Master dynamic hero is served at the root with same-site assets', () => {
   assert.ok(fs.existsSync(indexPath), 'frontend/index.html must exist');
   const html = fs.readFileSync(indexPath, 'utf8');
