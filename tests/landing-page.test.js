@@ -16,6 +16,7 @@ const redirectsPath = path.join(FRONTEND, '_redirects');
 test('landing page provides direct entry to the beginner course', () => {
   const html = fs.readFileSync(indexPath, 'utf8');
   assert.equal((html.match(/class="pill-button pill-(?:dark|light)" href="\.\/beginner\/" data-ai-path="\/beginner\/"/g) || []).length, 2);
+  assert.equal((html.match(/<span>Start Learning<\/span>/g) || []).length, 2);
 });
 
 test('AI Master dynamic hero is served at the root with same-site assets', () => {
